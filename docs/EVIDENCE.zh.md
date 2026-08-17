@@ -45,7 +45,7 @@
 | `artifacts-resource_engine_20260812.tar.gz` | 70,505 个文件 | 13.1 MiB | 171 MiB |
 
 Kitesurf lane 另有两个资产挂在同一个 Release 上，由
-[`kitesurf-eval` 分支的 `docs/EVIDENCE.md`](../../tree/kitesurf-eval/docs/EVIDENCE.md)
+[`kitesurf-eval` 分支的 `docs/EVIDENCE.md`](../../../tree/kitesurf-eval/docs/EVIDENCE.md)
 索引。
 
 ### sha256
