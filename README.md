@@ -55,15 +55,6 @@ Resource figures cover the four local engines only. Kitesurf runs on shared infr
 
 Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
 
-## What this branch adds
-
-- The generic `remote_cdp` identity contract in the runner and the adapters, with three-field same-connection verification, so a remote endpoint passes the same anti-substitution gate a local binary does. See [runner/scripts/adapters/PROTOCOL.md](runner/scripts/adapters/PROTOCOL.md).
-- The recipe machinery: `tools/kitesurf_experiments.py {check,list,render,run}` over [config/kitesurf_experiments.json](config/kitesurf_experiments.json).
-- A two-origin fixture contract: static fixtures served from this repository's GitHub Pages (`pages/`, pinned by [config/kitesurf_static_fixture.json](config/kitesurf_static_fixture.json)) and a self-deployed dynamic origin (`python3 -m runner.run fixture-serve` behind an HTTPS tunnel, contract-verified by [config/kitesurf_dynamic_fixture.json](config/kitesurf_dynamic_fixture.json)).
-- Five-engine aggregation: `tools/report_five_engine.py` computes the published denominators, the caliber split and the B-class adjudication instead of narrating them.
-
-Start with [docs/kitesurf-deployment.md](docs/kitesurf-deployment.md) for the fixture resolution rules and the four-command flow. Once Kitesurf ships a local binary it joins the main roster and this branch retires.
-
 ## Documentation
 
 | Document | What it answers |
@@ -74,6 +65,15 @@ Start with [docs/kitesurf-deployment.md](docs/kitesurf-deployment.md) for the fi
 | [docs/REPRODUCE.md](docs/REPRODUCE.md) | Reproducing the published runs and regenerating their reports |
 | [docs/RESULTS.md](docs/RESULTS.md) | Reading the results: scoring boundaries, calibers and limits |
 | [docs/reports/](docs/reports/) | The reports themselves, generated from run artifacts |
+
+## What this branch adds
+
+- The generic `remote_cdp` identity contract in the runner and the adapters, with three-field same-connection verification, so a remote endpoint passes the same anti-substitution gate a local binary does. See [runner/scripts/adapters/PROTOCOL.md](runner/scripts/adapters/PROTOCOL.md).
+- The recipe machinery: `tools/kitesurf_experiments.py {check,list,render,run}` over [config/kitesurf_experiments.json](config/kitesurf_experiments.json).
+- A two-origin fixture contract: static fixtures served from this repository's GitHub Pages (`pages/`, pinned by [config/kitesurf_static_fixture.json](config/kitesurf_static_fixture.json)) and a self-deployed dynamic origin (`python3 -m runner.run fixture-serve` behind an HTTPS tunnel, contract-verified by [config/kitesurf_dynamic_fixture.json](config/kitesurf_dynamic_fixture.json)).
+- Five-engine aggregation: `tools/report_five_engine.py` computes the published denominators, the caliber split and the B-class adjudication instead of narrating them.
+
+Start with [docs/kitesurf-deployment.md](docs/kitesurf-deployment.md) for the fixture resolution rules and the four-command flow. Once Kitesurf ships a local binary it joins the main roster and this branch retires.
 
 ## License
 

@@ -55,15 +55,6 @@
 
 单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 39 MiB、Moli 92 MiB、Chrome 697 MiB。同一批任务的单题引擎 CPU 中位数依次是 36 ms、38 ms、101 ms、687 ms。细节和校准记录见[资源卡片](docs/reports/resource-card-20260812.md)。
 
-## 这个分支多了什么
-
-- runner 和各 adapter 里通用的 `remote_cdp` 身份契约，采用同一连接上的三字段校验，让远程端点也要过和本地二进制一样的防偷换关卡。见 [runner/scripts/adapters/PROTOCOL.md](runner/scripts/adapters/PROTOCOL.md)。
-- 配方机制：`tools/kitesurf_experiments.py {check,list,render,run}`，作用于 [config/kitesurf_experiments.json](config/kitesurf_experiments.json)。
-- 双 origin 的 fixture 契约：静态 fixture 由本仓库的 GitHub Pages 提供（`pages/`，由 [config/kitesurf_static_fixture.json](config/kitesurf_static_fixture.json) 固定），动态 origin 则自行部署（`python3 -m runner.run fixture-serve` 加一条 HTTPS 隧道，由 [config/kitesurf_dynamic_fixture.json](config/kitesurf_dynamic_fixture.json) 做契约校验）。
-- 五引擎聚合：`tools/report_five_engine.py` 直接计算已发布的分母、口径划分和 B 类裁定，而不是用文字描述它们。
-
-先读 [docs/kitesurf-deployment.zh.md](docs/kitesurf-deployment.zh.md)，里面是 fixture 的解析规则和四条命令的流程。等 Kitesurf 提供本地二进制，它就并入主名单，这个分支随之退役。
-
 ## Documentation
 
 | 文档 | 回答什么 |
@@ -74,6 +65,15 @@
 | [docs/REPRODUCE.zh.md](docs/REPRODUCE.zh.md) | 怎么复现已发布的 run，怎么重新生成报告 |
 | [docs/RESULTS.zh.md](docs/RESULTS.zh.md) | 结果怎么读：判定边界、口径与适用范围 |
 | [docs/reports/](docs/reports/) | 报告本身，由 run 产物生成 |
+
+## 这个分支多了什么
+
+- runner 和各 adapter 里通用的 `remote_cdp` 身份契约，采用同一连接上的三字段校验，让远程端点也要过和本地二进制一样的防偷换关卡。见 [runner/scripts/adapters/PROTOCOL.md](runner/scripts/adapters/PROTOCOL.md)。
+- 配方机制：`tools/kitesurf_experiments.py {check,list,render,run}`，作用于 [config/kitesurf_experiments.json](config/kitesurf_experiments.json)。
+- 双 origin 的 fixture 契约：静态 fixture 由本仓库的 GitHub Pages 提供（`pages/`，由 [config/kitesurf_static_fixture.json](config/kitesurf_static_fixture.json) 固定），动态 origin 则自行部署（`python3 -m runner.run fixture-serve` 加一条 HTTPS 隧道，由 [config/kitesurf_dynamic_fixture.json](config/kitesurf_dynamic_fixture.json) 做契约校验）。
+- 五引擎聚合：`tools/report_five_engine.py` 直接计算已发布的分母、口径划分和 B 类裁定，而不是用文字描述它们。
+
+先读 [docs/kitesurf-deployment.zh.md](docs/kitesurf-deployment.zh.md)，里面是 fixture 的解析规则和四条命令的流程。等 Kitesurf 提供本地二进制，它就并入主名单，这个分支随之退役。
 
 ## License
 
