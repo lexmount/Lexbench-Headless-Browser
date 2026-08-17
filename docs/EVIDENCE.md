@@ -147,7 +147,11 @@ Two lane-level contract reports sit alongside them:
 content contract) and `ks_dynamic_verification.json` (127 static routes plus 28
 dynamic probes verified before the round started).
 
-Every round pins the same source commit, `7b6fe89e2e18d07484d630a46dac61f46c0a84f9`.
+Every round records the same source identity, so all 49 came from one
+unchanged working state. That identity is a commit and tree from before this
+repository's history was rebuilt for publication, which means the hashes in
+`provenance.json` no longer resolve here; they remain useful as an internal
+consistency record rather than as something to check out.
 
 ### Release assets
 

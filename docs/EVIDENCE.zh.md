@@ -129,7 +129,10 @@ python3 tools/scrub_release_paths.py build/release-runs/ --check --origins-from 
 对内容契约校验通过）和 `ks_dynamic_verification.json`（开跑前校验 127 条静态路由加 28
 个动态探针）。
 
-每一轮都固定在同一个源码提交 `7b6fe89e2e18d07484d630a46dac61f46c0a84f9` 上。
+每一轮记录的源码身份都相同,说明 49 轮出自同一个未改动的工作状态。这个身份是一个
+commit 和 tree,来自本仓库为公开发布而重建历史之前,所以 `provenance.json` 里那两个
+哈希在这里已经解析不出对象了 —— 它们的作用是内部一致性记录,而不是可以 checkout 的
+坐标。
 
 ### Release 资产
 
