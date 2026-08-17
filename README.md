@@ -16,9 +16,9 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)"
-            srcset="https://img.shields.io/badge/The%20next%20user%20of%20the%20headless%20browser%20is%20the%20agent.-A371F7?style=for-the-badge">
-    <img src="https://img.shields.io/badge/The%20next%20user%20of%20the%20headless%20browser%20is%20the%20agent.-8250DF?style=for-the-badge"
-         alt="The next user of the headless browser is the agent.">
+            srcset="https://img.shields.io/badge/The%20next%20users%20of%20the%20headless%20browser%20are%20agents.-6CB33F?style=for-the-badge">
+    <img src="https://img.shields.io/badge/The%20next%20users%20of%20the%20headless%20browser%20are%20agents.-3F9B4E?style=for-the-badge"
+         alt="The next users of the headless browser are agents." />
   </picture>
 </p>
 
