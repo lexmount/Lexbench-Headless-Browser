@@ -50,7 +50,7 @@ individual failure rather than only the result row.
 | `artifacts-resource_engine_20260812.tar.gz` | 70,505 files | 13.1 MiB | 171 MiB |
 
 The Kitesurf lane ships two more assets on the same release, indexed by
-[`docs/EVIDENCE.md` on the `kitesurf-eval` branch](../../tree/kitesurf-eval/docs/EVIDENCE.md).
+[`docs/EVIDENCE.md` on the `kitesurf-eval` branch](../../../tree/kitesurf-eval/docs/EVIDENCE.md).
 
 ### sha256
 
