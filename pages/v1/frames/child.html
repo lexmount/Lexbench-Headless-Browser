@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Kitesurf fixture: child</title></head>
+<body data-fixture="frame-child-v1">
+  <h2 id="child-heading">Child frame</h2>
+  <button id="post-parent" type="button">Post parent</button>
+  <iframe id="grandchild" src="grandchild.html"></iframe>
+  <script>
+    window.__kitesurfFixture = {version: "v1", fixture: "frame-child"};
+    document.querySelector("#post-parent").onclick = () => parent.postMessage("child-message-v1", "*");
+  </script>
+</body>
+</html>

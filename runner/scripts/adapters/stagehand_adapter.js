@@ -19,6 +19,12 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const {
+  compareRemoteIdentity,
+  requireRemoteIdentity,
+} = require("../lib/remote_identity");
+const { applyCleanupContract } = require("../lib/remote_cleanup");
+const { selectStagehandInitOwnedPages } = require("../lib/stagehand_ownership");
 
 // Stagehand's internal logger writes DEBUG lines (e.g. "css pierce-fallback"
 // when a selector misses) directly to process.stdout even with verbose: 0,
@@ -54,12 +60,25 @@ function handleAsyncCrash(err) {
         evidence: `stagehand crashed mid-scenario (engine drove the client into a fatal state): ${msg}`,
       }))
     );
-    emit({
+    const primaryOutcome = {
       ok: true,
       answer: `1/${checkRows.length} checks`,
-      observations: { checks: checkRows, saved: crashState.saved, binding: crashState.binding, transport_crash: msg, failure_class: "cdp_semantic" },
+      observations: {
+        checks: checkRows,
+        saved: crashState.saved,
+        binding: crashState.binding,
+        transport_crash: msg,
+        failure_class: "cdp_semantic",
+      },
       metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 1 },
-    });
+    };
+    emit(applyCleanupContract(primaryOutcome, {
+      backend: "stagehand_page.close",
+      required: true,
+      confirmed: false,
+      same_connection_as_task: true,
+      error: "async crash prevented confirmed target cleanup",
+    }, "Stagehand"));
     process.exit(0);
   }
   emit({ ok: false, error: { class: "script_error", message: `async crash before binding verified: ${msg}` }, observations: { binding: crashState.binding || {} }, metrics: {} });
@@ -140,6 +159,18 @@ async function main() {
   const expectProduct = payload.expect_product || "";
   const expectUA = payload.expect_ua || "";
   const expectProductLive = payload.expect_product_live || expectProduct;
+  let expectedRemoteIdentity = null;
+  try {
+    if (payload.remote_cdp === true) {
+      expectedRemoteIdentity = requireRemoteIdentity(
+        payload.expected_remote_identity,
+        "expected_remote_identity"
+      );
+    }
+  } catch (err) {
+    emit({ ok: false, error: { class: "script_error", message: `binding gate: ${err.message}` }, observations: {}, metrics: {} });
+    return;
+  }
   const steps = payload.steps || [];
   const checks = payload.checks || [];
   crashState.checks = checks;
@@ -227,7 +258,6 @@ async function main() {
     ]);
   } catch (err) {
     connectError = String(err && err.message ? err.message : err).slice(0, 1000);
-    stagehand = null;
   }
   binding.client_version = clientVersion;
   trace({ ts: new Date().toISOString(), direction: "stagehand", step: "connect", ok: !connectError, error: connectError || undefined });
@@ -238,53 +268,227 @@ async function main() {
   crashState.saved = saved;
   const stepResults = [];
   const createdPages = [];
+  const pageCreations = [];
   let page = null;
+  if (connectError && stagehand) {
+    // Stagehand.init may create a target before its promise rejects or times
+    // out. Its high-level error does not expose a target id, so continuing the
+    // experiment would be unsafe even after disconnecting the client.
+    pageCreations.push({
+      attempt: 0,
+      state: "ambiguous",
+      source: "stagehand.init",
+      error: connectError,
+    });
+  }
+
+  const registerTrackedPage = (created, source) => {
+    if (createdPages.includes(created)) return created;
+    const targetId = typeof created.targetId === "function" ? created.targetId() : null;
+    pageCreations.push({
+      attempt: pageCreations.length + 1,
+      state: targetId ? "created" : "ambiguous",
+      source,
+      target_id: targetId || undefined,
+      ...(targetId ? {} : { error: "Stagehand page exposes no target id" }),
+      page: created,
+    });
+    createdPages.push(created);
+    return created;
+  };
+
+  if (stagehand && !connectError) {
+    const visibleAfterInit = stagehand.context.pages();
+    const ownedAfterInit = selectStagehandInitOwnedPages(
+      visibleAfterInit,
+      payload.remote_cdp === true
+    );
+    binding.init_context_ownership = {
+      strategy: payload.remote_cdp === true
+        ? "fresh_remote_attempt_pages_owned"
+        : "local_preexisting_pages_borrowed",
+      observed: Array.isArray(visibleAfterInit) ? visibleAfterInit.length : 0,
+      tracked: ownedAfterInit.length,
+    };
+    for (const existing of ownedAfterInit) {
+      registerTrackedPage(existing, "stagehand.init_context_page");
+    }
+  }
+
+  const createTrackedPage = async () => {
+    const creation = {
+      attempt: pageCreations.length + 1,
+      state: "requested",
+    };
+    pageCreations.push(creation);
+    try {
+      const created = await stagehand.context.newPage();
+      creation.state = "created";
+      creation.target_id = typeof created.targetId === "function" ? created.targetId() : undefined;
+      creation.page = created;
+      createdPages.push(created);
+      if (!creation.target_id) {
+        creation.state = "ambiguous";
+        creation.error = "Stagehand newPage returned no target id";
+        throw new Error(creation.error);
+      }
+      return created;
+    } catch (error) {
+      creation.state = "ambiguous";
+      creation.error = String(error && error.message ? error.message : error);
+      throw error;
+    }
+  };
+
+  const cleanupCreatedPages = async () => {
+    const attempts = [];
+    for (const created of [...createdPages]) {
+      const creation = pageCreations.find((entry) => entry.page === created);
+      const targetId = creation && creation.target_id;
+      const root = created && created.mainSession && created.mainSession.root;
+      let pageClosed = false;
+      for (let attempt = 1; attempt <= 2 && !pageClosed; attempt += 1) {
+        let timer;
+        try {
+          if (!targetId || !root || typeof root.send !== "function") {
+            throw new Error("Stagehand root connection or target id unavailable during cleanup");
+          }
+          const closeOperation = (async () => {
+            let response = null;
+            let closeError = null;
+            try {
+              response = await root.send("Target.closeTarget", { targetId });
+            } catch (error) {
+              closeError = error;
+            }
+            const deadline = Date.now() + 2000;
+            do {
+              const inventory = await root.send("Target.getTargets", {});
+              const targetInfos = Array.isArray(inventory && inventory.targetInfos)
+                ? inventory.targetInfos
+                : [];
+              if (!targetInfos.some((item) => item.targetId === targetId)) {
+                return { response, close_error: closeError, inventory_confirmed: true };
+              }
+              await wait(25);
+            } while (Date.now() < deadline);
+            if (closeError) throw closeError;
+            return { response, inventory_confirmed: false };
+          })();
+          closeOperation.catch(() => {});
+          const result = await Promise.race([
+            closeOperation,
+            new Promise((_, reject) => {
+              timer = setTimeout(() => {
+                const error = new Error("Stagehand page cleanup timeout");
+                error.cleanupTimedOut = true;
+                reject(error);
+              }, 3000);
+              if (timer.unref) timer.unref();
+            }),
+          ]);
+          pageClosed = result.inventory_confirmed === true;
+          attempts.push({
+            target_id: targetId,
+            attempt,
+            success: result.response && result.response.success,
+            close_error: result.close_error
+              ? String(result.close_error.message || result.close_error)
+              : undefined,
+            inventory_confirmed: result.inventory_confirmed,
+            confirmed: pageClosed,
+          });
+        } catch (error) {
+          attempts.push({
+            target_id: targetId,
+            attempt,
+            confirmed: false,
+            error: String(error && error.message ? error.message : error),
+            ...(error && error.cleanupTimedOut ? { timed_out: true } : {}),
+          });
+          if (error && error.cleanupTimedOut) break;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      if (creation) creation.state = pageClosed ? "closed" : "cleanup_unconfirmed";
+      if (pageClosed) createdPages.splice(createdPages.indexOf(created), 1);
+    }
+    const confirmed = pageCreations.every((entry) => entry.state === "closed");
+    return {
+      backend: "stagehand_page.close",
+      required: pageCreations.length > 0,
+      confirmed,
+      same_connection_as_task: true,
+      creation_attempts: pageCreations.map(({ attempt, state, source, target_id, error }) => ({
+        attempt,
+        state,
+        ...(source ? { source } : {}),
+        ...(target_id ? { target_id } : {}),
+        ...(error ? { error } : {}),
+      })),
+      attempts,
+    };
+  };
 
   // ---- Binding gate 2/2: the live client transport must identify as the
   // engine under test. Stagehand's page.sendCDP rides its own connection.
-  if (stagehand) {
+  if (stagehand && !connectError) {
+    let liveIdentity = null;
     let liveProduct = null;
     let liveCheck = null;
     let probe = null;
     try {
       const existing = stagehand.context.pages();
-      probe = Array.isArray(existing) && existing.length ? existing[0] : await stagehand.context.newPage();
-      const ver = await probe.sendCDP("Browser.getVersion");
-      liveProduct = String((ver && ver.product) || "");
+      probe = Array.isArray(existing) && existing.length ? existing[0] : await createTrackedPage();
+      liveIdentity = await probe.sendCDP("Browser.getVersion");
+      liveProduct = String((liveIdentity && liveIdentity.product) || "");
       liveCheck = "stagehand_send_cdp_browser_get_version";
     } catch { /* fall through to the root-connection check */ }
-    if (liveProduct !== expectProductLive && probe && probe.mainSession && probe.mainSession.root) {
+    const firstIdentityVerified = expectedRemoteIdentity
+      ? compareRemoteIdentity(expectedRemoteIdentity, liveIdentity).verified
+      : liveProduct === expectProductLive;
+    if (!firstIdentityVerified && probe && probe.mainSession && probe.mainSession.root) {
       // Some engines (observed: Lightpanda) answer session-scoped
       // Browser.getVersion with an empty result under Stagehand's auto-attach
       // flow while answering correctly on the root of the same websocket. The
       // root IS Stagehand's live transport, so identity read there still
       // satisfies the gate.
       try {
-        const ver = await probe.mainSession.root.send("Browser.getVersion", {});
-        liveProduct = String((ver && ver.product) || "");
+        liveIdentity = await probe.mainSession.root.send("Browser.getVersion", {});
+        liveProduct = String((liveIdentity && liveIdentity.product) || "");
         liveCheck = "stagehand_root_connection_browser_get_version";
       } catch { /* handled below: mismatch fails the gate */ }
     }
     binding.expect_product_live = expectProductLive;
     binding.live_product = liveProduct;
     binding.live_check = liveCheck;
-    if (liveProduct !== expectProductLive) {
+    if (expectedRemoteIdentity) {
+      Object.assign(binding, compareRemoteIdentity(expectedRemoteIdentity, liveIdentity));
+    }
+    const identityVerified = expectedRemoteIdentity
+      ? binding.verified === true
+      : liveProduct === expectProductLive;
+    if (!identityVerified) {
+      const cleanup = await cleanupCreatedPages();
       try {
         await stagehand.close();
       } catch { /* best effort */ }
-      emit({
+      emit(applyCleanupContract({
         ok: false,
         error: {
           class: "script_error",
-          message: `binding gate: live stagehand transport reports product=${JSON.stringify(liveProduct)}; expected ${JSON.stringify(expectProductLive)} — the client is not bound to the engine under test`,
+          message: expectedRemoteIdentity
+            ? `binding gate: live stagehand transport reports identity=${JSON.stringify(binding.actual)}; expected ${JSON.stringify(binding.expected)} — the client is not bound to the remote engine under test`
+            : `binding gate: live stagehand transport reports product=${JSON.stringify(liveProduct)}; expected ${JSON.stringify(expectProductLive)} — the client is not bound to the engine under test`,
         },
         observations: { binding },
         metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 0 },
-      });
+      }, cleanup, "Stagehand"));
       return;
     }
     binding.verified = true;
-    trace({ ts: new Date().toISOString(), direction: "stagehand", step: "binding_verified", product: liveProduct });
+    trace({ ts: new Date().toISOString(), direction: "stagehand", step: "binding_verified", identity: expectedRemoteIdentity ? binding.actual : { product: liveProduct } });
   }
 
   const evalExpr = async (expression) => {
@@ -307,8 +511,7 @@ async function main() {
 
   const ensurePage = async () => {
     if (page) return page;
-    page = await stagehand.context.newPage();
-    createdPages.push(page);
+    page = await createTrackedPage();
     return page;
   };
 
@@ -529,6 +732,7 @@ async function main() {
     }
   }
 
+  let outcome;
   try {
     if (connectError) {
       // A refused/failed connect is a genuine compatibility result: the engine
@@ -542,119 +746,115 @@ async function main() {
           evidence: "client did not connect; scenario not executed",
         }))
       );
-      emit({
+      outcome = {
         ok: true,
         answer: `0/${checkRows.length} checks`,
         observations: { checks: checkRows, saved: {}, binding, connect_error: connectError, failure_class: "cdp_semantic" },
         metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 0 },
-      });
-      return;
-    }
-
-    for (let i = 0; i < steps.length; i += 1) {
-      const step = steps[i];
-      let result;
-      try {
-        const value = await runOp(step);
-        result = { ok: true, value };
-      } catch (err) {
-        const message = String(err && err.message ? err.message : err).slice(0, 1000);
-        result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
-        opErrors += 1;
-      }
-      stepResults.push(result);
-      trace({ ts: new Date().toISOString(), direction: "stagehand", step: i, op: step.op, selector: step.selector, ok: result.ok, error: result.error || undefined });
-      if (result.ok && step.expect_fail) result.unexpected_success = true;
-      if (step.save_as) {
-        saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
-      }
-    }
-
-    const evaluateCheck = (check) => {
-      const kind = check.kind;
-      const stepAt = (idx) => stepResults[idx] || {};
-      if (kind === "saved_equals") {
-        const value = saved[check.name];
-        return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
-      }
-      if (kind === "saved_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_not_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_truthy") {
-        const value = saved[check.name];
-        const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
-        return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
-      }
-      if (kind === "step_ok") {
-        const r = stepAt(check.step);
-        return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
-      }
-      if (kind === "step_fails") {
-        const r = stepAt(check.step);
-        return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
-      }
-      if (kind === "file_nonempty") {
-        const filePath = substitute(check.path);
-        let size = 0;
+      };
+    } else {
+      for (let i = 0; i < steps.length; i += 1) {
+        const step = steps[i];
+        let result;
         try {
-          size = fs.statSync(filePath).size;
-        } catch {
-          size = 0;
+          const value = await runOp(step);
+          result = { ok: true, value };
+        } catch (err) {
+          const message = String(err && err.message ? err.message : err).slice(0, 1000);
+          result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
+          opErrors += 1;
         }
-        return [size > 0, `${filePath} size=${size}`];
+        stepResults.push(result);
+        trace({ ts: new Date().toISOString(), direction: "stagehand", step: i, op: step.op, selector: step.selector, ok: result.ok, error: result.error || undefined });
+        if (result.ok && step.expect_fail) result.unexpected_success = true;
+        if (step.save_as) {
+          saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
+        }
       }
-      if (kind === "any_of") {
-        const results = (check.checks || []).map(evaluateCheck);
-        return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
-      }
-      return [false, `unknown check kind ${kind}`];
-    };
 
-    const checkRows = [
-      { name: "driver_connect", status: "pass", evidence: `stagehand@${clientVersion} bound to ${binding.live_product}` },
-    ].concat(
-      checks.map((check, idx) => {
-        const [ok, evidence] = evaluateCheck(check);
-        return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
-      })
-    );
+      const evaluateCheck = (check) => {
+        const kind = check.kind;
+        const stepAt = (idx) => stepResults[idx] || {};
+        if (kind === "saved_equals") {
+          const value = saved[check.name];
+          return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
+        }
+        if (kind === "saved_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_not_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_truthy") {
+          const value = saved[check.name];
+          const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
+          return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
+        }
+        if (kind === "step_ok") {
+          const r = stepAt(check.step);
+          return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
+        }
+        if (kind === "step_fails") {
+          const r = stepAt(check.step);
+          return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
+        }
+        if (kind === "file_nonempty") {
+          const filePath = substitute(check.path);
+          let size = 0;
+          try {
+            size = fs.statSync(filePath).size;
+          } catch {
+            size = 0;
+          }
+          return [size > 0, `${filePath} size=${size}`];
+        }
+        if (kind === "any_of") {
+          const results = (check.checks || []).map(evaluateCheck);
+          return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
+        }
+        return [false, `unknown check kind ${kind}`];
+      };
 
-    emit({
-      ok: true,
-      answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
-      observations: {
-        checks: checkRows,
-        saved,
-        binding,
-        driver_ops: stepResults.length,
-        driver_op_errors: stepResults.filter((r) => !r.ok).length,
-        failure_class: "cdp_semantic",
-      },
-      metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+      const checkRows = [
+        { name: "driver_connect", status: "pass", evidence: `stagehand@${clientVersion} bound to ${binding.live_product}` },
+      ].concat(
+        checks.map((check, idx) => {
+          const [ok, evidence] = evaluateCheck(check);
+          return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
+        })
+      );
+
+      outcome = {
+        ok: true,
+        answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
+        observations: {
+          checks: checkRows,
+          saved,
+          binding,
+          driver_ops: stepResults.length,
+          driver_op_errors: stepResults.filter((r) => !r.ok).length,
+          failure_class: "cdp_semantic",
+        },
+        metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
+      };
+    }
   } catch (err) {
     const msg = String(err && err.message ? err.message : err);
     const klass = isUnsupportedMessage(msg) ? "engine_unsupported" : "script_error";
-    emit({
+    outcome = {
       ok: false,
       error: { class: klass, message: msg },
       observations: { saved, binding },
       metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+    };
   } finally {
+    const cleanup = await cleanupCreatedPages();
+    emit(applyCleanupContract(outcome, cleanup, "Stagehand"));
     if (stagehand) {
-      for (const created of createdPages) {
-        try {
-          await created.close();
-        } catch { /* target may already be gone */ }
-      }
       try {
         // Verified safe: with cdpUrl connect, close() tears down the client
         // connection only and never the engine under test.

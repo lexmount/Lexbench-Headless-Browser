@@ -44,9 +44,7 @@
 | `artifacts-resource_baseline_20260812.tar.gz` | 59,366 个文件 | 7.1 MiB | 111 MiB |
 | `artifacts-resource_engine_20260812.tar.gz` | 70,505 个文件 | 13.1 MiB | 171 MiB |
 
-Kitesurf lane 另有两个资产挂在同一个 Release 上，由
-[`kitesurf-eval` 分支的 `docs/EVIDENCE.md`](../../tree/kitesurf-eval/docs/EVIDENCE.md)
-索引。
+Kitesurf lane 另有两个资产挂在同一个 Release 上，由下方 [Kitesurf lane](#kitesurf-lane) 一节索引。
 
 ### sha256
 
@@ -80,7 +78,7 @@ python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
 ```
 
 两份已发布的报告都用这种方式从 Release 压缩包里重新生成过，输出与仓库里的副本逐字节
-相同。五引擎报告在 `kitesurf-eval` 分支生成，它的输入在那边。
+相同。五引擎报告的重新生成命令见下方 Kitesurf lane 一节。
 
 ## 发布前去掉了什么
 
@@ -111,3 +109,73 @@ python3 tools/scrub_release_paths.py build/release-runs/ --check --origins-from 
 第二种形式用来检查已经清洗过的树。origin 是从产物里发现的，而清洗过的产物已经不再
 写出任何 origin，所以这种检查需要原始的树来告诉它要找什么。如果让脚本在没有这个参数
 的情况下检查一棵已清洗的树，它会拒绝执行，而不是给出一个根本没验过的"干净"结论。
+
+## Kitesurf lane
+
+五引擎报告有两个来源：四个本地引擎来自上文索引的那次四引擎 run，Kitesurf 那一列来自本分支采集的 lane。
+
+### 随仓库分发的部分
+
+`docs/evidence/<run_id>/` 放着这条 lane 全部 49 轮的指纹文件，合计约 1.2 MB。
+
+| 文件 | 固定了什么 |
+|:---|:---|
+| `provenance.json` | 分支、HEAD、树摘要、worktree 状态，以及该轮调用过的每个编译 adapter 的 sha256 |
+| `summary.json` | 端点、期望与实测身份、状态统计、延迟，以及该轮所依赖的 fixture 校验结果 |
+| `summary.md` | 同一轮的可读版本 |
+| `identity.cdp.jsonl` | 传输层上的实时身份交换，每条连接一行 |
+
+旁边还有两份 lane 级的契约报告：`ks_static_verification.json`（19 个静态 fixture 文件
+对内容契约校验通过）和 `ks_dynamic_verification.json`（开跑前校验 127 条静态路由加 28
+个动态探针）。
+
+每一轮都固定在同一个源码提交 `7b6fe89e2e18d07484d630a46dac61f46c0a84f9` 上。
+
+### Release 资产
+
+挂在 [v0.5.0](https://github.com/lexmount/Lexbench-Headless-Browser/releases/tag/v0.5.0)，
+与四引擎的压缩包放在一起。
+
+| 资产 | 内容 | 下载 | 解压后 |
+|:---|:---|---:|---:|
+| `evidence-kitesurf_lane_20260813.tar.gz` | 全部 49 轮：`results.jsonl`、每轮的 `fixture_verification.json`，以及上表那些指纹文件 | 1.2 MiB | 13 MiB |
+| `artifacts-kitesurf_lane_20260813.tar.gz` | 4,989 个 attempt 级协议产物 | 888 KiB | 12 MiB |
+
+```
+003b4af6eb7ccecfd13e7bf09cfb7d00db95c0e5d40338629b8663efa4fb5fd8  evidence-kitesurf_lane_20260813.tar.gz
+71b55f610b5b2f40742c43297a6f4e44a6baceec70f228ec7556eec3175a4a75  artifacts-kitesurf_lane_20260813.tar.gz
+```
+
+四引擎的压缩包，以及同样适用于这条 lane 的清洗规则，都在上文各节里索引。
+
+### 重新生成五引擎报告
+
+这条 lane 是 49 轮而不是一次 run：只要某道题无法确认 target 清理干净，探针就会整体触
+发熔断，外层 wrapper 再对剩下的题起一次续跑，playwright 一个栈就被切成了 25 段。每
+一段都是一个输入，每次失败的 rerun 证据是另一类输入：
+
+```bash
+python3 tools/report_five_engine.py \
+    --four-engine-run ../main/runs/four_engine_full_20260812 \
+    --kitesurf-results runs/ks_raw_full/results.jsonl \
+                       runs/ks_driver_full/results.jsonl \
+                       runs/ks_l2_full/results.jsonl \
+                       runs/ks_blocked_*/results.jsonl \
+                       runs/ks_sweep_*/results.jsonl \
+    --kitesurf-rerun runs/ks_adj_*/results.jsonl \
+                     runs/ks_l2_full/results.jsonl \
+    -o docs/reports/five-engine-report-20260813.md
+```
+
+`ks_l2_full` 在两边都出现，是因为那一轮每道题带两行：它自己的首轮尝试和它自己的
+rerun。
+
+跑这条命令能把已发布报告的全部生成段落逐字节复现，用清洗后的压缩包和用原始树都一
+样。报告末尾的"Run notes"是生成之后手写的散文段落，讲方法和观察，引用的数字都来自它
+上面那些生成段落已经算出来的值。
+
+### Kitesurf 这一列不是什么
+
+远程端点没有二进制摘要、没有进程树、没有 cgroup，所以这条 lane 的
+`formal_score_eligible` 为假，也不存在属于它的资源数字。资源格子空着表示无法测量，
+绝不表示零。这些读数是对一个可能随时变化的服务的一次快照，可复现性等级弱于上文那四个固定二进制。

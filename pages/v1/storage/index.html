@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Kitesurf fixture: storage</title></head>
+<body data-fixture="storage-v1">
+  <h1>Storage fixture</h1>
+  <button id="seed-storage" type="button">Seed storage</button>
+  <button id="read-storage" type="button">Read storage</button>
+  <output id="storage-result">idle</output>
+  <script>
+    window.__kitesurfFixture = {version: "v1", fixture: "storage", last: null};
+    const openDb = () => new Promise((resolve, reject) => {
+      const request = indexedDB.open("kitesurf-fixture-v1", 1);
+      request.onupgradeneeded = () => request.result.createObjectStore("records");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+    document.querySelector("#seed-storage").onclick = async () => {
+      localStorage.setItem("fixture-local", "local-v1");
+      sessionStorage.setItem("fixture-session", "session-v1");
+      document.cookie = "fixture-cookie=cookie-v1; path=/";
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction("records", "readwrite");
+        tx.objectStore("records").put({value: "idb-v1"}, "fixture");
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+      document.querySelector("#storage-result").textContent = "seeded";
+    };
+    document.querySelector("#read-storage").onclick = async () => {
+      const db = await openDb();
+      const idb = await new Promise((resolve, reject) => {
+        const request = db.transaction("records").objectStore("records").get("fixture");
+        request.onsuccess = () => resolve(request.result?.value || null);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      const value = {
+        local: localStorage.getItem("fixture-local"),
+        session: sessionStorage.getItem("fixture-session"),
+        cookie: document.cookie,
+        idb,
+      };
+      window.__kitesurfFixture.last = value;
+      document.querySelector("#storage-result").textContent = JSON.stringify(value);
+    };
+  </script>
+</body>
+</html>

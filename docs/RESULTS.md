@@ -61,7 +61,7 @@ Resource figures come from the separate A/B-calibrated round documented in [reso
 
 ## Five engines and the calibers
 
-The main branch reports four locally pinned binaries. The [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch adds Kitesurf, a remote endpoint, and publishes its comparison under two explicit calibers: caliber A drops the subsets whose failures cannot be attributed across a remote boundary, and caliber B further drops subsets that are systematically blocked end to end. The caliber definitions, the adjudication rule and the five-engine table live in that branch's report; the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
+The main branch reports four locally pinned binaries. This branch, `kitesurf-eval`, adds Kitesurf, a remote endpoint, and publishes its comparison under two explicit calibers: caliber A drops the subsets whose failures cannot be attributed across a remote boundary, and caliber B further drops subsets that are systematically blocked end to end. The caliber definitions, the adjudication rule and the five-engine table live in the [five-engine report](reports/five-engine-report-20260813.md); the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
 
 ## Why these mechanisms
 

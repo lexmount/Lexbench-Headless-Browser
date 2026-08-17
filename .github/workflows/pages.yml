@@ -1,0 +1,35 @@
+name: pages
+
+# Publish the static Kitesurf fixture tree (pages/) through GitHub Pages.
+# The deployed content is contract-verified by config/kitesurf_static_fixture.json:
+# every file is pinned by sha256 and checked by tools/kitesurf_static_fixture.py
+# before any recipe run scores a task.
+
+on:
+  push:
+    branches: [kitesurf-eval]
+    paths: ["pages/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+      - id: deployment
+        uses: actions/deploy-pages@v4

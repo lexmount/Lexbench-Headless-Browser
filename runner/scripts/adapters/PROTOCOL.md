@@ -27,6 +27,8 @@ driver (Node, Python, Go, Rust, Ruby).
   "driver_key": "chrome_remote_interface",
   "browser_ws": "ws://127.0.0.1:9224/devtools/browser/<uuid>",
   "cdp_port": 9224,
+  "remote_cdp": false,
+  "expected_remote_identity": null,
   "expect_product": "Chrome/150.0.7871.49",
   "expect_ua": "Mozilla/5.0 ...",
   "expect_product_live": "Chrome/150.0.7871.49",
@@ -118,6 +120,8 @@ Identical contract to `framework_probe.js`:
     "checks": [{"name": "driver_connect", "status": "pass", "evidence": "…"}],
     "saved": {"heading": "CDP Core Fixture"},
     "binding": {"verified": true, "http_product": "…", "live_product": "…"},
+    "target_cleanup": {"confirmed": true, "same_connection_as_task": true},
+    "isolation_restored": true,
     "failure_class": "cdp_semantic"
   },
   "metrics": {"cdp_call_count": 12, "cdp_error_count": 0, "ws_disconnect_count": 0}
@@ -127,13 +131,25 @@ Identical contract to `framework_probe.js`:
 - `ok: false` + `error: {class, message}` is reserved for *harness* problems
   (invalid payload, binding-gate violation, adapter crash): it grades as infra,
   never as an engine result.
-- An engine that cannot be driven (connect refused, op not implemented) is a
-  *benchmark result*: report `ok: true` with the relevant checks failed and
-  `observations.failure_class` set (default `cdp_semantic`), so the attempt
-  grades as a normal fail attributable to the engine.
+- After the mandatory binding gate succeeds, an engine that cannot execute an
+  op is a *benchmark result*: report `ok: true` with the relevant checks failed
+  and `observations.failure_class` set (default `cdp_semantic`), so the attempt
+  grades as a normal fail attributable to the engine. Before a remote binding
+  gate succeeds, connect/init failure is not attributable to that product and
+  must remain infra; recognized network evidence may still be counted
+  separately as a transport outcome.
 - `observations.checks` is the grading surface (`grader.kind =
   inline_assertions`): the attempt passes iff every check row has
   `status: "pass"`.
+- A remote-CDP adapter must complete owned page/target cleanup before writing
+  stdout. A successful result requires `observations.target_cleanup.confirmed
+  == true`, `same_connection_as_task == true`, and
+  `observations.isolation_restored == true`. A request whose create response
+  was lost is ambiguous, not target-free; cleanup failure must turn the result
+  into infra so the experiment can stop before another attempt. High-level
+  close helpers are not confirmation when they can swallow destruction-event
+  deadlines; adapters such as Rod issue `Target.closeTarget` on the exact root
+  task connection and require the response's explicit `success=true`.
 
 ## Mandatory binding gate (no-fallback rule)
 
@@ -148,6 +164,17 @@ Every adapter MUST verify, per attempt, before running any scenario step:
    expect_product_live`. A native Selenium route uses the binding's WebDriver
    capability assertions (currently `browserName == "moli"` and
    `browserVersion == expect_product_live`).
+
+For `remote_cdp: true`, the runner additionally supplies a non-empty
+`expected_remote_identity` object with `product`, `protocolVersion`, and
+`revision`. The adapter must obtain all three through the exact client
+connection used for the task and report this evidence as
+`observations.binding.expected`, `.actual`, `.compared_fields`,
+`.same_connection_as_task`, and `.reconnect_allowed`. Product-only or
+reconnected identity evidence is an infra exclusion. The runner independently
+enforces this contract before accepting an adapter's `verified: true` claim,
+and converts any otherwise gradable remote output without this complete claim
+to `binding_unverified` infra while preserving its `connect_error` evidence.
 
 A mismatch is emitted as `ok: false` / `class: "script_error"` — refusing to
 run is mandatory; falling back to another endpoint or launching a browser is

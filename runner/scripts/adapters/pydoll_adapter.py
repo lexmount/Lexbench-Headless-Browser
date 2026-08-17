@@ -23,6 +23,13 @@ import urllib.request
 from typing import Any
 
 try:
+    from .remote_identity import compare_remote_identity, require_remote_identity
+    from .remote_cleanup import apply_cleanup_contract
+except ImportError:  # Executed as a standalone adapter script.
+    from remote_identity import compare_remote_identity, require_remote_identity
+    from remote_cleanup import apply_cleanup_contract
+
+try:
     from importlib.metadata import version as _pkg_version
 
     CLIENT_VERSION = _pkg_version("pydoll-python")
@@ -46,6 +53,23 @@ def obscura_private_api_error(detail: str) -> RuntimeError:
         "Obscura Pydoll bootstrap requires the audited private API surface "
         f"from pydoll-python {OBSCURA_COMPAT_CLIENT_VERSION}; {detail}"
     )
+
+
+class TabBootstrapFailure(RuntimeError):
+    """A failed page bootstrap with explicit target-lifecycle evidence."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        target_id: str | None,
+        creation_state: str,
+        cleanup: dict[str, Any],
+    ) -> None:
+        super().__init__(message)
+        self.target_id = target_id
+        self.creation_state = creation_state
+        self.cleanup = cleanup
 
 
 async def setup_obscura_connection(
@@ -133,6 +157,7 @@ class Adapter:
         self.browser = None
         self.tab = None
         self.created_tabs: list[Any] = []
+        self.tab_creations: list[dict[str, Any]] = []
         self.op_calls = 0
         self.op_errors = 0
         self.saved: dict[str, str] = {}
@@ -146,6 +171,160 @@ class Adapter:
         }
         self.cdp_path = self.artifact_dir / "cdp.jsonl"
 
+    async def close_target(
+        self,
+        target_id: str,
+        target_commands: Any,
+    ) -> dict[str, Any]:
+        closure: dict[str, Any] = {
+            "backend": "pydoll.Target.closeTarget",
+            "target_id": target_id,
+            "confirmed": False,
+            "same_connection_as_task": True,
+            "attempts": [],
+        }
+        for attempt in range(1, 3):
+            try:
+                response = await asyncio.wait_for(
+                    self.browser._execute_command(
+                        target_commands.close_target(target_id)
+                    ),
+                    timeout=3.0,
+                )
+                error = protocol_error_message(response)
+                if error is not None:
+                    raise RuntimeError(error)
+                success = ((response or {}).get("result") or {}).get("success")
+                confirmed = success is True
+                closure["attempts"].append(
+                    {
+                        "target_id": target_id,
+                        "attempt": attempt,
+                        "success": success,
+                        "confirmed": confirmed,
+                    }
+                )
+                if confirmed:
+                    closure["confirmed"] = True
+                    break
+            except asyncio.TimeoutError:
+                closure["attempts"].append(
+                    {
+                        "target_id": target_id,
+                        "attempt": attempt,
+                        "confirmed": False,
+                        "timed_out": True,
+                        "error": "Target.closeTarget timeout",
+                    }
+                )
+                # Do not overlap a retry with the timed-out command reader.
+                break
+            except Exception as exc:
+                closure["attempts"].append(
+                    {
+                        "target_id": target_id,
+                        "attempt": attempt,
+                        "confirmed": False,
+                        "error": str(exc),
+                    }
+                )
+        return closure
+
+    async def create_tracked_tab(self) -> Any:
+        creation: dict[str, Any] = {
+            "attempt": len(self.tab_creations) + 1,
+            "state": "requested",
+        }
+        self.tab_creations.append(creation)
+        try:
+            tab = await self.new_tab("about:blank")
+        except TabBootstrapFailure as exc:
+            creation.update(
+                state=exc.creation_state,
+                error=str(exc),
+                bootstrap_cleanup=exc.cleanup,
+            )
+            if exc.target_id is not None:
+                creation["target_id"] = exc.target_id
+            raise
+        except Exception as exc:
+            creation.update(state="ambiguous", error=str(exc))
+            raise
+        creation["state"] = "created"
+        target_id = getattr(tab, "target_id", None) or getattr(tab, "_target_id", None)
+        if not target_id:
+            creation["state"] = "ambiguous"
+            creation["tab"] = tab
+            self.created_tabs.append(tab)
+            raise RuntimeError("Pydoll created a tab without exposing its target id")
+        creation["target_id"] = str(target_id)
+        creation["tab"] = tab
+        self.created_tabs.append(tab)
+        return tab
+
+    async def cleanup_tabs(self) -> dict[str, Any]:
+        from pydoll.commands import TargetCommands
+
+        attempts: list[dict[str, Any]] = [
+            {**attempt, "phase": "bootstrap"}
+            for creation in self.tab_creations
+            for attempt in (
+                (creation.get("bootstrap_cleanup") or {}).get("attempts") or []
+            )
+        ]
+        for tab in list(self.created_tabs):
+            creation = next(
+                (item for item in self.tab_creations if item.get("tab") is tab),
+                None,
+            )
+            target_id = creation.get("target_id") if creation else None
+            if target_id:
+                closure = await self.close_target(target_id, TargetCommands)
+            else:
+                closure = {
+                    "confirmed": False,
+                    "attempts": [
+                        {
+                            "attempt": 1,
+                            "target_id": None,
+                            "confirmed": False,
+                            "error": "created tab has no target id",
+                        }
+                    ],
+                }
+            closed = closure.get("confirmed") is True
+            attempts.extend(
+                {**attempt, "phase": "finalizer"}
+                for attempt in closure.get("attempts") or []
+            )
+            if creation is not None:
+                creation["state"] = "closed" if closed else "cleanup_unconfirmed"
+            if closed:
+                tabs_opened = getattr(self.browser, "_tabs_opened", None)
+                if isinstance(tabs_opened, dict) and creation is not None:
+                    tabs_opened.pop(creation.get("target_id"), None)
+                self.created_tabs.remove(tab)
+        safe_creation_states = {"closed", "rejected", "not_requested"}
+        confirmed = all(
+            item.get("state") in safe_creation_states
+            for item in self.tab_creations
+        )
+        creation_attempts = [
+            {key: value for key, value in item.items() if key != "tab"}
+            for item in self.tab_creations
+        ]
+        return {
+            "backend": "pydoll.Target.closeTarget",
+            "required": any(
+                item.get("state") not in {"rejected", "not_requested"}
+                for item in self.tab_creations
+            ),
+            "confirmed": confirmed,
+            "same_connection_as_task": True,
+            "creation_attempts": creation_attempts,
+            "attempts": attempts,
+        }
+
     async def new_tab(self, url: str = "", browser_context_id: Any = None):
         """Create a tab through Pydoll, with Obscura's empty-target bootstrap.
 
@@ -156,24 +335,73 @@ class Adapter:
         """
         if self.engine != "obscura":
             return await self.browser.new_tab(url, browser_context_id)
-        require_obscura_compat_client()
+        try:
+            require_obscura_compat_client()
+        except Exception as exc:
+            raise TabBootstrapFailure(
+                str(exc),
+                target_id=None,
+                creation_state="not_requested",
+                cleanup={
+                    "backend": "pydoll.Target.createTarget",
+                    "required": False,
+                    "confirmed": True,
+                    "same_connection_as_task": True,
+                    "attempts": [],
+                },
+            ) from exc
 
         from pydoll.browser.tab import Tab
         from pydoll.commands import TargetCommands
 
-        created = await self.browser._execute_command(
-            TargetCommands.create_target(
-                browser_context_id=browser_context_id
+        try:
+            created = await self.browser._execute_command(
+                TargetCommands.create_target(
+                    browser_context_id=browser_context_id
+                )
             )
-        )
+        except Exception as exc:
+            raise TabBootstrapFailure(
+                str(exc),
+                target_id=None,
+                creation_state="ambiguous",
+                cleanup={
+                    "backend": "pydoll.Target.createTarget",
+                    "required": True,
+                    "confirmed": False,
+                    "same_connection_as_task": True,
+                    "attempts": [],
+                },
+            ) from exc
         error = protocol_error_message(created)
         if error is not None:
-            raise RuntimeError(error)
+            raise TabBootstrapFailure(
+                error,
+                target_id=None,
+                creation_state="rejected",
+                cleanup={
+                    "backend": "pydoll.Target.createTarget",
+                    "required": False,
+                    "confirmed": True,
+                    "same_connection_as_task": True,
+                    "attempts": [],
+                },
+            )
         target_id = ((created or {}).get("result") or {}).get("targetId")
         if not target_id:
-            raise RuntimeError(
-                "Obscura Pydoll bootstrap: Target.createTarget returned no targetId"
+            raise TabBootstrapFailure(
+                "Obscura Pydoll bootstrap: Target.createTarget returned no targetId",
+                target_id=None,
+                creation_state="ambiguous",
+                cleanup={
+                    "backend": "pydoll.Target.createTarget",
+                    "required": True,
+                    "confirmed": False,
+                    "same_connection_as_task": True,
+                    "attempts": [],
+                },
             )
+        target_id = str(target_id)
 
         try:
             attached = await self.browser._execute_command(
@@ -214,7 +442,7 @@ class Adapter:
             if url:
                 await tab.go_to(url)
             return tab
-        except Exception:
+        except Exception as exc:
             # Target.createTarget succeeded, so every later bootstrap failure
             # must discard the orphan before the worker reuses this browser.
             try:
@@ -223,13 +451,17 @@ class Adapter:
                     tabs_opened.pop(target_id, None)
             except Exception:
                 pass
-            try:
-                await self.browser._execute_command(
-                    TargetCommands.close_target(target_id)
-                )
-            except Exception:
-                pass
-            raise
+            cleanup = await self.close_target(target_id, TargetCommands)
+            raise TabBootstrapFailure(
+                str(exc),
+                target_id=target_id,
+                creation_state=(
+                    "closed"
+                    if cleanup.get("confirmed") is True
+                    else "cleanup_unconfirmed"
+                ),
+                cleanup=cleanup,
+            ) from exc
 
     def trace(self, obj: dict[str, Any]) -> None:
         try:
@@ -401,13 +633,11 @@ class Adapter:
             ver = await self.browser.get_version()
             return ver.get("userAgent") if isinstance(ver, dict) else getattr(ver, "userAgent", None)
         if op == "new_page":
-            self.tab = await self.new_tab("about:blank")
-            self.created_tabs.append(self.tab)
+            self.tab = await self.create_tracked_tab()
             return "page_created"
 
         if self.tab is None:
-            self.tab = await self.new_tab("about:blank")
-            self.created_tabs.append(self.tab)
+            self.tab = await self.create_tracked_tab()
 
         if op == "goto":
             url = self.substitute(step.get("url") or "{fixture_url}")
@@ -666,6 +896,18 @@ async def amain() -> None:
     expect_product = payload.get("expect_product") or ""
     expect_ua = payload.get("expect_ua") or ""
     expect_product_live = payload.get("expect_product_live") or expect_product
+    try:
+        expected_remote_identity = (
+            require_remote_identity(
+                payload.get("expected_remote_identity"),
+                "expected_remote_identity",
+            )
+            if payload.get("remote_cdp") is True
+            else None
+        )
+    except ValueError as exc:
+        emit({"ok": False, "error": {"class": "script_error", "message": f"binding gate: {exc}"}, "observations": {}, "metrics": {}})
+        return
     steps = payload.get("steps") or []
     checks = payload.get("checks") or []
     connect_timeout_ms = int(payload.get("connect_timeout_ms") or 15000)
@@ -746,47 +988,78 @@ async def amain() -> None:
             {"name": check.get("label") or check.get("kind") or f"check{idx}", "status": "fail", "evidence": "client did not connect; scenario not executed"}
             for idx, check in enumerate(checks)
         ]
-        emit(
-            {
-                "ok": True,
-                "answer": f"0/{len(check_rows)} checks",
-                "observations": {"checks": check_rows, "saved": {}, "binding": binding, "connect_error": connect_error, "failure_class": "cdp_semantic"},
-                "metrics": {"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
-            }
-        )
+        outcome = {
+            "ok": True,
+            "answer": f"0/{len(check_rows)} checks",
+            "observations": {
+                "checks": check_rows,
+                "saved": {},
+                "binding": binding,
+                "connect_error": connect_error,
+                "failure_class": "cdp_semantic",
+            },
+            "metrics": {
+                "cdp_call_count": 1,
+                "cdp_error_count": 1,
+                "ws_disconnect_count": 0,
+            },
+        }
+        adapter.browser = browser
+        cleanup = await adapter.cleanup_tabs()
+        try:
+            await browser.close()
+        except Exception:
+            pass
+        emit(apply_cleanup_contract(outcome, cleanup, label="pydoll"))
         return
 
     adapter.browser = browser
+    outcome: dict[str, Any] | None = None
     try:
         # ---- Binding gate 2/2: the live client transport must identify as the
         # engine under test.
+        live_identity = None
         live_product = None
         try:
-            ver = await browser.get_version()
-            live_product = str((ver or {}).get("product") or "")
+            live_identity = await browser.get_version()
+            live_product = str((live_identity or {}).get("product") or "")
         except Exception:
             pass  # handled below: None != expect_product_live
         binding["expect_product_live"] = expect_product_live
         binding["live_product"] = live_product
         binding["live_check"] = "pydoll_get_version"
-        if live_product != expect_product_live:
-            emit(
-                {
-                    "ok": False,
-                    "error": {
-                        "class": "script_error",
-                        "message": (
-                            f"binding gate: live pydoll transport reports product={json.dumps(live_product)}; "
-                            f"expected {json.dumps(expect_product_live)} — the client is not bound to the engine under test"
-                        ),
-                    },
-                    "observations": {"binding": binding},
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
+        if expected_remote_identity is not None:
+            binding.update(
+                compare_remote_identity(expected_remote_identity, live_identity)
             )
+        identity_verified = (
+            binding.get("verified") is True
+            if expected_remote_identity is not None
+            else live_product == expect_product_live
+        )
+        if not identity_verified:
+            outcome = {
+                "ok": False,
+                "error": {
+                    "class": "script_error",
+                    "message": (
+                        f"binding gate: live pydoll transport reports identity={json.dumps(binding.get('actual'))}; "
+                        f"expected {json.dumps(binding.get('expected'))} — the client is not bound to the remote engine under test"
+                        if expected_remote_identity is not None
+                        else f"binding gate: live pydoll transport reports product={json.dumps(live_product)}; "
+                        f"expected {json.dumps(expect_product_live)} — the client is not bound to the engine under test"
+                    ),
+                },
+                "observations": {"binding": binding},
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
             return
         binding["verified"] = True
-        adapter.trace({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "direction": "pydoll", "step": "binding_verified", "product": live_product})
+        adapter.trace({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "direction": "pydoll", "step": "binding_verified", "identity": binding.get("actual") or {"product": live_product}})
 
         try:
             for idx, step in enumerate(steps):
@@ -822,42 +1095,44 @@ async def amain() -> None:
                     }
                 )
             passed = sum(1 for row in check_rows if row["status"] == "pass")
-            emit(
-                {
-                    "ok": True,
-                    "answer": adapter.saved.get("answer", f"{passed}/{len(check_rows)} checks"),
-                    "observations": {
-                        "checks": check_rows,
-                        "saved": adapter.saved,
-                        "binding": binding,
-                        "driver_ops": len(adapter.step_results),
-                        "driver_op_errors": sum(1 for row in adapter.step_results if not row["ok"]),
-                        "failure_class": "cdp_semantic",
-                    },
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
-            )
+            outcome = {
+                "ok": True,
+                "answer": adapter.saved.get("answer", f"{passed}/{len(check_rows)} checks"),
+                "observations": {
+                    "checks": check_rows,
+                    "saved": adapter.saved,
+                    "binding": binding,
+                    "driver_ops": len(adapter.step_results),
+                    "driver_op_errors": sum(1 for row in adapter.step_results if not row["ok"]),
+                    "failure_class": "cdp_semantic",
+                },
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
         except Exception as exc:
             message = str(exc)
             klass = "engine_unsupported" if is_unsupported_message(message) else "script_error"
-            emit(
-                {
-                    "ok": False,
-                    "error": {"class": klass, "message": message},
-                    "observations": {"saved": adapter.saved, "binding": binding},
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
-            )
+            outcome = {
+                "ok": False,
+                "error": {"class": klass, "message": message},
+                "observations": {"saved": adapter.saved, "binding": binding},
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
     finally:
-        for tab in adapter.created_tabs:
-            try:
-                await tab.close()
-            except Exception:
-                pass  # tab may already be gone
+        cleanup = await adapter.cleanup_tabs()
         try:
             await browser.close()  # closes the websocket only, never the engine
         except Exception:
             pass  # best effort
+        if outcome is not None:
+            emit(apply_cleanup_contract(outcome, cleanup, label="pydoll"))
 
 
 def main() -> None:

@@ -1,0 +1,23 @@
+{
+  "branch": "kitesurf-eval",
+  "contains_origin_main": false,
+  "dirty": false,
+  "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+  "merge_base_origin_main": null,
+  "origin_main": null,
+  "runtime_executables": [],
+  "schema": "experimental.kitesurf_source.v2",
+  "source_files_sha256": {
+    "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+    "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+    "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+    "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125",
+    "tools/kitesurf_l1_probe.py": "4854af22275c97c58c244ab91106526afc33aa26a2b8c3f393e4cf7bd9b2e3ed"
+  },
+  "status_porcelain": [],
+  "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_paths": [],
+  "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+}

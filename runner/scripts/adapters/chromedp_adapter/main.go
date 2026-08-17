@@ -28,26 +28,56 @@ import (
 
 	"github.com/chromedp/cdproto/accessibility"
 	"github.com/chromedp/cdproto/browser"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/css"
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 )
 
 type payloadT struct {
-	BrowserWS         string           `json:"browser_ws"`
-	CDPPort           int              `json:"cdp_port"`
-	ExpectProduct     string           `json:"expect_product"`
-	ExpectUA          string           `json:"expect_ua"`
-	ExpectProductLive string           `json:"expect_product_live"`
-	TaskURL           string           `json:"task_url"`
-	Steps             []map[string]any `json:"steps"`
-	Checks            []map[string]any `json:"checks"`
-	ConnectTimeoutMS  int              `json:"connect_timeout_ms"`
-	ActionTimeoutMS   int              `json:"action_timeout_ms"`
-	TaskTimeoutMS     int              `json:"task_timeout_ms"`
-	ArtifactDir       string           `json:"artifact_dir"`
+	BrowserWS              string           `json:"browser_ws"`
+	RemoteCDP              bool             `json:"remote_cdp"`
+	ExpectedRemoteIdentity remoteIdentityT  `json:"expected_remote_identity"`
+	CDPPort                int              `json:"cdp_port"`
+	ExpectProduct          string           `json:"expect_product"`
+	ExpectUA               string           `json:"expect_ua"`
+	ExpectProductLive      string           `json:"expect_product_live"`
+	TaskURL                string           `json:"task_url"`
+	Steps                  []map[string]any `json:"steps"`
+	Checks                 []map[string]any `json:"checks"`
+	ConnectTimeoutMS       int              `json:"connect_timeout_ms"`
+	ActionTimeoutMS        int              `json:"action_timeout_ms"`
+	TaskTimeoutMS          int              `json:"task_timeout_ms"`
+	ArtifactDir            string           `json:"artifact_dir"`
+}
+
+type remoteIdentityT struct {
+	Product         string `json:"product"`
+	ProtocolVersion string `json:"protocolVersion"`
+	Revision        string `json:"revision"`
+}
+
+func remoteIdentityBinding(expected, actual remoteIdentityT) map[string]any {
+	fields := []string{"product", "protocolVersion", "revision"}
+	mismatches := []string{}
+	if actual.Product != expected.Product {
+		mismatches = append(mismatches, "product")
+	}
+	if actual.ProtocolVersion != expected.ProtocolVersion {
+		mismatches = append(mismatches, "protocolVersion")
+	}
+	if actual.Revision != expected.Revision {
+		mismatches = append(mismatches, "revision")
+	}
+	return map[string]any{
+		"transport": "remote_cdp", "expected": expected, "actual": actual,
+		"compared_fields": fields, "mismatches": mismatches,
+		"verified": len(mismatches) == 0, "same_connection_as_task": true,
+		"reconnect_allowed": false,
+	}
 }
 
 type checkRow struct {
@@ -60,6 +90,15 @@ type stepResult struct {
 	OK    bool
 	Value any
 	Err   string
+}
+
+type targetCreation struct {
+	Attempt  int
+	Source   string
+	State    string
+	TargetID target.ID
+	Error    string
+	Ctx      context.Context
 }
 
 var clientVersion = "v0.16.0" // kept in sync with go.mod
@@ -125,17 +164,176 @@ type adapter struct {
 	// rootCtx is the first chromedp context: it owns the browser connection,
 	// so it must stay alive for the whole run. Page contexts for new_page are
 	// spawned from it and only those get cancelled.
-	rootCtx    context.Context
-	tabCtx     context.Context
-	tabCancels []context.CancelFunc
-	saved      map[string]string
-	steps      []stepResult
-	opCalls    int
-	opErrors   int
+	rootCtx         context.Context
+	tabCtx          context.Context
+	tabCancels      []context.CancelFunc
+	targetCreations []*targetCreation
+	saved           map[string]string
+	steps           []stepResult
+	opCalls         int
+	opErrors        int
 	// budgetDeadline is the runner's task_ms kill time minus a reserve; ops
 	// clamp their waits to it so the adapter always emits a result instead of
 	// being killed mid-run (which would misclassify the fail as infra).
 	budgetDeadline time.Time
+}
+
+func (a *adapter) beginTargetCreation(ctx context.Context, source string) *targetCreation {
+	creation := &targetCreation{
+		Attempt: len(a.targetCreations) + 1,
+		Source:  source,
+		State:   "requested",
+		Ctx:     ctx,
+	}
+	a.targetCreations = append(a.targetCreations, creation)
+	return creation
+}
+
+func (a *adapter) resolveTargetCreation(creation *targetCreation, runErr error) {
+	if details := chromedp.FromContext(creation.Ctx); details != nil && details.Target != nil && details.Target.TargetID != "" {
+		creation.TargetID = details.Target.TargetID
+		creation.State = "created"
+		return
+	}
+	if runErr != nil {
+		creation.Error = runErr.Error()
+	}
+	// a.run deliberately leaves a timed-out Run goroutine alive. It may still
+	// create a target after the timeout, so absence of an id is not evidence of
+	// rejection in that case. A completed failure before Browser allocation is
+	// target-free and can be recorded as rejected.
+	if runErr != nil && !strings.Contains(strings.ToLower(runErr.Error()), "timeout") {
+		details := chromedp.FromContext(creation.Ctx)
+		if details == nil || details.Browser == nil {
+			creation.State = "rejected"
+			return
+		}
+	}
+	creation.State = "ambiguous"
+}
+
+type closeTargetResult struct {
+	Success bool `json:"success"`
+}
+
+func closeTargetConfirmed(ctx context.Context, targetID target.ID) (bool, error) {
+	result := closeTargetResult{}
+	err := cdp.Execute(
+		ctx,
+		target.CommandCloseTarget,
+		target.CloseTarget(targetID),
+		&result,
+	)
+	return result.Success, err
+}
+
+func (a *adapter) cleanupTargets() map[string]any {
+	attempts := []map[string]any{}
+	// A timed-out first Run may settle after the scenario step returned. Refresh
+	// the context once before declaring its creation response irrecoverable.
+	for _, creation := range a.targetCreations {
+		if creation.TargetID == "" {
+			if details := chromedp.FromContext(creation.Ctx); details != nil && details.Target != nil && details.Target.TargetID != "" {
+				creation.TargetID = details.Target.TargetID
+				creation.State = "created"
+			}
+		}
+	}
+	for index := len(a.targetCreations) - 1; index >= 0; index-- {
+		creation := a.targetCreations[index]
+		if creation.TargetID == "" || creation.State == "rejected" {
+			continue
+		}
+		closed := false
+		for attempt := 1; attempt <= 2 && !closed; attempt++ {
+			cleanupCtx, cancel := context.WithTimeout(a.rootCtx, 3*time.Second)
+			success, err := closeTargetConfirmed(cleanupCtx, creation.TargetID)
+			timedOut := cleanupCtx.Err() == context.DeadlineExceeded
+			cancel()
+			confirmed := err == nil && success
+			entry := map[string]any{
+				"target_id": string(creation.TargetID),
+				"attempt":   attempt,
+				"confirmed": confirmed,
+				"success":   success,
+			}
+			if err != nil {
+				entry["error"] = err.Error()
+			} else if !success {
+				entry["error"] = "Target.closeTarget returned success=false"
+			}
+			if timedOut {
+				entry["timed_out"] = true
+			}
+			attempts = append(attempts, entry)
+			closed = confirmed
+			if timedOut {
+				break
+			}
+		}
+		if closed {
+			creation.State = "closed"
+		} else {
+			creation.State = "cleanup_unconfirmed"
+		}
+	}
+
+	creationRows := make([]map[string]any, 0, len(a.targetCreations))
+	confirmed := true
+	for _, creation := range a.targetCreations {
+		row := map[string]any{
+			"attempt": creation.Attempt,
+			"source":  creation.Source,
+			"state":   creation.State,
+		}
+		if creation.TargetID != "" {
+			row["target_id"] = string(creation.TargetID)
+		}
+		if creation.Error != "" {
+			row["error"] = creation.Error
+		}
+		creationRows = append(creationRows, row)
+		if creation.State != "closed" && creation.State != "rejected" {
+			confirmed = false
+		}
+	}
+	return map[string]any{
+		"backend":                 "chromedp.Target.closeTarget",
+		"required":                len(a.targetCreations) > 0,
+		"confirmed":               confirmed,
+		"same_connection_as_task": true,
+		"creation_attempts":       creationRows,
+		"attempts":                attempts,
+	}
+}
+
+func applyCleanupContract(outcome, cleanup map[string]any, label string) map[string]any {
+	observations, _ := outcome["observations"].(map[string]any)
+	if observations == nil {
+		observations = map[string]any{}
+	}
+	observations["target_cleanup"] = cleanup
+	confirmed := cleanup["confirmed"] == true
+	observations["isolation_restored"] = confirmed
+	outcome["observations"] = observations
+	if confirmed {
+		return outcome
+	}
+	return map[string]any{
+		"ok":     false,
+		"status": "infra",
+		"error": map[string]any{
+			"class":   "script_error",
+			"message": fmt.Sprintf("%s target cleanup was not confirmed: %v", label, cleanup),
+		},
+		"answer": outcome["answer"],
+		"observations": map[string]any{
+			"target_cleanup":     cleanup,
+			"isolation_restored": false,
+			"primary_outcome":    outcome,
+		},
+		"metrics": outcome["metrics"],
+	}
 }
 
 func (a *adapter) traceLine(obj map[string]any) {
@@ -368,8 +566,11 @@ func (a *adapter) runOp(step map[string]any) (any, error) {
 		var tabCancel context.CancelFunc
 		a.tabCtx, tabCancel = chromedp.NewContext(a.rootCtx)
 		a.tabCancels = append(a.tabCancels, tabCancel)
+		creation := a.beginTargetCreation(a.tabCtx, "chromedp.NewContext.first_run")
 		// First Run creates the target; make it explicit and cheap.
-		if err := a.run(timeout, chromedp.Navigate("about:blank")); err != nil {
+		err := a.run(timeout, chromedp.Navigate("about:blank"))
+		a.resolveTargetCreation(creation, err)
+		if err != nil {
 			return nil, err
 		}
 		return "page_created", nil
@@ -850,12 +1051,15 @@ func main() {
 	if expectLive == "" {
 		expectLive = payload.ExpectProduct
 	}
-	var liveProduct string
+	var liveIdentity remoteIdentityT
+	rootCreation := a.beginTargetCreation(rootCtx, "chromedp.root_context_first_run")
 	connectErr := a.run(payload.ConnectTimeoutMS, chromedp.ActionFunc(func(ctx context.Context) error {
-		_, product, _, _, _, err := browser.GetVersion().Do(ctx)
-		liveProduct = product
+		protocolVersion, product, revision, _, _, err := browser.GetVersion().Do(ctx)
+		liveIdentity = remoteIdentityT{Product: product, ProtocolVersion: protocolVersion, Revision: revision}
 		return err
 	}))
+	a.resolveTargetCreation(rootCreation, connectErr)
+	liveProduct := liveIdentity.Product
 	a.traceLine(map[string]any{"direction": "chromedp", "step": "connect", "ok": connectErr == nil, "error": errText(connectErr)})
 	if connectErr != nil {
 		// A refused/failed connect is a genuine compatibility result: the
@@ -864,7 +1068,7 @@ func main() {
 		for idx, check := range payload.Checks {
 			rows = append(rows, checkRow{Name: checkName(check, idx), Status: "fail", Evidence: "client did not connect; scenario not executed"})
 		}
-		emit(map[string]any{
+		outcome := map[string]any{
 			"ok":     true,
 			"answer": fmt.Sprintf("0/%d checks", len(rows)),
 			"observations": map[string]any{
@@ -872,18 +1076,35 @@ func main() {
 				"connect_error": truncate(connectErr.Error(), 500), "failure_class": "cdp_semantic",
 			},
 			"metrics": map[string]any{"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
-		})
+		}
+		emit(applyCleanupContract(outcome, a.cleanupTargets(), "chromedp"))
 		return
 	}
 	binding["expect_product_live"] = expectLive
 	binding["live_product"] = liveProduct
 	binding["live_check"] = "chromedp_browser_get_version"
-	if liveProduct != expectLive {
-		emitInfra(fmt.Sprintf("binding gate: live chromedp transport reports product=%q; expected %q — the client is not bound to the engine under test", liveProduct, expectLive), binding, a.opCalls, a.opErrors)
+	identityVerified := liveProduct == expectLive
+	if payload.RemoteCDP {
+		for key, value := range remoteIdentityBinding(payload.ExpectedRemoteIdentity, liveIdentity) {
+			binding[key] = value
+		}
+		identityVerified = binding["verified"] == true
+	}
+	if !identityVerified {
+		outcome := map[string]any{
+			"ok": false,
+			"error": map[string]any{
+				"class":   "script_error",
+				"message": fmt.Sprintf("binding gate: live chromedp transport identity does not match the expected engine (product=%q protocolVersion=%q revision=%q)", liveIdentity.Product, liveIdentity.ProtocolVersion, liveIdentity.Revision),
+			},
+			"observations": map[string]any{"binding": binding},
+			"metrics":      map[string]any{"cdp_call_count": a.opCalls, "cdp_error_count": a.opErrors, "ws_disconnect_count": 0},
+		}
+		emit(applyCleanupContract(outcome, a.cleanupTargets(), "chromedp"))
 		return
 	}
 	binding["verified"] = true
-	a.traceLine(map[string]any{"direction": "chromedp", "step": "binding_verified", "product": liveProduct})
+	a.traceLine(map[string]any{"direction": "chromedp", "step": "binding_verified", "identity": liveIdentity})
 
 	// ---- Scenario steps.
 	for idx, step := range payload.Steps {
@@ -929,7 +1150,7 @@ func main() {
 			driverOpErrors++
 		}
 	}
-	emit(map[string]any{
+	outcome := map[string]any{
 		"ok":     true,
 		"answer": answer,
 		"observations": map[string]any{
@@ -938,7 +1159,8 @@ func main() {
 			"failure_class": "cdp_semantic",
 		},
 		"metrics": map[string]any{"cdp_call_count": a.opCalls, "cdp_error_count": a.opErrors, "ws_disconnect_count": 0},
-	})
+	}
+	emit(applyCleanupContract(outcome, a.cleanupTargets(), "chromedp"))
 }
 
 func errText(err error) any {

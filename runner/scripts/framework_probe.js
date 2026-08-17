@@ -51,6 +51,13 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { transportFaultSignature } = require("./lib/transport_fault");
+const {
+  compareRemoteIdentity,
+  parseExpectedRemoteIdentity,
+} = require("./lib/remote_identity");
+const {
+  finalizeCleanupOutcome,
+} = require("./lib/remote_cleanup");
 
 const artifactDir = process.env.ARTIFACT_DIR || ".";
 const cdpPath = path.join(artifactDir, "cdp.jsonl");
@@ -72,7 +79,13 @@ function emit(obj) {
 // inside the framework is enough. Whether the identity gate had finished is not
 // the boundary: an engine whose reply kills the framework inside gate 2/2 is
 // reporting the same incompatibility as one that kills it mid-scenario.
-const crashState = { binding: null, checks: [], saved: {}, transportUp: false };
+const crashState = {
+  binding: null,
+  checks: [],
+  saved: {},
+  transportUp: false,
+  remoteCdp: false,
+};
 
 function handleAsyncCrash(err) {
   const msg = String(err && err.message ? err.message : err).slice(0, 1000);
@@ -113,7 +126,7 @@ function handleAsyncCrash(err) {
       }))
     );
     const passed = checkRows.filter((row) => row.status === "pass").length;
-    emit({
+    const primaryOutcome = {
       ok: true,
       answer: `${passed}/${checkRows.length} checks`,
       observations: {
@@ -127,7 +140,14 @@ function handleAsyncCrash(err) {
         failure_class: "cdp_semantic",
       },
       metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 1 },
-    });
+    };
+    emit(finalizeCleanupOutcome(primaryOutcome, {
+      backend: `${(crashState.binding && crashState.binding.driver) || "framework"}_page.close`,
+      required: true,
+      confirmed: false,
+      same_connection_as_task: true,
+      error: "async crash prevented confirmed target cleanup",
+    }, "framework", { requireConfirmed: crashState.remoteCdp }));
     process.exit(0);
   }
   emit({
@@ -225,6 +245,7 @@ async function main() {
   const cdpPort = process.env.CDP_PORT;
   const expectProduct = process.env.EXPECT_PRODUCT || "";
   const expectUA = process.env.EXPECT_UA || "";
+  const remoteIdentityText = process.env.REMOTE_CDP_IDENTITY_JSON || "";
   // CDP-level Browser.getVersion product captured by the runner at engine
   // launch. It can legitimately differ from the HTTP identity (Lightpanda
   // spoofs "Chrome/124..." over CDP while /json/version says "Lightpanda/1.0"),
@@ -268,7 +289,48 @@ async function main() {
   const binding = { framework, browser_ws: browserWs, expect_product: expectProduct, verified: false, gate: null };
   crashState.binding = binding;
   crashState.checks = checks;
-  if (cdpPort && expectProduct) {
+  let expectedRemoteIdentity = null;
+  if (remoteIdentityText && expectProduct) {
+    try {
+      expectedRemoteIdentity = parseExpectedRemoteIdentity(remoteIdentityText);
+    } catch (err) {
+      emit({
+        ok: false,
+        error: { class: "script_error", message: `binding gate: REMOTE_CDP_IDENTITY_JSON is invalid: ${err.message}` },
+        observations: { binding },
+        metrics: {},
+      });
+      return;
+    }
+    const product = expectedRemoteIdentity.product;
+    let remoteScheme = "";
+    try {
+      remoteScheme = new URL(browserWs).protocol;
+    } catch { /* rejected below */ }
+    binding.remote_product = product;
+    binding.remote_protocol_version = expectedRemoteIdentity.protocolVersion;
+    binding.remote_revision = expectedRemoteIdentity.revision;
+    if (
+      !["ws:", "wss:"].includes(remoteScheme)
+      || product !== expectProduct
+    ) {
+      emit({
+        ok: false,
+        error: {
+          class: "script_error",
+          message: `binding gate: remote preflight reports product=${JSON.stringify(product)}; expected a ws(s) endpoint and product=${JSON.stringify(expectProduct)} — refusing to run against an unverified engine`,
+        },
+        observations: { binding },
+        metrics: {},
+      });
+      return;
+    }
+    // The framework connects to browserWs itself below; Browser.getVersion
+    // through that live framework connection is the independent endpoint and
+    // identity gate.  The preflight record is provenance, not a second source
+    // from which a distinct WebSocket URL can be discovered.
+    binding.gate = "remote_cdp_preflight";
+  } else if (cdpPort && expectProduct) {
     let versionInfo;
     try {
       versionInfo = await httpJson(`http://127.0.0.1:${cdpPort}/json/version`, 4000);
@@ -318,6 +380,7 @@ async function main() {
     });
     return;
   }
+  crashState.remoteCdp = expectedRemoteIdentity !== null;
 
   const saved = {};
   crashState.saved = saved;
@@ -328,6 +391,7 @@ async function main() {
   const recordedConsole = [];
   const recordedDialogs = [];
   const createdPages = [];
+  const pageCreations = [];
 
   let fw = null; // { kind, browser, version, close(), newPage(), ops }
 
@@ -360,29 +424,87 @@ async function main() {
   binding.framework_version = fw ? fw.version : null;
   trace({ ts: new Date().toISOString(), direction: "fw", step: "connect", framework, ok: !connectError, error: connectError || undefined });
 
+  async function createTrackedPage(source, factory) {
+    const creation = {
+      attempt: pageCreations.length + 1,
+      source,
+      state: "requested",
+    };
+    pageCreations.push(creation);
+    try {
+      const created = await factory();
+      creation.state = "created";
+      creation.page = created;
+      createdPages.push(created);
+      return created;
+    } catch (error) {
+      // A rejected framework promise does not prove Target.createTarget was
+      // rejected; its success response may have been lost after target
+      // creation. Keep the attempt ambiguous and fail cleanup closed.
+      creation.state = "ambiguous";
+      creation.error = String(error && error.message ? error.message : error);
+      throw error;
+    }
+  }
+
   // ---- Binding gate 2/2: the LIVE framework transport must report the same
-  // Browser.getVersion product as the verified endpoint. Preferred mechanism is
-  // a framework-owned CDP session; engines that cannot even provide that are
-  // cross-checked via the framework's own cached identity.
+  // Browser.getVersion identity as the verified endpoint. Remote attempts
+  // require product/protocolVersion/revision from a framework-owned CDP
+  // session on the exact task transport. Product-only caches are
+  // retained solely for local engines, where the runner owns the process.
   if (fw) {
+    let liveIdentity = null;
     let liveProduct = null;
     let method = null;
+    let bindingIdentityCleanup = null;
     try {
       if (fw.kind === "playwright") {
         const cdp = await fw.browser.newBrowserCDPSession();
-        const ver = await cdp.send("Browser.getVersion");
-        liveProduct = String(ver.product || "");
-        method = "pw_browser_cdp_session";
-        await cdp.detach().catch(() => {});
-      } else {
-        liveProduct = String(await fw.browser.version());
+        try {
+          liveIdentity = await cdp.send("Browser.getVersion");
+          liveProduct = String(liveIdentity.product || "");
+          method = "pw_browser_cdp_session";
+        } finally {
+          await cdp.detach().catch(() => {});
+        }
+      } else if (!expectedRemoteIdentity) {
+        // Puppeteer's public version() sends Browser.getVersion through the
+        // connected browser transport. Product is sufficient for local
+        // runner-owned engines, whose process and endpoint are independently
+        // guarded by the runner.
+        liveProduct = String(await fw.browser.version() || "");
         method = "pp_browser_version";
+      } else {
+        // CdpBrowser's root connection is private/internal in the public API,
+        // and Kitesurf does not advertise a browser Target. Create one audited
+        // page on this browser transport, use Puppeteer's public page CDP
+        // session for the complete identity, then close it before any scenario
+        // operation starts.
+        let identitySession = null;
+        try {
+          const identityPage = await createTrackedPage(
+            "puppeteer_binding_identity",
+            () => fw.browser.newPage()
+          );
+          identitySession = await identityPage.createCDPSession();
+          liveIdentity = await identitySession.send("Browser.getVersion");
+          liveProduct = String(liveIdentity.product || "");
+          method = "pp_page_cdp_session";
+        } finally {
+          if (identitySession) await identitySession.detach().catch(() => {});
+          bindingIdentityCleanup = await cleanupCreatedPages();
+          binding.identity_probe_cleanup = bindingIdentityCleanup;
+        }
+        if (!bindingIdentityCleanup.confirmed) {
+          throw new Error("Puppeteer binding identity page cleanup was not confirmed");
+        }
       }
     } catch (err) {
-      // Fallback: framework-cached identity (both frameworks derive it from
-      // Browser.getVersion during their own handshake). Playwright's version()
-      // is the product string with the name prefix stripped.
+      // Local-only Playwright fallback: version() is the product string with
+      // the name prefix stripped. Remote attempts never fall back from the
+      // complete three-field identity read on their live CDP session.
       try {
+        if (expectedRemoteIdentity) throw err;
         if (fw.kind === "playwright") {
           const v = String(fw.browser.version() || "");
           if (v && expectProductLive.includes(v)) {
@@ -395,24 +517,55 @@ async function main() {
     binding.expect_product_live = expectProductLive;
     binding.live_product = liveProduct;
     binding.live_check = method;
-    if (liveProduct !== expectProductLive) {
-      try {
-        if (fw.kind === "playwright") await fw.browser.close();
-        else fw.browser.disconnect();
-      } catch { /* best effort */ }
-      emit({
+    if (expectedRemoteIdentity) {
+      Object.assign(binding, compareRemoteIdentity(expectedRemoteIdentity, liveIdentity));
+    }
+    const identityMatched = expectedRemoteIdentity
+      ? binding.verified === true
+      : liveProduct === expectProductLive;
+    const identityProbeIsolated =
+      !expectedRemoteIdentity
+      || fw.kind !== "puppeteer"
+      || (bindingIdentityCleanup && bindingIdentityCleanup.confirmed === true);
+    const identityVerified = identityMatched && identityProbeIsolated;
+    if (!identityVerified) {
+      if (!identityProbeIsolated) {
+        binding.identity_matched = identityMatched;
+        binding.verified = false;
+        binding.isolation_restored = false;
+      }
+      const identityOutcome = {
         ok: false,
         error: {
           class: "script_error",
-          message: `binding gate: live framework session reports product=${JSON.stringify(liveProduct)} (via ${method}); expected ${JSON.stringify(expectProductLive)} — the framework is not bound to the engine under test`,
+          message: !identityProbeIsolated
+            ? "binding gate: Puppeteer identity page cleanup was not confirmed — refusing to start the scenario"
+            : expectedRemoteIdentity
+            ? `binding gate: live framework session reports identity=${JSON.stringify(binding.actual)} (via ${method}); expected ${JSON.stringify(binding.expected)} — the framework is not bound to the remote engine under test`
+            : `binding gate: live framework session reports product=${JSON.stringify(liveProduct)} (via ${method}); expected ${JSON.stringify(expectProductLive)} — the framework is not bound to the engine under test`,
         },
-        observations: { binding },
+        observations: {
+          binding,
+        },
         metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 0 },
-      });
+      };
+      const pageCleanup = await cleanupCreatedPages();
+      const connectionCleanup = await disconnectFramework();
+      const cleanup = combineFrameworkCleanup(
+        pageCleanup,
+        connectionCleanup
+      );
+      emit(finalizeCleanupOutcome(identityOutcome, cleanup, "framework", {
+        requireConfirmed: expectedRemoteIdentity !== null,
+      }));
       return;
     }
     binding.verified = true;
-    trace({ ts: new Date().toISOString(), direction: "fw", step: "binding_verified", product: liveProduct, method });
+    if (bindingIdentityCleanup) binding.isolation_restored = true;
+    trace({
+      ts: new Date().toISOString(), direction: "fw", step: "binding_verified",
+      identity: expectedRemoteIdentity ? binding.actual : { product: liveProduct }, method,
+    });
   }
 
   let page = null;
@@ -420,16 +573,15 @@ async function main() {
 
   async function ensurePage() {
     if (page) return page;
-    if (fw.kind === "playwright") {
-      context = fw.browser.contexts()[0];
-      if (!context) context = await fw.browser.newContext();
-      page = await context.newPage();
-      page.setDefaultTimeout(Number(process.env.FW_ACTION_TIMEOUT_MS || 8000));
-    } else {
-      page = await fw.browser.newPage();
-      page.setDefaultTimeout(Number(process.env.FW_ACTION_TIMEOUT_MS || 8000));
-    }
-    createdPages.push(page);
+    page = await createTrackedPage("scenario", async () => {
+      if (fw.kind === "playwright") {
+        context = fw.browser.contexts()[0];
+        if (!context) context = await fw.browser.newContext();
+        return await context.newPage();
+      }
+      return await fw.browser.newPage();
+    });
+    page.setDefaultTimeout(Number(process.env.FW_ACTION_TIMEOUT_MS || 8000));
     page.on("console", (msg) => {
       try {
         recordedConsole.push({ type: msg.type(), text: msg.text() });
@@ -847,6 +999,8 @@ async function main() {
         await page.close();
         const idx = createdPages.indexOf(page);
         if (idx >= 0) createdPages.splice(idx, 1);
+        const creation = pageCreations.find((entry) => entry.page === page);
+        if (creation) creation.state = "closed_during_scenario";
         page = null;
         return "page_closed";
       }
@@ -855,6 +1009,157 @@ async function main() {
     }
   }
 
+  async function cleanupCreatedPages() {
+    const attempts = [];
+    for (const created of [...createdPages]) {
+      let pageClosed = typeof created.isClosed === "function" && created.isClosed();
+      for (let attempt = 1; attempt <= 2 && !pageClosed; attempt += 1) {
+        let timer;
+        try {
+          const closeOperation = created.close();
+          closeOperation.catch(() => {});
+          await Promise.race([
+            closeOperation,
+            new Promise((_, reject) => {
+              timer = setTimeout(() => {
+                const error = new Error("framework page cleanup timeout");
+                error.cleanupTimedOut = true;
+                reject(error);
+              }, 3000);
+              if (timer.unref) timer.unref();
+            }),
+          ]);
+          pageClosed = typeof created.isClosed === "function"
+            ? created.isClosed()
+            : true;
+          attempts.push({ attempt, confirmed: pageClosed });
+        } catch (error) {
+          pageClosed = typeof created.isClosed === "function" && created.isClosed();
+          attempts.push({
+            attempt,
+            confirmed: pageClosed,
+            error: String(error && error.message ? error.message : error),
+            ...(error && error.cleanupTimedOut ? { timed_out: true } : {}),
+          });
+          if (error && error.cleanupTimedOut) break;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      if (pageClosed) {
+        const index = createdPages.indexOf(created);
+        if (index >= 0) createdPages.splice(index, 1);
+        const creation = pageCreations.find((entry) => entry.page === created);
+        if (creation) creation.state = "closed";
+      } else {
+        const creation = pageCreations.find((entry) => entry.page === created);
+        if (creation) creation.state = "cleanup_unconfirmed";
+      }
+    }
+    const confirmed = pageCreations.every((entry) =>
+      ["closed", "closed_during_scenario", "rejected"].includes(entry.state)
+    );
+    return {
+      backend: `${fw ? fw.kind : framework}_page.close`,
+      required: pageCreations.length > 0,
+      confirmed,
+      same_connection_as_task: fw !== null,
+      creation_attempts: pageCreations.map(({ attempt, source, state, error }) => ({
+        attempt,
+        source,
+        state,
+        ...(error ? { error } : {}),
+      })),
+      attempts,
+    };
+  }
+
+  function frameworkConnectionState() {
+    if (!fw || !fw.browser) return null;
+    try {
+      if (fw.kind === "playwright") {
+        return typeof fw.browser.isConnected === "function"
+          ? Boolean(fw.browser.isConnected())
+          : null;
+      }
+      return typeof fw.browser.connected === "boolean"
+        ? fw.browser.connected
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function disconnectFramework() {
+    const remoteRequired = expectedRemoteIdentity !== null;
+    if (!fw) {
+      return {
+        backend: `${framework}_connection_disconnect`,
+        required: remoteRequired,
+        attempted: false,
+        confirmed: !remoteRequired,
+        same_connection_as_task: false,
+        connected_before: null,
+        connected_after: null,
+        ...(remoteRequired
+          ? {
+              error:
+                "framework bootstrap failed before a live connection could confirm disconnect",
+            }
+          : {}),
+      };
+    }
+
+    const connectedBefore = frameworkConnectionState();
+    let disconnectError = null;
+    try {
+      if (fw.kind === "playwright") await fw.browser.close();
+      else await fw.browser.disconnect();
+    } catch (error) {
+      disconnectError = String(
+        error && error.message ? error.message : error
+      ).slice(0, 1000);
+    }
+    const connectedAfter = frameworkConnectionState();
+    // Remote evidence must use a public connection-state surface and observe
+    // false after the awaited close/disconnect. Local runner-owned engines
+    // retain the legacy best-effort contract when a framework lacks that
+    // introspection API.
+    const confirmed = connectedAfter === false
+      || (!remoteRequired && disconnectError === null);
+    return {
+      backend: `${fw.kind}_connection_disconnect`,
+      required: true,
+      attempted: true,
+      confirmed,
+      same_connection_as_task: true,
+      connected_before: connectedBefore,
+      connected_after: connectedAfter,
+      ...(disconnectError ? { error: disconnectError } : {}),
+      ...(remoteRequired && connectedAfter === null
+        ? { error: disconnectError || "framework connection state is unavailable after disconnect" }
+        : {}),
+    };
+  }
+
+  function combineFrameworkCleanup(pageCleanup, connectionCleanup) {
+    return {
+      backend: `${framework}_page_and_connection_cleanup`,
+      required: pageCleanup.required || connectionCleanup.required,
+      confirmed:
+        pageCleanup.confirmed === true
+        && connectionCleanup.confirmed === true,
+      same_connection_as_task:
+        pageCleanup.same_connection_as_task === true
+        && connectionCleanup.same_connection_as_task === true,
+      page_cleanup: pageCleanup,
+      connection_cleanup: connectionCleanup,
+      creation_attempts: pageCleanup.creation_attempts,
+      attempts: pageCleanup.attempts,
+    };
+  }
+
+  let outcome;
   try {
     if (connectError) {
       // Grade every declared check as failed; the connect check carries the evidence.
@@ -867,156 +1172,150 @@ async function main() {
           evidence: "framework did not connect; scenario not executed",
         }))
       );
-      emit({
+      outcome = {
         ok: true,
         answer: `0/${checkRows.length} checks`,
         observations: { checks: checkRows, saved: {}, binding, connect_error: connectError, failure_class: "cdp_semantic" },
         metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 0 },
-      });
-      return;
-    }
+      };
+    } else {
+      // The runner kills the probe at task_ms; racing every op against the
+      // remaining budget (minus a reserve for grading/emit) means an engine
+      // that hangs mid-scenario still produces a graded result instead of an
+      // infra kill.
+      const taskBudgetMs = Number(process.env.FW_TASK_TIMEOUT_MS || 0);
+      const budgetDeadline = taskBudgetMs > 0 ? Date.now() + taskBudgetMs - 3000 : null;
 
-    // The runner kills the probe at task_ms; racing every op against the
-    // remaining budget (minus a reserve for grading/emit) means an engine
-    // that hangs mid-scenario still produces a graded result instead of an
-    // infra kill.
-    const taskBudgetMs = Number(process.env.FW_TASK_TIMEOUT_MS || 0);
-    const budgetDeadline = taskBudgetMs > 0 ? Date.now() + taskBudgetMs - 3000 : null;
-
-    for (let i = 0; i < steps.length; i += 1) {
-      const step = steps[i];
-      opCalls += 1;
-      let result;
-      try {
-        const remaining = budgetDeadline === null ? Infinity : budgetDeadline - Date.now();
-        if (remaining <= 0) throw new Error("task budget exhausted before op could run");
-        const value = budgetDeadline === null
-          ? await runOp(step)
-          : await Promise.race([
-              runOp(step),
-              // .unref(): the losing timer stays armed until the budget
-              // deadline. Without this it keeps the event loop alive after the
-              // result is emitted, so every attempt burns the full task budget
-              // before node exits and the runner kills it as a timeout.
-              new Promise((_, reject) =>
-                setTimeout(() => reject(new Error(`task budget exhausted during ${step.op}`)), remaining).unref()
-              ),
-            ]);
-        result = { ok: true, value };
-      } catch (err) {
-        const message = String(err && err.message ? err.message : err).slice(0, 1000);
-        result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
-        opErrors += 1;
-      }
-      stepResults.push(result);
-      trace({
-        ts: new Date().toISOString(),
-        direction: "fw",
-        step: i,
-        op: step.op,
-        selector: step.selector,
-        ok: result.ok,
-        error: result.error || undefined,
-      });
-      if (result.ok && step.expect_fail) {
-        result.unexpected_success = true;
-      }
-      if (step.save_as) {
-        saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
-      }
-    }
-
-    const evaluateCheck = (check) => {
-      const kind = check.kind;
-      const stepAt = (idx) => stepResults[idx] || {};
-      if (kind === "saved_equals") {
-        const value = saved[check.name];
-        return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
-      }
-      if (kind === "saved_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_not_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_truthy") {
-        const value = saved[check.name];
-        const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
-        return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
-      }
-      if (kind === "step_ok") {
-        const r = stepAt(check.step);
-        return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
-      }
-      if (kind === "step_fails") {
-        const r = stepAt(check.step);
-        return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
-      }
-      if (kind === "file_nonempty") {
-        const filePath = substitute(check.path);
-        let size = 0;
+      for (let i = 0; i < steps.length; i += 1) {
+        const step = steps[i];
+        opCalls += 1;
+        let result;
         try {
-          size = fs.statSync(filePath).size;
-        } catch {
-          size = 0;
+          const remaining = budgetDeadline === null ? Infinity : budgetDeadline - Date.now();
+          if (remaining <= 0) throw new Error("task budget exhausted before op could run");
+          const value = budgetDeadline === null
+            ? await runOp(step)
+            : await Promise.race([
+                runOp(step),
+                // .unref(): the losing timer stays armed until the budget
+                // deadline. Without this it keeps the event loop alive after the
+                // result is emitted, so every attempt burns the full task budget
+                // before node exits and the runner kills it as a timeout.
+                new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error(`task budget exhausted during ${step.op}`)), remaining).unref()
+                ),
+              ]);
+          result = { ok: true, value };
+        } catch (err) {
+          const message = String(err && err.message ? err.message : err).slice(0, 1000);
+          result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
+          opErrors += 1;
         }
-        return [size > 0, `${filePath} size=${size}`];
+        stepResults.push(result);
+        trace({
+          ts: new Date().toISOString(),
+          direction: "fw",
+          step: i,
+          op: step.op,
+          selector: step.selector,
+          ok: result.ok,
+          error: result.error || undefined,
+        });
+        if (result.ok && step.expect_fail) {
+          result.unexpected_success = true;
+        }
+        if (step.save_as) {
+          saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
+        }
       }
-      if (kind === "any_of") {
-        const results = (check.checks || []).map(evaluateCheck);
-        return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
-      }
-      return [false, `unknown check kind ${kind}`];
-    };
 
-    const implicitChecks = [
-      { name: "framework_connect", status: "pass", evidence: `${framework}@${fw.version} bound to ${binding.live_product}` },
-    ];
-    const checkRows = implicitChecks.concat(
-      checks.map((check, idx) => {
-        const [ok, evidence] = evaluateCheck(check);
-        return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
-      })
-    );
+      const evaluateCheck = (check) => {
+        const kind = check.kind;
+        const stepAt = (idx) => stepResults[idx] || {};
+        if (kind === "saved_equals") {
+          const value = saved[check.name];
+          return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
+        }
+        if (kind === "saved_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_not_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_truthy") {
+          const value = saved[check.name];
+          const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
+          return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
+        }
+        if (kind === "step_ok") {
+          const r = stepAt(check.step);
+          return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
+        }
+        if (kind === "step_fails") {
+          const r = stepAt(check.step);
+          return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
+        }
+        if (kind === "file_nonempty") {
+          const filePath = substitute(check.path);
+          let size = 0;
+          try {
+            size = fs.statSync(filePath).size;
+          } catch {
+            size = 0;
+          }
+          return [size > 0, `${filePath} size=${size}`];
+        }
+        if (kind === "any_of") {
+          const results = (check.checks || []).map(evaluateCheck);
+          return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
+        }
+        return [false, `unknown check kind ${kind}`];
+      };
 
-    emit({
-      ok: true,
-      answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
-      observations: {
-        checks: checkRows,
-        saved,
-        binding,
-        fw_ops: opCalls,
-        fw_op_errors: opErrors,
-        failure_class: "cdp_semantic",
-      },
-      metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+      const implicitChecks = [
+        { name: "framework_connect", status: "pass", evidence: `${framework}@${fw.version} bound to ${binding.live_product}` },
+      ];
+      const checkRows = implicitChecks.concat(
+        checks.map((check, idx) => {
+          const [ok, evidence] = evaluateCheck(check);
+          return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
+        })
+      );
+
+      outcome = {
+        ok: true,
+        answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
+        observations: {
+          checks: checkRows,
+          saved,
+          binding,
+          fw_ops: opCalls,
+          fw_op_errors: opErrors,
+          failure_class: "cdp_semantic",
+        },
+        metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
+      };
+    }
   } catch (err) {
     const msg = String(err && err.message ? err.message : err);
     const klass = isUnsupportedMessage(msg) ? "engine_unsupported" : "script_error";
-    emit({
+    outcome = {
       ok: false,
       error: { class: klass, message: msg },
       observations: { saved, binding },
       metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+    };
   } finally {
-    if (fw) {
-      for (const created of createdPages) {
-        try {
-          await created.close();
-        } catch { /* target may already be gone */ }
-      }
-      try {
-        if (fw.kind === "playwright") await fw.browser.close();
-        else await fw.browser.disconnect();
-      } catch { /* best effort */ }
-    }
+    const pageCleanup = await cleanupCreatedPages();
+    const connectionCleanup = await disconnectFramework();
+    const cleanup = combineFrameworkCleanup(pageCleanup, connectionCleanup);
+    emit(finalizeCleanupOutcome(outcome, cleanup, "framework", {
+      requireConfirmed: expectedRemoteIdentity !== null,
+    }));
   }
 }
 

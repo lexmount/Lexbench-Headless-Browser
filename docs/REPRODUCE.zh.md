@@ -4,6 +4,8 @@
 
 报告里的每一个数字都能追溯到三次 run 之一。这一页记录它们的精确参数、一次 run 怎么变成一份报告，以及你的复现结果对不上时该查什么。
 
+这个分支在此之上多发布一个结果：Kitesurf lane 和它喂出来的五引擎报告。采集流程见 [kitesurf-deployment.zh.md](kitesurf-deployment.zh.md)，重新生成五引擎报告的命令见 [EVIDENCE.zh.md](EVIDENCE.zh.md)。
+
 ## 三次已发布的 run
 
 | Run id | 用途 | 任务集 | k | jobs | Profiler |

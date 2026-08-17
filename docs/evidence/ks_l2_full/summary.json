@@ -1,0 +1,145 @@
+{
+  "abort_reason": null,
+  "aborted": false,
+  "attempts": 364,
+  "binding_unverified_attempts": 0,
+  "binding_verified_attempts": 364,
+  "by_category": {
+    "animations": {
+      "fail": 2
+    },
+    "clipboard": {
+      "fail": 2
+    },
+    "components": {
+      "pass": 4
+    },
+    "crypto": {
+      "pass": 22,
+      "transport_error": 2
+    },
+    "css": {
+      "fail": 38,
+      "pass": 68,
+      "transport_error": 4
+    },
+    "dom": {
+      "fail": 6,
+      "pass": 57,
+      "transport_error": 1
+    },
+    "encoding": {
+      "pass": 21,
+      "transport_error": 1
+    },
+    "html": {
+      "fail": 4
+    },
+    "intl": {
+      "pass": 12
+    },
+    "media": {
+      "pass": 3,
+      "transport_error": 1
+    },
+    "observer": {
+      "pass": 4
+    },
+    "storage": {
+      "fail": 51,
+      "pass": 24,
+      "transport_error": 5,
+      "unsupported": 2
+    },
+    "url": {
+      "pass": 26,
+      "transport_error": 2
+    },
+    "view_transitions": {
+      "fail": 2
+    }
+  },
+  "concurrency": 1,
+  "created_at": "2026-08-13T13:27:04+00:00",
+  "endpoint": "wss://kitesurf.cloudflare.app/devtools/browser",
+  "expected_identity": {
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf"
+  },
+  "fixture_base_url": "https://<dynamic-fixture-origin>",
+  "fixture_verification": {
+    "contract_sha256": "93908f2885114c981013529a65a49c035d2ecc63eded53e48600d2c0eb4bc906",
+    "dynamic_probes": {
+      "required": 28,
+      "verified": 28
+    },
+    "local_contract_verified": true,
+    "manifest_sha256": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+    "report": "fixture_verification.json",
+    "report_sha256": "1fb18bb200786ec930d21e257ee7f7f0527aff178f7a78d0fb650fda42161ff8",
+    "static_routes": {
+      "required": 127,
+      "verified": 127
+    },
+    "verified": true
+  },
+  "formal_score_eligible": false,
+  "identity": {
+    "jsVersion": "12.0.0",
+    "probe_duration_ms": 1785,
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+  },
+  "latency": {
+    "max_ms": 15806,
+    "min_ms": 4995,
+    "p50_ms": 7816,
+    "p95_ms": 10880
+  },
+  "requested_attempts": 364,
+  "reruns": 2,
+  "schema": "experimental.kitesurf_l2_sample_probe.v3",
+  "source": {
+    "branch": "kitesurf-eval",
+    "contains_origin_main": false,
+    "dirty": false,
+    "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+    "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+    "merge_base_origin_main": null,
+    "origin_main": null,
+    "runtime_executables": [],
+    "schema": "experimental.kitesurf_source.v2",
+    "source_files_sha256": {
+      "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+      "config/l2_semantic_capabilities.json": "173070e547d4ba49c97ef4b5908719a3ca5f997f0872866376a7781dab35f84d",
+      "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+      "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+      "runner/scripts/l2_fixture_probe.js": "34dd11e381b940d965bfddeefb05107c4d8d5a14651fabcbc288557ddb214600",
+      "runner/scripts/lib/rawws.js": "6369efd6c7d55268f5bc13d61231f04df4ca540de3b7199617129ee98bfbb065",
+      "runner/scripts/lib/remote_identity.js": "55eaa34550ec03a6cd14cb9c3a9ea79f5ead7dbe0175576e6a1d059ab6354bbe",
+      "runner/scripts/storage_indexeddb_inventory_001.js": "be07a9083b5bc66b8581520a6f2090437060ee71fbb75202f333455f957b7a0b",
+      "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125",
+      "tools/kitesurf_l1_probe.py": "4854af22275c97c58c244ab91106526afc33aa26a2b8c3f393e4cf7bd9b2e3ed",
+      "tools/kitesurf_l2_sample_probe.py": "925a95c414039860dddfbe18ad5953dda00c9d98d042f6d18ffc6038bea70f23"
+    },
+    "status_porcelain": [],
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_paths": [],
+    "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+  },
+  "source_commit": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "status_counts": {
+    "fail": 105,
+    "pass": 241,
+    "transport_error": 16,
+    "unsupported": 2
+  },
+  "tasks": 182,
+  "total_cdp_calls": 3158,
+  "total_cdp_errors": 0,
+  "total_disconnects": 0
+}

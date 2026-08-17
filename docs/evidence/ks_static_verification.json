@@ -1,0 +1,207 @@
+{
+  "base_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures",
+  "created_at": "2026-08-13T07:18:52+00:00",
+  "expected_deployment_base_url": "https://lexmount.github.io/browser-runtime-bench",
+  "file_count": 19,
+  "files": [
+    {
+      "actual_sha256": "d706f861b38796297d5ce576a7044256ffe0eafc7e8784328a6e056a6003e7b2",
+      "actual_size": 772,
+      "expected_sha256": "d706f861b38796297d5ce576a7044256ffe0eafc7e8784328a6e056a6003e7b2",
+      "expected_size": 772,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/index.html",
+      "path": "index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "5c5b9d349f44224b799d4cc322fe01ef40b7d76b3f02f6446dcf2733e9cced7c",
+      "actual_size": 3843,
+      "expected_sha256": "5c5b9d349f44224b799d4cc322fe01ef40b7d76b3f02f6446dcf2733e9cced7c",
+      "expected_size": 3843,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/core/index.html",
+      "path": "v1/core/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/core/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "4b0f1adbc5b835c85bdb5a7ce974865adffd64642b759466625b9c1b62410b0c",
+      "actual_size": 521,
+      "expected_sha256": "4b0f1adbc5b835c85bdb5a7ce974865adffd64642b759466625b9c1b62410b0c",
+      "expected_size": 521,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/child.html",
+      "path": "v1/frames/child.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/child.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "30146fc11eef9af0648f6a14e5cfc3ecd79ddbf8f20c228cc2ae72e05388a82e",
+      "actual_size": 310,
+      "expected_sha256": "30146fc11eef9af0648f6a14e5cfc3ecd79ddbf8f20c228cc2ae72e05388a82e",
+      "expected_size": 310,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/grandchild.html",
+      "path": "v1/frames/grandchild.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/grandchild.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "4e048761959a5ca86fb3b570d76e441c6a995db0878f71ac4fd5651cb2aefe1c",
+      "actual_size": 1011,
+      "expected_sha256": "4e048761959a5ca86fb3b570d76e441c6a995db0878f71ac4fd5651cb2aefe1c",
+      "expected_size": 1011,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/index.html",
+      "path": "v1/frames/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/frames/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "de0c822bec53cbd390acbbb86cc39552ee22c58ce4c0eca6ec99d4b2016efe10",
+      "actual_size": 349,
+      "expected_sha256": "de0c822bec53cbd390acbbb86cc39552ee22c58ce4c0eca6ec99d4b2016efe10",
+      "expected_size": 349,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/lifecycle/destination.html",
+      "path": "v1/lifecycle/destination.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/lifecycle/destination.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "dd23de38d157acd76c88ff70299ea4259c373019d6465f350a9509c3a588147e",
+      "actual_size": 1215,
+      "expected_sha256": "dd23de38d157acd76c88ff70299ea4259c373019d6465f350a9509c3a588147e",
+      "expected_size": 1215,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/lifecycle/index.html",
+      "path": "v1/lifecycle/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/lifecycle/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "a7301e472fcee402b8ef7323bdb0fdbf59460378b1ab57849952b35dc04d9f68",
+      "actual_size": 69,
+      "expected_sha256": "a7301e472fcee402b8ef7323bdb0fdbf59460378b1ab57849952b35dc04d9f68",
+      "expected_size": 69,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/data.json",
+      "path": "v1/network/data.json",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/data.json",
+      "verified": true
+    },
+    {
+      "actual_sha256": "94b6092efd6600e2312addd2a8bdc5bf001449679f443ad9f23ecaa2b2592fbf",
+      "actual_size": 504,
+      "expected_sha256": "94b6092efd6600e2312addd2a8bdc5bf001449679f443ad9f23ecaa2b2592fbf",
+      "expected_size": 504,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/index.html",
+      "path": "v1/network/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "5e6c1d5946f6615d9158f97797ec0e5d5eef5f66122a3f5ef80c4aba8fd3aad0",
+      "actual_size": 133,
+      "expected_sha256": "5e6c1d5946f6615d9158f97797ec0e5d5eef5f66122a3f5ef80c4aba8fd3aad0",
+      "expected_size": 133,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/pixel.svg",
+      "path": "v1/network/pixel.svg",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/pixel.svg",
+      "verified": true
+    },
+    {
+      "actual_sha256": "f78a7aeb81dabf77832703523b2906794f13505f29dd802fe0b6338a17981a20",
+      "actual_size": 788,
+      "expected_sha256": "f78a7aeb81dabf77832703523b2906794f13505f29dd802fe0b6338a17981a20",
+      "expected_size": 788,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/script.js",
+      "path": "v1/network/script.js",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/script.js",
+      "verified": true
+    },
+    {
+      "actual_sha256": "afa8da5d6e199cb8b0f4b743f1439f745fc32df66b184325e826aaab7680e0ab",
+      "actual_size": 94,
+      "expected_sha256": "afa8da5d6e199cb8b0f4b743f1439f745fc32df66b184325e826aaab7680e0ab",
+      "expected_size": 94,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/style.css",
+      "path": "v1/network/style.css",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/network/style.css",
+      "verified": true
+    },
+    {
+      "actual_sha256": "07d5733c47bd7b92d741e4407b2a213555420db43dfc744e2060aeb82a364ca4",
+      "actual_size": 449,
+      "expected_sha256": "07d5733c47bd7b92d741e4407b2a213555420db43dfc744e2060aeb82a364ca4",
+      "expected_size": 449,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/security/index.html",
+      "path": "v1/security/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/security/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "ab7d406863d66f862b8eae608d97ae676ca80e81a020f9a14d8e094c2ef23658",
+      "actual_size": 514,
+      "expected_sha256": "ab7d406863d66f862b8eae608d97ae676ca80e81a020f9a14d8e094c2ef23658",
+      "expected_size": 514,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/security/security.js",
+      "path": "v1/security/security.js",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/security/security.js",
+      "verified": true
+    },
+    {
+      "actual_sha256": "80f1781de6cfc46da0aa496dd15e37b65e9b8aef251a634e4e9bcf584f5364db",
+      "actual_size": 2160,
+      "expected_sha256": "80f1781de6cfc46da0aa496dd15e37b65e9b8aef251a634e4e9bcf584f5364db",
+      "expected_size": 2160,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/storage/index.html",
+      "path": "v1/storage/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/storage/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "37194da31e46c135c09d0f49e70fb49f08ba09610f8a6a910014d60eeff4ce2d",
+      "actual_size": 1567,
+      "expected_sha256": "37194da31e46c135c09d0f49e70fb49f08ba09610f8a6a910014d60eeff4ce2d",
+      "expected_size": 1567,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/index.html",
+      "path": "v1/workers/index.html",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/index.html",
+      "verified": true
+    },
+    {
+      "actual_sha256": "154616c64357fbc747c970f13668fdf1877032152f084df75bfcabf9d0a8b391",
+      "actual_size": 160,
+      "expected_sha256": "154616c64357fbc747c970f13668fdf1877032152f084df75bfcabf9d0a8b391",
+      "expected_size": 160,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/shared-worker.js",
+      "path": "v1/workers/shared-worker.js",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/shared-worker.js",
+      "verified": true
+    },
+    {
+      "actual_sha256": "3b924c75127304413865008fe9bcfa9fcd83b6a32dc3737dbe0e66f535e39dd6",
+      "actual_size": 187,
+      "expected_sha256": "3b924c75127304413865008fe9bcfa9fcd83b6a32dc3737dbe0e66f535e39dd6",
+      "expected_size": 187,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/sw.js",
+      "path": "v1/workers/sw.js",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/sw.js",
+      "verified": true
+    },
+    {
+      "actual_sha256": "18be829697536bc9f429afe2fc161b51f4f0361903469649bd06467970587b7a",
+      "actual_size": 77,
+      "expected_sha256": "18be829697536bc9f429afe2fc161b51f4f0361903469649bd06467970587b7a",
+      "expected_size": 77,
+      "final_url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/worker.js",
+      "path": "v1/workers/worker.js",
+      "url": "https://<static-fixture-origin>/kitesurf-cdp-fixtures/v1/workers/worker.js",
+      "verified": true
+    }
+  ],
+  "manifest_path": "<repo>/config/kitesurf_static_fixture.json",
+  "manifest_sha256": "09dd37e36dc254b6305e1854144a06155d4705f2b3029a15daa93e1da2ae7c4f",
+  "schema": "experimental.kitesurf_static_fixture_verification.v1",
+  "source": {
+    "path": "pages",
+    "repository": "https://github.com/lexmount/browser-runtime-bench"
+  },
+  "verified": true,
+  "verified_file_count": 19
+}

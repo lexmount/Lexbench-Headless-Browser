@@ -4,6 +4,8 @@
 
 Every number in the reports traces back to one of three runs. This page records their exact parameters, how a run turns into a report, and what to check when your rerun disagrees.
 
+This branch publishes one more result on top of them: the Kitesurf lane and the five-engine report it feeds. Its collection flow is in [kitesurf-deployment.md](kitesurf-deployment.md), and the command that regenerates the five-engine report is in [EVIDENCE.md](EVIDENCE.md).
+
 ## The three published runs
 
 | Run id | Purpose | Task set | k | jobs | Profiler |

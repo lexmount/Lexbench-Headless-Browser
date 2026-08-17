@@ -26,6 +26,13 @@ import urllib.request
 from typing import Any
 
 try:
+    from .remote_identity import compare_remote_identity, require_remote_identity
+    from .remote_cleanup import apply_cleanup_contract
+except ImportError:  # Executed as a standalone adapter script.
+    from remote_identity import compare_remote_identity, require_remote_identity
+    from remote_cleanup import apply_cleanup_contract
+
+try:
     from importlib.metadata import version as _pkg_version
 
     CLIENT_VERSION = _pkg_version("cdp-use")
@@ -90,6 +97,7 @@ class Adapter:
         self.client = None
         self.session_id: str | None = None
         self.created_targets: list[str] = []
+        self.target_creations: list[dict[str, Any]] = []
         self.op_calls = 0
         self.op_errors = 0
         self.saved: dict[str, str] = {}
@@ -129,7 +137,14 @@ class Adapter:
             self.op_errors += 1
             message = str(exc)
             self.trace({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "direction": "cdp_use", "method": method, "sessionId": session_id, "ok": False, "error": message})
-            raise RuntimeError(f"{method}: {message}") from None
+            wrapped = RuntimeError(f"{method}: {message}")
+            wrapped.cdp_rejected = (
+                isinstance(exc, RuntimeError)
+                and bool(exc.args)
+                and isinstance(exc.args[0], dict)
+                and exc.args[0].get("code") is not None
+            )
+            raise wrapped from None
 
     async def eval_expr(self, expression: str) -> Any:
         result = await self.send(
@@ -168,14 +183,102 @@ class Adapter:
     async def ensure_session(self) -> str:
         if self.session_id:
             return self.session_id
-        created = await self.send("Target.createTarget", {"url": "about:blank"}, use_session=False)
-        target_id = created["targetId"]
+        creation: dict[str, Any] = {
+            "attempt": len(self.target_creations) + 1,
+            "state": "requested",
+        }
+        self.target_creations.append(creation)
+        try:
+            created = await self.send(
+                "Target.createTarget", {"url": "about:blank"}, use_session=False
+            )
+        except Exception as exc:
+            creation.update(
+                state=("rejected" if getattr(exc, "cdp_rejected", False) else "ambiguous"),
+                error=str(exc),
+            )
+            raise
+        target_id = created.get("targetId")
+        if not target_id:
+            creation["state"] = "ambiguous"
+            raise RuntimeError("Target.createTarget returned no targetId")
+        creation.update(state="created", target_id=target_id)
         self.created_targets.append(target_id)
         attached = await self.send("Target.attachToTarget", {"targetId": target_id, "flatten": True}, use_session=False)
         self.session_id = attached["sessionId"]
         await self.send("Page.enable")
         await self.send("Runtime.enable")
         return self.session_id
+
+    async def cleanup_targets(self) -> dict[str, Any]:
+        attempts: list[dict[str, Any]] = []
+        for target_id in list(self.created_targets):
+            closed = False
+            for attempt in range(1, 3):
+                try:
+                    result = await asyncio.wait_for(
+                        self.send(
+                            "Target.closeTarget",
+                            {"targetId": target_id},
+                            use_session=False,
+                        ),
+                        timeout=3.0,
+                    )
+                    closed = result.get("success") is True
+                    attempts.append(
+                        {
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "success": result.get("success"),
+                            "confirmed": closed,
+                        }
+                    )
+                except asyncio.TimeoutError:
+                    attempts.append(
+                        {
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "confirmed": False,
+                            "timed_out": True,
+                            "error": "Target.closeTarget timeout",
+                        }
+                    )
+                    break
+                except Exception as exc:
+                    attempts.append(
+                        {
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "confirmed": False,
+                            "error": str(exc),
+                        }
+                    )
+                if closed:
+                    break
+            creation = next(
+                (
+                    item
+                    for item in self.target_creations
+                    if item.get("target_id") == target_id
+                ),
+                None,
+            )
+            if creation is not None:
+                creation["state"] = "closed" if closed else "cleanup_unconfirmed"
+            if closed:
+                self.created_targets.remove(target_id)
+        confirmed = all(
+            item.get("state") in {"closed", "rejected"}
+            for item in self.target_creations
+        )
+        return {
+            "backend": "cdp_use.Target.closeTarget",
+            "required": bool(self.target_creations),
+            "confirmed": confirmed,
+            "same_connection_as_task": True,
+            "creation_attempts": self.target_creations,
+            "attempts": attempts,
+        }
 
     @staticmethod
     def ax_value(value: Any) -> str:
@@ -498,6 +601,18 @@ async def amain() -> None:
     expect_product = payload.get("expect_product") or ""
     expect_ua = payload.get("expect_ua") or ""
     expect_product_live = payload.get("expect_product_live") or expect_product
+    try:
+        expected_remote_identity = (
+            require_remote_identity(
+                payload.get("expected_remote_identity"),
+                "expected_remote_identity",
+            )
+            if payload.get("remote_cdp") is True
+            else None
+        )
+    except ValueError as exc:
+        emit({"ok": False, "error": {"class": "script_error", "message": f"binding gate: {exc}"}, "observations": {}, "metrics": {}})
+        return
     steps = payload.get("steps") or []
     checks = payload.get("checks") or []
     connect_timeout_ms = int(payload.get("connect_timeout_ms") or 15000)
@@ -564,47 +679,78 @@ async def amain() -> None:
             {"name": check.get("label") or check.get("kind") or f"check{idx}", "status": "fail", "evidence": "client did not connect; scenario not executed"}
             for idx, check in enumerate(checks)
         ]
-        emit(
-            {
-                "ok": True,
-                "answer": f"0/{len(check_rows)} checks",
-                "observations": {"checks": check_rows, "saved": {}, "binding": binding, "connect_error": connect_error, "failure_class": "cdp_semantic"},
-                "metrics": {"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
-            }
-        )
+        outcome = {
+            "ok": True,
+            "answer": f"0/{len(check_rows)} checks",
+            "observations": {
+                "checks": check_rows,
+                "saved": {},
+                "binding": binding,
+                "connect_error": connect_error,
+                "failure_class": "cdp_semantic",
+            },
+            "metrics": {
+                "cdp_call_count": 1,
+                "cdp_error_count": 1,
+                "ws_disconnect_count": 0,
+            },
+        }
+        adapter.client = client
+        cleanup = await adapter.cleanup_targets()
+        try:
+            await client.stop()
+        except Exception:
+            pass
+        emit(apply_cleanup_contract(outcome, cleanup, label="cdp-use"))
         return
 
     adapter.client = client
+    outcome: dict[str, Any] | None = None
     try:
         # ---- Binding gate 2/2: the live client transport must identify as the
         # engine under test.
+        live_identity = None
         live_product = None
         try:
-            ver = await adapter.send("Browser.getVersion", use_session=False)
-            live_product = str(ver.get("product") or "")
+            live_identity = await adapter.send("Browser.getVersion", use_session=False)
+            live_product = str(live_identity.get("product") or "")
         except Exception:
             pass  # handled below: None != expect_product_live
         binding["expect_product_live"] = expect_product_live
         binding["live_product"] = live_product
         binding["live_check"] = "cdp_use_browser_get_version"
-        if live_product != expect_product_live:
-            emit(
-                {
-                    "ok": False,
-                    "error": {
-                        "class": "script_error",
-                        "message": (
-                            f"binding gate: live cdp-use transport reports product={json.dumps(live_product)}; "
-                            f"expected {json.dumps(expect_product_live)} — the client is not bound to the engine under test"
-                        ),
-                    },
-                    "observations": {"binding": binding},
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
+        if expected_remote_identity is not None:
+            binding.update(
+                compare_remote_identity(expected_remote_identity, live_identity)
             )
+        identity_verified = (
+            binding.get("verified") is True
+            if expected_remote_identity is not None
+            else live_product == expect_product_live
+        )
+        if not identity_verified:
+            outcome = {
+                "ok": False,
+                "error": {
+                    "class": "script_error",
+                    "message": (
+                        f"binding gate: live cdp-use transport reports identity={json.dumps(binding.get('actual'))}; "
+                        f"expected {json.dumps(binding.get('expected'))} — the client is not bound to the remote engine under test"
+                        if expected_remote_identity is not None
+                        else f"binding gate: live cdp-use transport reports product={json.dumps(live_product)}; "
+                        f"expected {json.dumps(expect_product_live)} — the client is not bound to the engine under test"
+                    ),
+                },
+                "observations": {"binding": binding},
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
             return
         binding["verified"] = True
-        adapter.trace({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "direction": "cdp_use", "step": "binding_verified", "product": live_product})
+        adapter.trace({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "direction": "cdp_use", "step": "binding_verified", "identity": binding.get("actual") or {"product": live_product}})
 
         try:
             for idx, step in enumerate(steps):
@@ -646,42 +792,44 @@ async def amain() -> None:
                     }
                 )
             passed = sum(1 for row in check_rows if row["status"] == "pass")
-            emit(
-                {
-                    "ok": True,
-                    "answer": adapter.saved.get("answer", f"{passed}/{len(check_rows)} checks"),
-                    "observations": {
-                        "checks": check_rows,
-                        "saved": adapter.saved,
-                        "binding": binding,
-                        "driver_ops": len(adapter.step_results),
-                        "driver_op_errors": sum(1 for row in adapter.step_results if not row["ok"]),
-                        "failure_class": "cdp_semantic",
-                    },
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
-            )
+            outcome = {
+                "ok": True,
+                "answer": adapter.saved.get("answer", f"{passed}/{len(check_rows)} checks"),
+                "observations": {
+                    "checks": check_rows,
+                    "saved": adapter.saved,
+                    "binding": binding,
+                    "driver_ops": len(adapter.step_results),
+                    "driver_op_errors": sum(1 for row in adapter.step_results if not row["ok"]),
+                    "failure_class": "cdp_semantic",
+                },
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
         except Exception as exc:
             message = str(exc)
             klass = "engine_unsupported" if is_unsupported_message(message) else "script_error"
-            emit(
-                {
-                    "ok": False,
-                    "error": {"class": klass, "message": message},
-                    "observations": {"saved": adapter.saved, "binding": binding},
-                    "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-                }
-            )
+            outcome = {
+                "ok": False,
+                "error": {"class": klass, "message": message},
+                "observations": {"saved": adapter.saved, "binding": binding},
+                "metrics": {
+                    "cdp_call_count": adapter.op_calls,
+                    "cdp_error_count": adapter.op_errors,
+                    "ws_disconnect_count": 0,
+                },
+            }
     finally:
-        for target_id in adapter.created_targets:
-            try:
-                await client.send_raw("Target.closeTarget", {"targetId": target_id})
-            except Exception:
-                pass  # target may already be gone
+        cleanup = await adapter.cleanup_targets()
         try:
             await client.stop()
         except Exception:
             pass  # best effort
+        if outcome is not None:
+            emit(apply_cleanup_contract(outcome, cleanup, label="cdp-use"))
 
 
 def main() -> None:

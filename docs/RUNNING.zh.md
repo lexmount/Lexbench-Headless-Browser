@@ -13,7 +13,7 @@
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 候选 | 仓库 Releases，或按其构建文档自行编译 |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 候选 | 仓库 Releases，或按其构建文档自行编译 |
 
-`--engines` 接受这四个名字的任意逗号组合，默认全选。chromedriver 不是被测对象，它只是 Selenium 路由需要的桥。远程引擎（Kitesurf）不在 main 分支，见 `kitesurf-eval` 分支。
+`--engines` 接受这四个名字的任意逗号组合，默认全选。chromedriver 不是被测对象，它只是 Selenium 路由需要的桥。远程引擎 Kitesurf 不走 `--engines`：它那条 lane 由配方机制驱动，见 [kitesurf-deployment.zh.md](kitesurf-deployment.zh.md)。
 
 ## 最短路径：先跑通一个引擎
 

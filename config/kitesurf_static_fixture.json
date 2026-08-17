@@ -1,0 +1,105 @@
+{
+  "schema": "experimental.kitesurf_static_fixture.v1",
+  "deployment_base_url": "https://lexmount.github.io/Lexbench-Headless-Browser",
+  "source": {
+    "repository": "https://github.com/lexmount/Lexbench-Headless-Browser",
+    "path": "pages"
+  },
+  "files": [
+    {
+      "path": "index.html",
+      "size": 772,
+      "sha256": "d706f861b38796297d5ce576a7044256ffe0eafc7e8784328a6e056a6003e7b2"
+    },
+    {
+      "path": "v1/core/index.html",
+      "size": 3843,
+      "sha256": "5c5b9d349f44224b799d4cc322fe01ef40b7d76b3f02f6446dcf2733e9cced7c"
+    },
+    {
+      "path": "v1/frames/child.html",
+      "size": 521,
+      "sha256": "4b0f1adbc5b835c85bdb5a7ce974865adffd64642b759466625b9c1b62410b0c"
+    },
+    {
+      "path": "v1/frames/grandchild.html",
+      "size": 310,
+      "sha256": "30146fc11eef9af0648f6a14e5cfc3ecd79ddbf8f20c228cc2ae72e05388a82e"
+    },
+    {
+      "path": "v1/frames/index.html",
+      "size": 1011,
+      "sha256": "4e048761959a5ca86fb3b570d76e441c6a995db0878f71ac4fd5651cb2aefe1c"
+    },
+    {
+      "path": "v1/lifecycle/destination.html",
+      "size": 349,
+      "sha256": "de0c822bec53cbd390acbbb86cc39552ee22c58ce4c0eca6ec99d4b2016efe10"
+    },
+    {
+      "path": "v1/lifecycle/index.html",
+      "size": 1215,
+      "sha256": "dd23de38d157acd76c88ff70299ea4259c373019d6465f350a9509c3a588147e"
+    },
+    {
+      "path": "v1/network/data.json",
+      "size": 69,
+      "sha256": "a7301e472fcee402b8ef7323bdb0fdbf59460378b1ab57849952b35dc04d9f68"
+    },
+    {
+      "path": "v1/network/index.html",
+      "size": 504,
+      "sha256": "94b6092efd6600e2312addd2a8bdc5bf001449679f443ad9f23ecaa2b2592fbf"
+    },
+    {
+      "path": "v1/network/pixel.svg",
+      "size": 133,
+      "sha256": "5e6c1d5946f6615d9158f97797ec0e5d5eef5f66122a3f5ef80c4aba8fd3aad0"
+    },
+    {
+      "path": "v1/network/script.js",
+      "size": 788,
+      "sha256": "f78a7aeb81dabf77832703523b2906794f13505f29dd802fe0b6338a17981a20"
+    },
+    {
+      "path": "v1/network/style.css",
+      "size": 94,
+      "sha256": "afa8da5d6e199cb8b0f4b743f1439f745fc32df66b184325e826aaab7680e0ab"
+    },
+    {
+      "path": "v1/security/index.html",
+      "size": 449,
+      "sha256": "07d5733c47bd7b92d741e4407b2a213555420db43dfc744e2060aeb82a364ca4"
+    },
+    {
+      "path": "v1/security/security.js",
+      "size": 514,
+      "sha256": "ab7d406863d66f862b8eae608d97ae676ca80e81a020f9a14d8e094c2ef23658"
+    },
+    {
+      "path": "v1/storage/index.html",
+      "size": 2160,
+      "sha256": "80f1781de6cfc46da0aa496dd15e37b65e9b8aef251a634e4e9bcf584f5364db"
+    },
+    {
+      "path": "v1/workers/index.html",
+      "size": 1567,
+      "sha256": "37194da31e46c135c09d0f49e70fb49f08ba09610f8a6a910014d60eeff4ce2d"
+    },
+    {
+      "path": "v1/workers/shared-worker.js",
+      "size": 160,
+      "sha256": "154616c64357fbc747c970f13668fdf1877032152f084df75bfcabf9d0a8b391"
+    },
+    {
+      "path": "v1/workers/sw.js",
+      "size": 187,
+      "sha256": "3b924c75127304413865008fe9bcfa9fcd83b6a32dc3737dbe0e66f535e39dd6"
+    },
+    {
+      "path": "v1/workers/worker.js",
+      "size": 77,
+      "sha256": "18be829697536bc9f429afe2fc161b51f4f0361903469649bd06467970587b7a"
+    }
+  ]
+}

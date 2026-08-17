@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Kitesurf fixture: frames</title></head>
+<body data-fixture="frames-v1">
+  <h1>Frame host</h1>
+  <iframe id="static-child" name="static-child" src="child.html"></iframe>
+  <button id="add-frame" type="button">Add dynamic frame</button>
+  <button id="remove-frame" type="button">Remove dynamic frame</button>
+  <script>
+    window.__kitesurfFixture = {version: "v1", fixture: "frames", messages: []};
+    addEventListener("message", (event) => window.__kitesurfFixture.messages.push(event.data));
+    document.querySelector("#add-frame").onclick = () => {
+      if (document.querySelector("#dynamic-child")) return;
+      const frame = document.createElement("iframe");
+      frame.id = "dynamic-child";
+      frame.src = `child.html?dynamic=${Date.now()}`;
+      document.body.appendChild(frame);
+    };
+    document.querySelector("#remove-frame").onclick = () => document.querySelector("#dynamic-child")?.remove();
+  </script>
+</body>
+</html>

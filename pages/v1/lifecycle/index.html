@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Kitesurf fixture: lifecycle</title></head>
+<body data-fixture="lifecycle-v1">
+  <h1>Lifecycle fixture</h1>
+  <a id="destination" href="destination.html">Destination</a>
+  <button id="push-state" type="button">Push state</button>
+  <output id="lifecycle-result">loaded</output>
+  <script>
+    const events = JSON.parse(sessionStorage.getItem("fixture-lifecycle") || "[]");
+    window.__kitesurfFixture = {version: "v1", fixture: "lifecycle", events};
+    const record = (name) => {
+      events.push(name);
+      sessionStorage.setItem("fixture-lifecycle", JSON.stringify(events));
+      document.querySelector("#lifecycle-result").textContent = events.join(",");
+    };
+    addEventListener("pageshow", (event) => record(`pageshow:${event.persisted}`));
+    addEventListener("pagehide", (event) => record(`pagehide:${event.persisted}`));
+    addEventListener("beforeunload", () => record("beforeunload"));
+    addEventListener("popstate", () => record("popstate"));
+    document.querySelector("#push-state").onclick = () => {
+      history.pushState({fixture: true}, "", "?pushed=1");
+      record("pushstate");
+    };
+  </script>
+</body>
+</html>

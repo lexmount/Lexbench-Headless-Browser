@@ -1,0 +1,30 @@
+{
+  "branch": "kitesurf-eval",
+  "contains_origin_main": false,
+  "dirty": false,
+  "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+  "merge_base_origin_main": null,
+  "origin_main": null,
+  "runtime_executables": [],
+  "schema": "experimental.kitesurf_source.v2",
+  "source_files_sha256": {
+    "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+    "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+    "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+    "runner/scripts/adapters/PROTOCOL.md": "2cb46235db50656ae480f8dd6045e3b4a1056d8e73f55acd8be02dbb1779aed7",
+    "runner/scripts/adapters/cdp_use_adapter.py": "f8872b8146b461375baab74a280e4eecaec743a937e2149209e9fe692c787907",
+    "runner/scripts/adapters/remote_cleanup.py": "fe33d938b66b457ce73b9bec6c8d9f2be64ff7354cbdff644aaa32ce6cb76e3e",
+    "runner/scripts/adapters/remote_identity.py": "1ec8bf0af758a42a4b28c439692466b2294794658e1d69ca34010b35d7712f31",
+    "runner/scripts/lib/remote_cleanup.js": "3b33230a44ab464b86341df95c700edcd69f5ed42e177f7a977d182726c88c52",
+    "runner/scripts/lib/remote_identity.js": "55eaa34550ec03a6cd14cb9c3a9ea79f5ead7dbe0175576e6a1d059ab6354bbe",
+    "runner/scripts/lib/transport_fault.js": "35c770d1b2fc9fcb1a0242ba9e7466bd9ff5a4933ba8c07b9f85010384a9ef3e",
+    "tools/kitesurf_driver_probe.py": "ef653bb4c3e9626c2a679c7fbb84cabe46d5bd6d1aee99b133cb378fc8026096",
+    "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125"
+  },
+  "status_porcelain": [],
+  "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_paths": [],
+  "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+}

@@ -1,0 +1,66 @@
+{
+  "branch": "kitesurf-eval",
+  "contains_origin_main": false,
+  "dirty": false,
+  "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+  "merge_base_origin_main": null,
+  "origin_main": null,
+  "runtime_executables": [
+    {
+      "invoked_path": "<repo>/runner/scripts/adapters/chromedp_adapter/chromedp_adapter",
+      "resolved_path": "<repo>/runner/scripts/adapters/chromedp_adapter/chromedp_adapter",
+      "sha256": "6a373ea557236e94d4b1020e93e4da92da3d9cba2f764c403da27fd4d601247c",
+      "size": 12118918
+    },
+    {
+      "invoked_path": "<repo>/runner/scripts/adapters/chromiumoxide_adapter/target/debug/chromiumoxide_adapter",
+      "resolved_path": "<repo>/runner/scripts/adapters/chromiumoxide_adapter/target/debug/chromiumoxide_adapter",
+      "sha256": "ac0dbcbd56bd7f0ddfcbf86da568e33ff7f8b11f04a94e25764a4678257b1530",
+      "size": 121653960
+    },
+    {
+      "invoked_path": "<repo>/runner/scripts/adapters/rod_adapter/rod_adapter",
+      "resolved_path": "<repo>/runner/scripts/adapters/rod_adapter/rod_adapter",
+      "sha256": "3d7d4ac8545ac8eafa041634771cffaa70d6861c6e509f86f47a3d730ece0ccd",
+      "size": 15290414
+    }
+  ],
+  "schema": "experimental.kitesurf_source.v2",
+  "source_files_sha256": {
+    "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+    "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+    "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+    "runner/scripts/adapters/PROTOCOL.md": "2cb46235db50656ae480f8dd6045e3b4a1056d8e73f55acd8be02dbb1779aed7",
+    "runner/scripts/adapters/cdp_use_adapter.py": "f8872b8146b461375baab74a280e4eecaec743a937e2149209e9fe692c787907",
+    "runner/scripts/adapters/chromedp_adapter/go.mod": "2bcadcbb46e2a8021dae6ffc98f0aa6dd3e57da029126328ce47f3b33c308257",
+    "runner/scripts/adapters/chromedp_adapter/go.sum": "04eb870ca24e58c6411d792fba75ddeee070efde311f8614ce7052e767fc3809",
+    "runner/scripts/adapters/chromedp_adapter/main.go": "9d1647a41439e78a980c823aefb981df6fe933700a0f66542ea30fc1aa21b627",
+    "runner/scripts/adapters/chromedp_adapter/main_test.go": "4f48ecef89dcf42bda377ce4c3a66dc6d3e30b5d2a0b2e9c3370d812b2720c59",
+    "runner/scripts/adapters/chromiumoxide_adapter/Cargo.lock": "e8b38f68cfaa375980d30406b1119b9ded8ffa74611ce4aee82a8891ec7833f4",
+    "runner/scripts/adapters/chromiumoxide_adapter/Cargo.toml": "901b032cbe1afae353a6af43543ff474a4940153d4d038244919da1b1f91d6de",
+    "runner/scripts/adapters/chromiumoxide_adapter/src/main.rs": "35974c7748bfccc0b13077c5401e8d3e6018a5a8021c8787e7481b8cc88a02b2",
+    "runner/scripts/adapters/cri_adapter.js": "554ea2ffefc5c4e2cd5c494eaec74ba6a75d855f8ee575e7ef0ce46bb9e1514f",
+    "runner/scripts/adapters/ferrum_adapter.rb": "8f4dc2aba3502284c5eaacfc5f0dbc3981ad26603ff4877bbbb808fcf77aad60",
+    "runner/scripts/adapters/pydoll_adapter.py": "4afd49e0969cdfa819ef12635900da9ea1bc93729247f7c1e80f75bfc539a786",
+    "runner/scripts/adapters/remote_cleanup.py": "fe33d938b66b457ce73b9bec6c8d9f2be64ff7354cbdff644aaa32ce6cb76e3e",
+    "runner/scripts/adapters/remote_identity.py": "1ec8bf0af758a42a4b28c439692466b2294794658e1d69ca34010b35d7712f31",
+    "runner/scripts/adapters/rod_adapter/go.mod": "be39562e79f7c0e747f6f3e7812820d37cad80a407d71c30af1d2701e9b2e458",
+    "runner/scripts/adapters/rod_adapter/go.sum": "a5afaa6899686e3d4cbe7fd5a13d7654a4ffdc14b9ca2a209a38129dd5b59154",
+    "runner/scripts/adapters/rod_adapter/main.go": "eb0b183d39f0da3780a66c8a888cbfd07ca5213debb124d122d51ef60ec67713",
+    "runner/scripts/adapters/rod_adapter/main_test.go": "508eab8714697a642015cabfdafaf0229edbe036d5a8664cab06c7a7e95c0094",
+    "runner/scripts/adapters/stagehand_adapter.js": "f7cb1f0b8af094d62b06fe8c746a8acc17f212df8e0c5250376357898388c459",
+    "runner/scripts/framework_probe.js": "1dc374dfb84b4f9ebcda23e852e3518ca09906e6d4da66d8a07e3d4ca4345f3a",
+    "runner/scripts/lib/remote_cleanup.js": "3b33230a44ab464b86341df95c700edcd69f5ed42e177f7a977d182726c88c52",
+    "runner/scripts/lib/remote_identity.js": "55eaa34550ec03a6cd14cb9c3a9ea79f5ead7dbe0175576e6a1d059ab6354bbe",
+    "runner/scripts/lib/stagehand_ownership.js": "193055431b520c2a430f5868176802901b2a629c64be366ba2f577863c7ca8d3",
+    "runner/scripts/lib/transport_fault.js": "35c770d1b2fc9fcb1a0242ba9e7466bd9ff5a4933ba8c07b9f85010384a9ef3e",
+    "tools/kitesurf_driver_probe.py": "ef653bb4c3e9626c2a679c7fbb84cabe46d5bd6d1aee99b133cb378fc8026096",
+    "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125"
+  },
+  "status_porcelain": [],
+  "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_paths": [],
+  "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+}

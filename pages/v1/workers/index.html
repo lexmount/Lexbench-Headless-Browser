@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Kitesurf fixture: workers</title></head>
+<body data-fixture="workers-v1">
+  <h1>Workers fixture</h1>
+  <button id="dedicated" type="button">Dedicated worker</button>
+  <button id="shared" type="button">Shared worker</button>
+  <button id="service" type="button">Service worker</button>
+  <output id="worker-result">idle</output>
+  <script>
+    window.__kitesurfFixture = {version: "v1", fixture: "workers", events: []};
+    const output = document.querySelector("#worker-result");
+    document.querySelector("#dedicated").onclick = () => {
+      const worker = new Worker("worker.js");
+      worker.onmessage = (event) => {
+        output.textContent = event.data;
+        window.__kitesurfFixture.events.push(event.data);
+        worker.terminate();
+      };
+      worker.postMessage(21);
+    };
+    document.querySelector("#shared").onclick = () => {
+      const worker = new SharedWorker("shared-worker.js");
+      worker.port.onmessage = (event) => {
+        output.textContent = event.data;
+        window.__kitesurfFixture.events.push(event.data);
+      };
+      worker.port.start();
+      worker.port.postMessage(14);
+    };
+    document.querySelector("#service").onclick = async () => {
+      const registration = await navigator.serviceWorker.register("sw.js", {scope: "./"});
+      await navigator.serviceWorker.ready;
+      output.textContent = `service-worker:${registration.scope}`;
+      window.__kitesurfFixture.events.push("service-worker-ready");
+    };
+  </script>
+</body>
+</html>

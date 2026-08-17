@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kitesurf fixture: core</title>
+  <style>
+    #geometry { box-sizing: border-box; width: 160px; height: 90px; margin: 7px; padding: 11px; border: 3px solid rgb(10, 20, 30); }
+    #hidden { display: none; }
+    #offscreen { position: absolute; left: -10000px; top: 0; }
+  </style>
+</head>
+<body data-fixture="core-v1">
+  <h1 id="heading">Core fixture</h1>
+  <p id="status" aria-live="polite">ready</p>
+  <form id="form" action="../lifecycle/destination.html" method="get">
+    <label>Name <input id="name" name="name" value="initial"></label>
+    <label><input id="check" type="checkbox"> Enabled</label>
+    <label>Choice
+      <select id="choice" name="choice">
+        <option value="alpha">Alpha</option>
+        <option value="beta">Beta</option>
+      </select>
+    </label>
+    <textarea id="notes" name="notes">seed</textarea>
+    <button id="submit" type="submit">Submit</button>
+  </form>
+  <button id="increment" type="button">Increment</button>
+  <output id="counter">0</output>
+  <button id="alert" type="button">Alert</button>
+  <button id="confirm" type="button">Confirm</button>
+  <button id="prompt" type="button">Prompt</button>
+  <input id="file" type="file">
+  <div id="file-result">no-file</div>
+  <div id="geometry">geometry target</div>
+  <div id="hidden">hidden target</div>
+  <div id="offscreen">offscreen target</div>
+  <div id="open-shadow-host"></div>
+  <div id="closed-shadow-host"></div>
+  <a id="hash-link" href="#hash-target">Hash target</a>
+  <div id="hash-target">hash destination</div>
+  <script>
+    (() => {
+      const state = {
+        version: "v1",
+        fixture: "core",
+        loadedAt: Date.now(),
+        events: [],
+      };
+      window.__kitesurfFixture = state;
+      const record = (name) => state.events.push(name);
+      document.querySelector("#increment").addEventListener("click", () => {
+        const output = document.querySelector("#counter");
+        output.textContent = String(Number(output.textContent) + 1);
+        record("increment");
+      });
+      document.querySelector("#check").addEventListener("change", () => record("check-change"));
+      document.querySelector("#choice").addEventListener("change", () => record("select-change"));
+      document.querySelector("#alert").addEventListener("click", () => alert("fixture-alert"));
+      document.querySelector("#confirm").addEventListener("click", () => {
+        document.querySelector("#status").textContent = confirm("fixture-confirm") ? "confirmed" : "dismissed";
+      });
+      document.querySelector("#prompt").addEventListener("click", () => {
+        document.querySelector("#status").textContent = prompt("fixture-prompt", "default") || "empty";
+      });
+      document.querySelector("#file").addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        document.querySelector("#file-result").textContent = file ? `${file.name}:${file.size}:${await file.text()}` : "no-file";
+      });
+      const openRoot = document.querySelector("#open-shadow-host").attachShadow({mode: "open"});
+      openRoot.innerHTML = '<button id="shadow-button">Open shadow action</button><span id="shadow-value">open-shadow</span>';
+      const closedRoot = document.querySelector("#closed-shadow-host").attachShadow({mode: "closed"});
+      closedRoot.innerHTML = '<span id="closed-value">closed-shadow</span>';
+      setTimeout(() => {
+        const late = document.createElement("div");
+        late.id = "late-item";
+        late.textContent = "late-ready";
+        document.body.appendChild(late);
+        record("late-item");
+      }, 450);
+      console.log("kitesurf-fixture-core-ready", state.version);
+    })();
+  </script>
+</body>
+</html>

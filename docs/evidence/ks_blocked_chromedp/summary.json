@@ -1,0 +1,105 @@
+{
+  "by_driver": {
+    "chromedp": {
+      "attempts": 1,
+      "latency": {
+        "max_ms": 18510,
+        "min_ms": 18510,
+        "p50_ms": 18510,
+        "p95_ms": 18510
+      },
+      "statuses": {
+        "infra": 1
+      },
+      "tasks": 1
+    }
+  },
+  "created_at": "2026-08-13T13:29:14+00:00",
+  "endpoint": "wss://kitesurf.cloudflare.app/devtools/browser",
+  "expected_identity": {
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf"
+  },
+  "fixture_base_url": "https://<dynamic-fixture-origin>",
+  "fixture_verification": {
+    "contract_sha256": "93908f2885114c981013529a65a49c035d2ecc63eded53e48600d2c0eb4bc906",
+    "dynamic_probes": {
+      "required": 28,
+      "verified": 28
+    },
+    "local_contract_verified": true,
+    "manifest_sha256": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+    "report": "fixture_verification.json",
+    "report_sha256": "28f62dfbdbd0d90139bf862ab1aa872fc4f332419c788ca4eb5f994573758480",
+    "static_routes": {
+      "required": 127,
+      "verified": 127
+    },
+    "verified": true
+  },
+  "identity": {
+    "jsVersion": "12.0.0",
+    "probe_duration_ms": 1799,
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+  },
+  "schema": "experimental.kitesurf_driver_probe.v3",
+  "scope": {
+    "completed_attempts": 1,
+    "concurrency": 1,
+    "delay_ms": 750,
+    "drivers": [
+      "chromedp"
+    ],
+    "formal_score_eligible": false,
+    "isolation_abort_reason": "sequence 1 (chromedp/sc_agentloop_ax_id_stable_across_mutation__chromedp) did not confirm target cleanup",
+    "reruns": 1,
+    "scenario_only": false,
+    "selected_tasks": 5,
+    "session_strategy": "one fresh public browser WebSocket per attempt",
+    "stopped_early": true
+  },
+  "source": {
+    "branch": "kitesurf-eval",
+    "contains_origin_main": false,
+    "dirty": false,
+    "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+    "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+    "merge_base_origin_main": null,
+    "origin_main": null,
+    "runtime_executables": [
+      {
+        "invoked_path": "<repo>/runner/scripts/adapters/chromedp_adapter/chromedp_adapter",
+        "resolved_path": "<repo>/runner/scripts/adapters/chromedp_adapter/chromedp_adapter",
+        "sha256": "6a373ea557236e94d4b1020e93e4da92da3d9cba2f764c403da27fd4d601247c",
+        "size": 12118918
+      }
+    ],
+    "schema": "experimental.kitesurf_source.v2",
+    "source_files_sha256": {
+      "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+      "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+      "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+      "runner/scripts/adapters/PROTOCOL.md": "2cb46235db50656ae480f8dd6045e3b4a1056d8e73f55acd8be02dbb1779aed7",
+      "runner/scripts/adapters/chromedp_adapter/go.mod": "2bcadcbb46e2a8021dae6ffc98f0aa6dd3e57da029126328ce47f3b33c308257",
+      "runner/scripts/adapters/chromedp_adapter/go.sum": "04eb870ca24e58c6411d792fba75ddeee070efde311f8614ce7052e767fc3809",
+      "runner/scripts/adapters/chromedp_adapter/main.go": "9d1647a41439e78a980c823aefb981df6fe933700a0f66542ea30fc1aa21b627",
+      "runner/scripts/adapters/chromedp_adapter/main_test.go": "4f48ecef89dcf42bda377ce4c3a66dc6d3e30b5d2a0b2e9c3370d812b2720c59",
+      "runner/scripts/lib/remote_cleanup.js": "3b33230a44ab464b86341df95c700edcd69f5ed42e177f7a977d182726c88c52",
+      "runner/scripts/lib/remote_identity.js": "55eaa34550ec03a6cd14cb9c3a9ea79f5ead7dbe0175576e6a1d059ab6354bbe",
+      "runner/scripts/lib/transport_fault.js": "35c770d1b2fc9fcb1a0242ba9e7466bd9ff5a4933ba8c07b9f85010384a9ef3e",
+      "tools/kitesurf_driver_probe.py": "ef653bb4c3e9626c2a679c7fbb84cabe46d5bd6d1aee99b133cb378fc8026096",
+      "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125"
+    },
+    "status_porcelain": [],
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_paths": [],
+    "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+  },
+  "source_commit": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "total_cdp_calls": 8
+}

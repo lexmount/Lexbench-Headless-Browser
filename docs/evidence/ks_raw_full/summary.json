@@ -1,0 +1,1274 @@
+{
+  "by_cdp_domain": {
+    "Accessibility": {
+      "fail": 2,
+      "pass": 18
+    },
+    "Audits": {
+      "fail": 3
+    },
+    "Autofill": {
+      "pass": 1
+    },
+    "Browser": {
+      "fail": 7,
+      "pass": 4
+    },
+    "CSS": {
+      "pass": 1
+    },
+    "DOM": {
+      "fail": 20,
+      "pass": 78
+    },
+    "DOMDebugger": {
+      "fail": 1,
+      "pass": 6
+    },
+    "DOMSnapshot": {
+      "fail": 2
+    },
+    "DOMStorage": {
+      "fail": 1
+    },
+    "Debugger": {
+      "fail": 20,
+      "pass": 7
+    },
+    "Emulation": {
+      "fail": 2,
+      "pass": 17
+    },
+    "Fetch": {
+      "fail": 25
+    },
+    "IO": {
+      "fail": 3
+    },
+    "Input": {
+      "fail": 4,
+      "pass": 11
+    },
+    "Inspector": {
+      "pass": 1
+    },
+    "Log": {
+      "fail": 4,
+      "pass": 6
+    },
+    "Moli": {
+      "pass": 1
+    },
+    "Network": {
+      "fail": 14,
+      "pass": 18
+    },
+    "Overlay": {
+      "pass": 2
+    },
+    "Page": {
+      "fail": 23,
+      "pass": 81
+    },
+    "Performance": {
+      "fail": 4,
+      "pass": 2
+    },
+    "Profiler": {
+      "fail": 7,
+      "pass": 4
+    },
+    "Runtime": {
+      "fail": 96,
+      "pass": 160
+    },
+    "Schema": {
+      "pass": 1
+    },
+    "Security": {
+      "pass": 4
+    },
+    "Storage": {
+      "pass": 1
+    },
+    "Target": {
+      "fail": 9,
+      "pass": 12
+    },
+    "Tracing": {
+      "fail": 1,
+      "pass": 2
+    },
+    "WebMCP": {
+      "fail": 1
+    }
+  },
+  "by_feature": {
+    "cdp.accessibility.disable": {
+      "pass": 1
+    },
+    "cdp.accessibility.enable": {
+      "pass": 3
+    },
+    "cdp.accessibility.get_full_ax_tree": {
+      "fail": 2,
+      "pass": 16
+    },
+    "cdp.accessibility.query_ax_tree": {
+      "pass": 2
+    },
+    "cdp.audits.enable": {
+      "fail": 2
+    },
+    "cdp.audits.issue_added": {
+      "fail": 2
+    },
+    "cdp.autofill.trigger": {
+      "pass": 1
+    },
+    "cdp.browser.cancel_download": {
+      "fail": 1
+    },
+    "cdp.browser.download_progress": {
+      "fail": 2
+    },
+    "cdp.browser.download_will_begin": {
+      "fail": 2
+    },
+    "cdp.browser.get_browser_command_line": {
+      "pass": 1
+    },
+    "cdp.browser.get_version": {
+      "fail": 1,
+      "pass": 2
+    },
+    "cdp.browser.get_window_bounds": {
+      "fail": 1
+    },
+    "cdp.browser.get_window_for_target": {
+      "fail": 1
+    },
+    "cdp.browser.grant_permissions": {
+      "fail": 1
+    },
+    "cdp.browser.reset_permissions": {
+      "fail": 1
+    },
+    "cdp.browser.set_contents_size": {
+      "fail": 1
+    },
+    "cdp.browser.set_download_behavior": {
+      "fail": 2
+    },
+    "cdp.browser.set_permission": {
+      "fail": 1
+    },
+    "cdp.browser.set_window_bounds": {
+      "fail": 1
+    },
+    "cdp.css.get_computed_style_for_node": {
+      "pass": 1
+    },
+    "cdp.debugger.continue_to_location": {
+      "fail": 1
+    },
+    "cdp.debugger.disable": {
+      "pass": 1
+    },
+    "cdp.debugger.enable": {
+      "pass": 1
+    },
+    "cdp.debugger.evaluate_on_call_frame": {
+      "fail": 1
+    },
+    "cdp.debugger.get_possible_breakpoints": {
+      "fail": 1
+    },
+    "cdp.debugger.get_script_source": {
+      "fail": 1
+    },
+    "cdp.debugger.pause": {
+      "fail": 1
+    },
+    "cdp.debugger.paused": {
+      "fail": 1
+    },
+    "cdp.debugger.remove_breakpoint": {
+      "fail": 1
+    },
+    "cdp.debugger.restart_frame": {
+      "fail": 1
+    },
+    "cdp.debugger.resume": {
+      "fail": 1
+    },
+    "cdp.debugger.resumed": {
+      "fail": 1
+    },
+    "cdp.debugger.script_failed_to_parse": {
+      "fail": 1
+    },
+    "cdp.debugger.script_parsed": {
+      "fail": 1
+    },
+    "cdp.debugger.search_in_content": {
+      "fail": 1
+    },
+    "cdp.debugger.set_async_call_stack_depth": {
+      "pass": 1
+    },
+    "cdp.debugger.set_breakpoint": {
+      "fail": 1
+    },
+    "cdp.debugger.set_breakpoint_by_url": {
+      "fail": 1
+    },
+    "cdp.debugger.set_breakpoints_active": {
+      "pass": 1
+    },
+    "cdp.debugger.set_instrumentation_breakpoint": {
+      "fail": 1
+    },
+    "cdp.debugger.set_pause_on_exceptions": {
+      "pass": 1
+    },
+    "cdp.debugger.set_skip_all_pauses": {
+      "pass": 1
+    },
+    "cdp.debugger.set_variable_value": {
+      "fail": 1
+    },
+    "cdp.debugger.step_into": {
+      "fail": 1
+    },
+    "cdp.debugger.step_out": {
+      "fail": 1
+    },
+    "cdp.debugger.step_over": {
+      "fail": 1
+    },
+    "cdp.dom.attribute_modified": {
+      "fail": 1
+    },
+    "cdp.dom.attribute_removed": {
+      "fail": 1
+    },
+    "cdp.dom.character_data_modified": {
+      "pass": 1
+    },
+    "cdp.dom.child_node_count_updated": {
+      "fail": 1
+    },
+    "cdp.dom.child_node_inserted": {
+      "pass": 1
+    },
+    "cdp.dom.child_node_removed": {
+      "pass": 1
+    },
+    "cdp.dom.describe_node": {
+      "fail": 2,
+      "pass": 1
+    },
+    "cdp.dom.disable": {
+      "pass": 1
+    },
+    "cdp.dom.discard_search_results": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.dom.document_updated": {
+      "pass": 1
+    },
+    "cdp.dom.enable": {
+      "fail": 1
+    },
+    "cdp.dom.focus": {
+      "pass": 1
+    },
+    "cdp.dom.get_attributes": {
+      "pass": 1
+    },
+    "cdp.dom.get_box_model": {
+      "fail": 1,
+      "pass": 2
+    },
+    "cdp.dom.get_content_quads": {
+      "pass": 2
+    },
+    "cdp.dom.get_document": {
+      "fail": 2,
+      "pass": 11
+    },
+    "cdp.dom.get_flattened_document": {
+      "pass": 1
+    },
+    "cdp.dom.get_frame_owner": {
+      "pass": 1
+    },
+    "cdp.dom.get_node_for_location": {
+      "pass": 1
+    },
+    "cdp.dom.get_outer_html": {
+      "pass": 1
+    },
+    "cdp.dom.get_search_results": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.dom.hide_highlight": {
+      "pass": 1
+    },
+    "cdp.dom.highlight_node": {
+      "pass": 1
+    },
+    "cdp.dom.highlight_rect": {
+      "pass": 1
+    },
+    "cdp.dom.move_to": {
+      "fail": 1
+    },
+    "cdp.dom.perform_search": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.dom.query_selector": {
+      "fail": 2,
+      "pass": 6
+    },
+    "cdp.dom.query_selector_all": {
+      "pass": 1
+    },
+    "cdp.dom.remove_attribute": {
+      "pass": 1
+    },
+    "cdp.dom.remove_node": {
+      "pass": 1
+    },
+    "cdp.dom.request_child_nodes": {
+      "pass": 1
+    },
+    "cdp.dom.request_node": {
+      "fail": 1
+    },
+    "cdp.dom.resolve_node": {
+      "fail": 1,
+      "pass": 2
+    },
+    "cdp.dom.set_attribute_value": {
+      "fail": 1
+    },
+    "cdp.dom.set_attributes_as_text": {
+      "fail": 1
+    },
+    "cdp.dom.set_child_nodes": {
+      "pass": 1
+    },
+    "cdp.dom.set_file_input_files": {
+      "fail": 1
+    },
+    "cdp.dom.set_node_name": {
+      "fail": 1
+    },
+    "cdp.dom.set_node_value": {
+      "pass": 1
+    },
+    "cdp.dom.set_outer_html": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.get_event_listeners": {
+      "fail": 1
+    },
+    "cdp.dom_debugger.remove_dom_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.remove_event_listener_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.remove_xhr_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.set_dom_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.set_event_listener_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_debugger.set_xhr_breakpoint": {
+      "pass": 1
+    },
+    "cdp.dom_storage.enable": {
+      "fail": 1
+    },
+    "cdp.dom_storage.get_dom_storage_items": {
+      "fail": 1
+    },
+    "cdp.dom_storage.set_dom_storage_item": {
+      "fail": 1
+    },
+    "cdp.domsnapshot.capture_snapshot": {
+      "fail": 2
+    },
+    "cdp.emulation.clear_device_metrics_override": {
+      "pass": 1
+    },
+    "cdp.emulation.clear_geolocation_override": {
+      "pass": 1
+    },
+    "cdp.emulation.clear_idle_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_cpu_throttling_rate": {
+      "pass": 1
+    },
+    "cdp.emulation.set_default_background_color_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_device_metrics_override": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.emulation.set_emulated_media": {
+      "pass": 1
+    },
+    "cdp.emulation.set_emulated_os_text_scale": {
+      "pass": 1
+    },
+    "cdp.emulation.set_emulated_vision_deficiency": {
+      "pass": 1
+    },
+    "cdp.emulation.set_focus_emulation_enabled": {
+      "pass": 1
+    },
+    "cdp.emulation.set_geolocation_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_idle_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_locale_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_script_execution_disabled": {
+      "pass": 1
+    },
+    "cdp.emulation.set_timezone_override": {
+      "pass": 1
+    },
+    "cdp.emulation.set_touch_emulation_enabled": {
+      "pass": 1
+    },
+    "cdp.emulation.set_user_agent_override": {
+      "pass": 1
+    },
+    "cdp.fetch.auth_required": {
+      "fail": 1
+    },
+    "cdp.fetch.continue_request": {
+      "fail": 7
+    },
+    "cdp.fetch.continue_with_auth": {
+      "fail": 2
+    },
+    "cdp.fetch.disable": {
+      "fail": 1
+    },
+    "cdp.fetch.enable": {
+      "fail": 23
+    },
+    "cdp.fetch.fail_request": {
+      "fail": 3
+    },
+    "cdp.fetch.fulfill_request": {
+      "fail": 10
+    },
+    "cdp.fetch.get_response_body": {
+      "fail": 1
+    },
+    "cdp.fetch.request_paused": {
+      "fail": 6
+    },
+    "cdp.fetch.take_response_body_as_stream": {
+      "fail": 1
+    },
+    "cdp.input.cancel_dragging": {
+      "pass": 1
+    },
+    "cdp.input.dispatch_key_event": {
+      "fail": 2,
+      "pass": 3
+    },
+    "cdp.input.dispatch_mouse_event": {
+      "pass": 2
+    },
+    "cdp.input.dispatch_touch_event": {
+      "pass": 1
+    },
+    "cdp.input.insert_text": {
+      "fail": 1,
+      "pass": 4
+    },
+    "cdp.input.set_ignore_input_events": {
+      "pass": 1
+    },
+    "cdp.input.synthesize_scroll_gesture": {
+      "fail": 1
+    },
+    "cdp.inspector.enable": {
+      "pass": 1
+    },
+    "cdp.io.close": {
+      "fail": 2
+    },
+    "cdp.io.read": {
+      "fail": 2
+    },
+    "cdp.io.resolve_blob": {
+      "fail": 1
+    },
+    "cdp.log.clear": {
+      "pass": 1
+    },
+    "cdp.log.disable": {
+      "pass": 1
+    },
+    "cdp.log.enable": {
+      "fail": 3,
+      "pass": 2
+    },
+    "cdp.log.entry_added": {
+      "fail": 2
+    },
+    "cdp.log.start_violations_report": {
+      "pass": 1
+    },
+    "cdp.log.stop_violations_report": {
+      "pass": 1
+    },
+    "cdp.network.clear_browser_cache": {
+      "pass": 2
+    },
+    "cdp.network.clear_browser_cookies": {
+      "pass": 2
+    },
+    "cdp.network.data_received": {
+      "pass": 1
+    },
+    "cdp.network.delete_cookies": {
+      "pass": 1
+    },
+    "cdp.network.disable": {
+      "pass": 1
+    },
+    "cdp.network.emulate_network_conditions": {
+      "fail": 1
+    },
+    "cdp.network.enable": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.network.event_source_message_received": {
+      "fail": 1
+    },
+    "cdp.network.get_all_cookies": {
+      "pass": 2
+    },
+    "cdp.network.get_cookies": {
+      "pass": 3
+    },
+    "cdp.network.get_request_post_data": {
+      "fail": 1
+    },
+    "cdp.network.get_response_body": {
+      "pass": 1
+    },
+    "cdp.network.load_network_resource": {
+      "fail": 1
+    },
+    "cdp.network.loading_failed": {
+      "fail": 1
+    },
+    "cdp.network.loading_finished": {
+      "pass": 2
+    },
+    "cdp.network.request_served_from_cache": {
+      "fail": 1
+    },
+    "cdp.network.request_will_be_sent": {
+      "pass": 2
+    },
+    "cdp.network.request_will_be_sent_extra_info": {
+      "pass": 1
+    },
+    "cdp.network.response_received": {
+      "fail": 1,
+      "pass": 2
+    },
+    "cdp.network.response_received_extra_info": {
+      "pass": 1
+    },
+    "cdp.network.set_bypass_service_worker": {
+      "fail": 1
+    },
+    "cdp.network.set_cache_disabled": {
+      "pass": 2
+    },
+    "cdp.network.set_cookie": {
+      "pass": 1
+    },
+    "cdp.network.set_cookies": {
+      "pass": 2
+    },
+    "cdp.network.set_extra_http_headers": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.network.set_user_agent_override": {
+      "pass": 1
+    },
+    "cdp.network.web_socket_closed": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_created": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_frame_error": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_frame_received": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_frame_sent": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_handshake_response_received": {
+      "fail": 1
+    },
+    "cdp.network.web_socket_will_send_handshake_request": {
+      "fail": 1
+    },
+    "cdp.page.add_script_to_evaluate_on_new_document": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.page.bring_to_front": {
+      "pass": 1
+    },
+    "cdp.page.close": {
+      "fail": 1
+    },
+    "cdp.page.create_isolated_world": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.page.delete_cookie.removed": {
+      "fail": 1
+    },
+    "cdp.page.disable": {
+      "pass": 1
+    },
+    "cdp.page.dom_content_event_fired": {
+      "pass": 1
+    },
+    "cdp.page.download_progress": {
+      "fail": 1
+    },
+    "cdp.page.download_will_begin": {
+      "fail": 1
+    },
+    "cdp.page.enable": {
+      "fail": 2,
+      "pass": 1
+    },
+    "cdp.page.file_chooser_opened": {
+      "fail": 1
+    },
+    "cdp.page.frame_attached": {
+      "pass": 1
+    },
+    "cdp.page.frame_detached": {
+      "pass": 1
+    },
+    "cdp.page.frame_navigated": {
+      "pass": 1
+    },
+    "cdp.page.frame_requested_navigation": {
+      "fail": 1
+    },
+    "cdp.page.frame_started_loading": {
+      "pass": 1
+    },
+    "cdp.page.frame_stopped_loading": {
+      "pass": 1
+    },
+    "cdp.page.get_app_manifest": {
+      "fail": 1
+    },
+    "cdp.page.get_cookies": {
+      "fail": 1
+    },
+    "cdp.page.get_frame_tree": {
+      "fail": 4,
+      "pass": 6
+    },
+    "cdp.page.get_layout_metrics": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.page.get_navigation_history": {
+      "pass": 2
+    },
+    "cdp.page.get_resource_tree": {
+      "pass": 1
+    },
+    "cdp.page.handle_javascript_dialog": {
+      "fail": 2
+    },
+    "cdp.page.javascript_dialog_closed": {
+      "fail": 1
+    },
+    "cdp.page.javascript_dialog_opening": {
+      "fail": 2
+    },
+    "cdp.page.lifecycle_event": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.page.load_event_fired": {
+      "pass": 3
+    },
+    "cdp.page.navigate": {
+      "pass": 7
+    },
+    "cdp.page.navigate_to_history_entry": {
+      "pass": 1
+    },
+    "cdp.page.navigated_within_document": {
+      "pass": 1
+    },
+    "cdp.page.reload": {
+      "pass": 2
+    },
+    "cdp.page.remove_script_to_evaluate_on_new_document": {
+      "pass": 1
+    },
+    "cdp.page.reset_navigation_history": {
+      "pass": 1
+    },
+    "cdp.page.search_in_resource": {
+      "pass": 1
+    },
+    "cdp.page.set_bypass_csp": {
+      "pass": 1
+    },
+    "cdp.page.set_document_content": {
+      "pass": 2
+    },
+    "cdp.page.set_intercept_file_chooser_dialog": {
+      "fail": 1
+    },
+    "cdp.page.set_lifecycle_events_enabled": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.page.stop_loading": {
+      "pass": 1
+    },
+    "cdp.page.window_open": {
+      "fail": 1
+    },
+    "cdp.performance.disable": {
+      "fail": 1
+    },
+    "cdp.performance.enable": {
+      "fail": 2,
+      "pass": 2
+    },
+    "cdp.performance.get_metrics": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.profiler.console_profile_finished": {
+      "fail": 1
+    },
+    "cdp.profiler.console_profile_started": {
+      "fail": 1
+    },
+    "cdp.profiler.disable": {
+      "pass": 1
+    },
+    "cdp.profiler.enable": {
+      "pass": 1
+    },
+    "cdp.profiler.get_best_effort_coverage": {
+      "fail": 1
+    },
+    "cdp.profiler.set_sampling_interval": {
+      "pass": 1
+    },
+    "cdp.profiler.start": {
+      "fail": 1
+    },
+    "cdp.profiler.start_precise_coverage": {
+      "fail": 1
+    },
+    "cdp.profiler.stop": {
+      "fail": 1
+    },
+    "cdp.profiler.stop_precise_coverage": {
+      "pass": 1
+    },
+    "cdp.profiler.take_precise_coverage": {
+      "fail": 1
+    },
+    "cdp.protocol.unknown_method": {
+      "fail": 2,
+      "pass": 1
+    },
+    "cdp.runtime.add_binding": {
+      "fail": 1,
+      "pass": 4
+    },
+    "cdp.runtime.await_promise": {
+      "fail": 1
+    },
+    "cdp.runtime.binding_called": {
+      "pass": 4
+    },
+    "cdp.runtime.call_function_on": {
+      "fail": 3,
+      "pass": 10
+    },
+    "cdp.runtime.compile_script": {
+      "pass": 1
+    },
+    "cdp.runtime.console_api_called": {
+      "pass": 1
+    },
+    "cdp.runtime.disable": {
+      "pass": 1
+    },
+    "cdp.runtime.discard_console_entries": {
+      "pass": 1
+    },
+    "cdp.runtime.enable": {
+      "fail": 2,
+      "pass": 1
+    },
+    "cdp.runtime.evaluate": {
+      "fail": 1,
+      "pass": 63
+    },
+    "cdp.runtime.exception_thrown": {
+      "fail": 1
+    },
+    "cdp.runtime.execution_context_created": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.runtime.execution_context_destroyed": {
+      "pass": 1
+    },
+    "cdp.runtime.execution_contexts_cleared": {
+      "pass": 1
+    },
+    "cdp.runtime.get_properties": {
+      "fail": 3,
+      "pass": 3
+    },
+    "cdp.runtime.global_lexical_scope_names": {
+      "pass": 1
+    },
+    "cdp.runtime.query_objects": {
+      "fail": 1
+    },
+    "cdp.runtime.release_object": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.runtime.release_object_group": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.runtime.remove_binding": {
+      "fail": 1
+    },
+    "cdp.runtime.run_if_waiting_for_debugger": {
+      "fail": 7
+    },
+    "cdp.runtime.run_script": {
+      "pass": 1
+    },
+    "cdp.runtime.set_async_call_stack_depth": {
+      "pass": 1
+    },
+    "cdp.schema.get_domains": {
+      "pass": 1
+    },
+    "cdp.security.disable": {
+      "pass": 1
+    },
+    "cdp.security.enable": {
+      "pass": 1
+    },
+    "cdp.security.set_ignore_certificate_errors": {
+      "pass": 2
+    },
+    "cdp.storage.clear_cookies": {
+      "pass": 1
+    },
+    "cdp.storage.get_cookies": {
+      "pass": 1
+    },
+    "cdp.storage.set_cookies": {
+      "pass": 1
+    },
+    "cdp.target.activate_target": {
+      "pass": 1
+    },
+    "cdp.target.attach_to_browser_target": {
+      "pass": 1
+    },
+    "cdp.target.attach_to_target": {
+      "pass": 3
+    },
+    "cdp.target.attached_to_target": {
+      "fail": 6,
+      "pass": 4
+    },
+    "cdp.target.close_target": {
+      "pass": 2
+    },
+    "cdp.target.create_browser_context": {
+      "pass": 1
+    },
+    "cdp.target.create_target": {
+      "pass": 6
+    },
+    "cdp.target.detach_from_target": {
+      "pass": 1
+    },
+    "cdp.target.detached_from_target": {
+      "pass": 1
+    },
+    "cdp.target.dispose_browser_context": {
+      "pass": 1
+    },
+    "cdp.target.get_browser_contexts": {
+      "fail": 1,
+      "pass": 1
+    },
+    "cdp.target.get_target_info": {
+      "pass": 1
+    },
+    "cdp.target.get_targets": {
+      "pass": 1
+    },
+    "cdp.target.set_auto_attach": {
+      "fail": 3,
+      "pass": 2
+    },
+    "cdp.target.set_discover_targets": {
+      "fail": 1,
+      "pass": 2
+    },
+    "cdp.target.target_created": {
+      "pass": 2
+    },
+    "cdp.target.target_destroyed": {
+      "pass": 1
+    },
+    "cdp.target.target_info_changed": {
+      "pass": 1
+    },
+    "cdp.tracing.end": {
+      "pass": 1
+    },
+    "cdp.tracing.start": {
+      "pass": 1
+    },
+    "cdp.tracing.tracing_complete": {
+      "fail": 1
+    },
+    "web.abort_controller": {
+      "pass": 1
+    },
+    "web.array_buffer": {
+      "pass": 1
+    },
+    "web.ax.aria_hidden": {
+      "pass": 2
+    },
+    "web.ax.depth": {
+      "fail": 1
+    },
+    "web.ax.hidden_answer": {
+      "pass": 1
+    },
+    "web.ax.iframe_scope": {
+      "fail": 1
+    },
+    "web.ax.ignored": {
+      "pass": 2
+    },
+    "web.ax.live_region": {
+      "pass": 1
+    },
+    "web.ax.name": {
+      "pass": 7
+    },
+    "web.ax.name_computation": {
+      "pass": 2
+    },
+    "web.ax.property.level": {
+      "pass": 1
+    },
+    "web.ax.role": {
+      "pass": 2
+    },
+    "web.ax.role.button": {
+      "pass": 1
+    },
+    "web.ax.role.checkbox": {
+      "pass": 1
+    },
+    "web.ax.role.heading": {
+      "pass": 1
+    },
+    "web.ax.role.table": {
+      "pass": 1
+    },
+    "web.ax.state.checked": {
+      "pass": 2
+    },
+    "web.ax.state.disabled": {
+      "pass": 2
+    },
+    "web.ax.value": {
+      "pass": 1
+    },
+    "web.blob": {
+      "pass": 1
+    },
+    "web.components.custom_elements": {
+      "pass": 1
+    },
+    "web.crypto.random_uuid": {
+      "pass": 1
+    },
+    "web.css.computed_style": {
+      "pass": 1
+    },
+    "web.css.media_queries": {
+      "pass": 1
+    },
+    "web.dom.document_lifecycle": {
+      "pass": 1
+    },
+    "web.dom.document_metadata": {
+      "pass": 1
+    },
+    "web.dom.dom_parser": {
+      "pass": 1
+    },
+    "web.dom.event_target": {
+      "pass": 1
+    },
+    "web.dom.images": {
+      "pass": 1
+    },
+    "web.dom.query_selector": {
+      "pass": 1
+    },
+    "web.dom.scripts": {
+      "pass": 1
+    },
+    "web.dom.text_extraction": {
+      "pass": 1
+    },
+    "web.encoding.base64": {
+      "pass": 1
+    },
+    "web.encoding.text_encoder": {
+      "pass": 1
+    },
+    "web.fetch": {
+      "pass": 1
+    },
+    "web.forms": {
+      "pass": 1
+    },
+    "web.history": {
+      "pass": 1
+    },
+    "web.intl.date_time_format": {
+      "pass": 1
+    },
+    "web.intl.number_format": {
+      "pass": 1
+    },
+    "web.json": {
+      "pass": 1
+    },
+    "web.layout.bounding_client_rect": {
+      "pass": 1
+    },
+    "web.layout.hit_test": {
+      "pass": 1
+    },
+    "web.layout.offset_dimensions": {
+      "pass": 1
+    },
+    "web.layout.scroll_dimensions": {
+      "pass": 1
+    },
+    "web.layout.viewport": {
+      "fail": 1
+    },
+    "web.location": {
+      "pass": 1
+    },
+    "web.mutation_observer": {
+      "pass": 1
+    },
+    "web.navigator.languages": {
+      "pass": 1
+    },
+    "web.navigator.online": {
+      "pass": 1
+    },
+    "web.navigator.platform": {
+      "pass": 1
+    },
+    "web.navigator.user_agent": {
+      "pass": 1
+    },
+    "web.observer.intersection": {
+      "pass": 1
+    },
+    "web.performance.now": {
+      "pass": 1
+    },
+    "web.promise": {
+      "pass": 1
+    },
+    "web.storage.cookies": {
+      "pass": 1
+    },
+    "web.storage.local_storage": {
+      "pass": 1
+    },
+    "web.storage.session_storage": {
+      "pass": 1
+    },
+    "web.structured_clone": {
+      "pass": 1
+    },
+    "web.url": {
+      "pass": 1
+    },
+    "web.url.search_params": {
+      "pass": 1
+    },
+    "web.viewport.device_pixel_ratio": {
+      "pass": 1
+    },
+    "web.viewport.screen": {
+      "pass": 1
+    },
+    "web.viewport.size": {
+      "pass": 1
+    },
+    "web.websocket": {
+      "pass": 1
+    },
+    "web.worker": {
+      "pass": 1
+    }
+  },
+  "created_at": "2026-08-13T08:06:39+00:00",
+  "endpoint": "wss://kitesurf.cloudflare.app/devtools/browser",
+  "expected_identity": {
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf"
+  },
+  "identity": {
+    "jsVersion": "12.0.0",
+    "probe_duration_ms": 1537,
+    "product": "Chrome/145.0.0.0",
+    "protocolVersion": "1.3",
+    "revision": "@kitesurf",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+  },
+  "latency": {
+    "max_ms": 14486,
+    "min_ms": 1996,
+    "p50_ms": 5724,
+    "p95_ms": 11357
+  },
+  "schema": "experimental.kitesurf_l1_probe.v3",
+  "scope": {
+    "completed_tasks": 375,
+    "concurrency": 1,
+    "delay_ms": 750,
+    "excluded_selected_self_hosted_tasks": 0,
+    "fixture_base_url": "https://<dynamic-fixture-origin>",
+    "fixture_verification": {
+      "contract_sha256": "93908f2885114c981013529a65a49c035d2ecc63eded53e48600d2c0eb4bc906",
+      "dynamic_probes": {
+        "required": 28,
+        "verified": 28
+      },
+      "local_contract_verified": true,
+      "manifest_sha256": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+      "report": "fixture_verification.json",
+      "report_sha256": "872f8d3d8749679840c8d9f46a08d0581c2545c4a6e9303589877e3d77b0df27",
+      "static_routes": {
+        "required": 127,
+        "verified": 127
+      },
+      "verified": true
+    },
+    "formal_score_eligible": false,
+    "identity_policy": "Browser.getVersion is checked on that same connection; no reconnect or page-websocket fallback",
+    "isolation_abort_reason": null,
+    "scene_kind": "about_blank",
+    "scene_kinds": [
+      "about_blank",
+      "self_hosted_fixture"
+    ],
+    "selected_tasks": 375,
+    "session_strategy": "one fresh public browser WebSocket per task",
+    "stopped_early": false,
+    "subset": "l1.raw_cdp"
+  },
+  "source": {
+    "branch": "kitesurf-eval",
+    "contains_origin_main": false,
+    "dirty": false,
+    "head": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+    "head_tree": "ca57a9ee012eb5adcd3849b5e5534b941eb07fde",
+    "merge_base_origin_main": null,
+    "origin_main": null,
+    "runtime_executables": [],
+    "schema": "experimental.kitesurf_source.v2",
+    "source_files_sha256": {
+      "config/kitesurf_dynamic_fixture.json": "dd39c23156b5a0e49a994941b286fd7dedd112f00836d5201185eac4be5a0526",
+      "manifest.json": "9015a6e100fce509935cb68e1a0d1e9ebcc549f5e3ad581c1eedf153fdf1ada6",
+      "runner/run.py": "a934f01139a896735a35f1a3556447f6513383cd61f560dede110a0883471994",
+      "tools/kitesurf_dynamic_fixture.py": "c4d2edc02db83debeec15780dc8314ff33639cfbe1a8dcd826be474aa26f7125",
+      "tools/kitesurf_l1_probe.py": "4854af22275c97c58c244ab91106526afc33aa26a2b8c3f393e4cf7bd9b2e3ed"
+    },
+    "status_porcelain": [],
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_paths": [],
+    "worktree_state_sha256": "bc8e05cadd5e6ea26e016fd4e35221aec8a4e9ecf8b65f2b16d96d711eaa1611"
+  },
+  "source_commit": "7b6fe89e2e18d07484d630a46dac61f46c0a84f9",
+  "status_counts": {
+    "fail": 129,
+    "pass": 246
+  },
+  "total_cdp_calls": 3350
+}

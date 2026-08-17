@@ -13,7 +13,7 @@ This page walks you through completing a full run on your own machine. If your g
 | [Lightpanda](https://github.com/lightpanda-io/browser) | candidate | repository releases, or build from source per its docs |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | candidate | repository releases, or build from source per its docs |
 
-`--engines` accepts any comma-separated subset of these four names and defaults to all of them. chromedriver is not under test; it is the bridge the Selenium route needs. Remote engines (Kitesurf) are not on the main branch; see `kitesurf-eval`.
+`--engines` accepts any comma-separated subset of these four names and defaults to all of them. chromedriver is not under test; it is the bridge the Selenium route needs. The remote engine, Kitesurf, does not go through `--engines`; its lane is driven by the recipe machinery documented in [kitesurf-deployment.md](kitesurf-deployment.md).
 
 ## Shortest path: one engine first
 

@@ -13,19 +13,20 @@
 //   evaluate → eval                     wait_for_selector → wait <sel>
 //
 // One isolated daemon session per attempt (l1_ab_probe.js discipline). NEVER
-// run commands without an explicit prior `connect <cdp_port>`: on a dangling
+// run commands without an explicit prior `connect <target>`: on a dangling
 // session agent-browser silently auto-launches its own browser — the hidden
-// fallback this bench forbids. The `lifecycle.launched` fields in its JSON
-// refer to the daemon bootstrap, not to a browser launch; connect-to-port has
-// been verified to attach to the running engine (pages appear in the
-// engine's /json/list).
+// fallback this bench forbids. Local engines connect through their discovery
+// port; an explicitly marked remote-CDP run connects to the exact browser WSS.
+// The `lifecycle.launched` fields in its JSON refer to daemon bootstrap, not
+// to a browser launch.
 //
-// The CLI exposes no raw-CDP call. Its live binding evidence is therefore the
-// explicit connect-to-port command, `get cdp-url` equality with the runner's
-// discovered browser WebSocket, and a successful eval on that session. Page
-// navigator.userAgent is retained as an observation, not an identity equality
-// gate: CDP-compatible engines may expose a synthetic control-plane UA that
-// intentionally differs from the page UA.
+// The CLI exposes no raw-CDP call. For local engines, explicit connect,
+// `get cdp-url`, and a successful page eval remain the audited route. For a
+// remote browser WebSocket these observations cannot prove that
+// Browser.getVersion and the task ran on one backend connection: URL equality
+// and navigator.userAgent are not engine identity. Remote attempts therefore
+// fail closed as unverified until agent-browser exposes a live control-plane
+// identity operation.
 
 const { execFile } = require("child_process");
 const crypto = require("crypto");
@@ -106,6 +107,7 @@ async function main() {
   const artifactDir = payload.artifact_dir || ".";
   const connectTimeoutMs = Number(payload.connect_timeout_ms || 15000);
   const actionTimeoutMs = Number(payload.action_timeout_ms || 8000);
+  const remoteCdp = payload.remote_cdp === true;
   const taskTimeoutMs = Number(payload.task_timeout_ms || 30000);
   // Leave a 3s reserve for check evaluation and result emission.
   const budgetDeadline = Date.now() + taskTimeoutMs - 3000;
@@ -188,23 +190,54 @@ async function main() {
     const fullArgs = ["--session", session, "--json", "close"];
     return new Promise((resolve) => {
       execFile(BIN, fullArgs, { timeout: timeoutMs || 8000, maxBuffer: 1024 * 1024 }, (err, stdout) => {
-        let ok = !err;
         const text = (stdout || "").trim();
-        if (text) {
-          try {
-            ok = JSON.parse(text).success === true;
-          } catch { /* process status remains the fallback */ }
+        let json = null;
+        let parseError = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (error) {
+          parseError = error;
+        }
+        // Process status alone cannot prove that the named daemon session was
+        // closed. JSON mode must return one complete object that explicitly
+        // acknowledges success; empty, noisy, malformed, array, and primitive
+        // output all leave cleanup unconfirmed.
+        const validObject = Boolean(json && typeof json === "object" && !Array.isArray(json));
+        const ok = !err && validObject && json.success === true;
+        let cleanupError = null;
+        if (err) {
+          cleanupError = String(err.message || err);
+        } else if (!text) {
+          cleanupError = "agent-browser close returned empty JSON output";
+        } else if (parseError) {
+          cleanupError = `agent-browser close returned malformed JSON: ${parseError.message}`;
+        } else if (!validObject) {
+          cleanupError = "agent-browser close returned a non-object JSON value";
+        } else if (json.success !== true) {
+          cleanupError = "agent-browser close did not acknowledge success=true";
         }
         trace({
           ts: new Date().toISOString(),
           direction: "ab_cleanup",
           argv: ["close"],
           ok,
-          error: err ? String(err.message || err) : undefined,
+          error: cleanupError || undefined,
         });
         resolve(ok);
       });
     });
+  };
+
+  // A binding exclusion returns before scenario operations start, but it may
+  // already own a live agent-browser daemon connection.  Close that exact
+  // named session before emitting the exclusion so the orchestrator can
+  // distinguish a safely isolated exclusion from an abandoned attempt.
+  let cleanupPromise = null;
+  const closeAttemptSession = () => {
+    if (!cleanupPromise) {
+      cleanupPromise = runABCleanup(8000).catch(() => false);
+    }
+    return cleanupPromise;
   };
 
   const abOrThrow = async (argv, timeoutMs) => {
@@ -260,8 +293,16 @@ async function main() {
   binding.client_version = clientVersion;
 
   // ---- Connect (explicit; never let a command auto-launch).
-  const bound = await runAB(["connect", String(cdpPort)], connectTimeoutMs);
+  const connectTarget = remoteCdp ? browserWs : String(cdpPort);
+  binding.connect_target_kind = remoteCdp ? "browser_ws" : "cdp_port";
+  const bound = await runAB(["connect", connectTarget], connectTimeoutMs);
   let connectError = bound.ok ? null : String(bound.error || "connect failed").slice(0, 1000);
+  const bindingExcluded = remoteCdp;
+  if (bindingExcluded) {
+    binding.excluded = true;
+    binding.exclusion_reason =
+      "agent-browser does not expose Browser.getVersion on its connected session";
+  }
 
   // ---- Binding gate 2/2: the daemon must report the exact runner-owned CDP
   // endpoint and the explicitly connected session must execute a live page
@@ -279,6 +320,12 @@ async function main() {
     } else if (liveCdpUrl !== browserWs) {
       connectError = `binding probe failed: agent-browser reports cdpUrl=${JSON.stringify(liveCdpUrl)}; expected ${JSON.stringify(browserWs)}`;
     }
+  }
+  if (!connectError && remoteCdp) {
+    binding.gate = "remote_live_identity_unavailable";
+    binding.live_check = "unavailable";
+    connectError =
+      "binding unverified: agent-browser can report the configured CDP URL but cannot expose Browser.getVersion on the live connected session";
   }
   if (!connectError) {
     let liveUA = null;
@@ -461,10 +508,48 @@ async function main() {
 
   try {
     if (connectError) {
+      if (bindingExcluded) {
+        const sessionClosed = await closeAttemptSession();
+        emit({
+          ok: false,
+          error: {
+            class: "script_error",
+            message:
+              `remote agent-browser attempt excluded because live engine identity cannot be verified: ${connectError}`,
+          },
+          observations: {
+            binding,
+            connect_error: connectError,
+            failure_class: "binding_unverified",
+            formal_score_eligible: false,
+            binding_exclusion_isolation: {
+              schema: "abb.binding_exclusion_isolation.v1",
+              driver: "agent_browser",
+              phase: "driver_session_closed",
+              scenario_started: false,
+              target_creation_requested: false,
+              cleanup: {
+                backend: "agent_browser_named_session_close",
+                required: true,
+                confirmed: sessionClosed === true,
+                same_named_session_as_attempt: true,
+                session,
+              },
+            },
+            isolation_restored: sessionClosed === true,
+          },
+          metrics: {
+            cdp_call_count: abCalls,
+            cdp_error_count: abErrors,
+            ws_disconnect_count: 0,
+          },
+        });
+        return;
+      }
       // A refused/failed connect is a genuine compatibility result: the engine
       // cannot be driven by this client. Grade every check as failed.
       const checkRows = [
-        { name: "driver_connect", status: "fail", evidence: `agent-browser@${clientVersion} could not bind CDP port ${cdpPort}: ${connectError}` },
+        { name: "driver_connect", status: "fail", evidence: `agent-browser@${clientVersion} could not bind ${binding.connect_target_kind} ${connectTarget}: ${connectError}` },
       ].concat(
         checks.map((check, idx) => ({
           name: check.label || check.kind || `check${idx}`,
@@ -586,7 +671,7 @@ async function main() {
   } finally {
     // Tear down the daemon session (never the engine: close ends the
     // agent-browser session; the engine outlives it — verified).
-    await runABCleanup(8000).catch(() => {});
+    await closeAttemptSession();
   }
 }
 

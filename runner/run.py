@@ -18,6 +18,7 @@ import shlex
 import shutil
 import signal
 import socket
+import ssl
 import struct
 import subprocess
 import sys
@@ -263,6 +264,31 @@ apply_active_engine_set()
 
 class BenchError(Exception):
     pass
+
+
+class CDPTransportError(BenchError, ConnectionError):
+    """A failure establishing or maintaining the CDP transport."""
+
+    pass
+
+
+class CDPTransportTimeout(CDPTransportError, TimeoutError):
+    """A transport deadline, classified as a timeout by formal runners."""
+
+    pass
+
+
+def is_cdp_transport_exception(exc: BaseException) -> bool:
+    """Return whether a raw-CDP failure retains transport attribution."""
+
+    return (
+        isinstance(exc, ConnectionError)
+        or isinstance(exc, ssl.SSLError)
+        or (
+            isinstance(exc, OSError)
+            and is_socket_transport_os_error(exc)
+        )
+    )
 
 
 class CDPCommandError(Exception):
@@ -631,6 +657,13 @@ def sha256_file(path: pathlib.Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+RUNNER_SOURCE_PATH = pathlib.Path(__file__).resolve()
+# Capture this once while the module is loaded. A long-lived tunneled fixture
+# process must not claim a newly checked-out on-disk runner after it has already
+# loaded an older implementation into memory.
+RUNNER_SOURCE_SHA256 = sha256_file(RUNNER_SOURCE_PATH)
 
 
 def rel_to_bench(path: pathlib.Path) -> str:
@@ -1397,6 +1430,19 @@ SCENARIO_ADAPTER_KINDS: dict[str, dict[str, Any]] = {
         "script": "runner/scripts/adapters/chromiumoxide_adapter",
     },
 }
+
+
+def scenario_adapter_argv(spec: dict[str, Any]) -> list[str]:
+    """Resolve the exact adapter argv used by the subprocess runner."""
+
+    script_path = str(BENCH_ROOT / str(spec["script"]))
+    if any("{script}" in str(arg) for arg in spec["argv"]):
+        return [
+            str(arg).replace("{script}", script_path)
+            for arg in spec["argv"]
+        ]
+    return [str(arg) for arg in spec["argv"]] + [script_path]
+
 
 CATALOG_DRIVER_BY_TASK_KIND = {
     **{
@@ -2852,6 +2898,62 @@ def create_page_ws(browser: BrowserProcess) -> str:
 
 
 BROWSER_SCOPE_DOMAINS = ("Browser.", "Target.", "Schema.", "SystemInfo.", "Security.")
+REMOTE_CDP_IDENTITY_FIELDS = ("product", "protocolVersion", "revision")
+
+
+def require_remote_cdp_identity(
+    identity: Any,
+    *,
+    label: str,
+) -> dict[str, str]:
+    """Require the exact non-empty identity fields used for remote attribution."""
+
+    if not isinstance(identity, dict):
+        raise BenchError(f"{label} must be a JSON object")
+    missing = [
+        field
+        for field in REMOTE_CDP_IDENTITY_FIELDS
+        if not isinstance(identity.get(field), str)
+        or not str(identity[field]).strip()
+    ]
+    if missing:
+        raise BenchError(
+            f"{label} missing non-empty remote identity field(s): "
+            + ", ".join(missing)
+        )
+    return {field: str(identity[field]) for field in REMOTE_CDP_IDENTITY_FIELDS}
+
+
+def require_matching_remote_cdp_identity(
+    observed: Any,
+    expected: Any,
+    *,
+    label: str,
+) -> dict[str, str]:
+    """Reject a complete but wrong remote identity before attribution."""
+
+    expected_identity = require_remote_cdp_identity(
+        expected,
+        label=f"{label} expected identity",
+    )
+    observed_identity = require_remote_cdp_identity(
+        observed,
+        label=f"{label} observed identity",
+    )
+    if observed_identity != expected_identity:
+        mismatches = {
+            field: {
+                "expected": expected_identity[field],
+                "observed": observed_identity[field],
+            }
+            for field in REMOTE_CDP_IDENTITY_FIELDS
+            if observed_identity[field] != expected_identity[field]
+        }
+        raise BenchError(
+            f"{label} remote identity mismatch: "
+            + json.dumps(mismatches, sort_keys=True)
+        )
+    return observed_identity
 
 
 def open_page_session(
@@ -2867,20 +2969,145 @@ def open_page_session(
     unavailable. Returns (client, session_id, target_id).
     """
     browser_ws = browser.version_info.get("webSocketDebuggerUrl")
+    strict_remote = browser.version_info.get("transport") == "remote_cdp"
+    expected_identity = (
+        require_remote_cdp_identity(
+            browser.version_info,
+            label="remote CDP preflight",
+        )
+        if strict_remote
+        else None
+    )
     if browser_ws:
         client = CDPClient(browser_ws, cdp_path, timeout_s=timeout_s)
+        target_id: Any = None
+        creation_state = "not_requested"
         try:
             client.connect()
-            created = client.command("Target.createTarget", {"url": "about:blank"})
+            if strict_remote:
+                identity = client.command("Browser.getVersion")
+                actual_identity = require_remote_cdp_identity(
+                    identity,
+                    label="remote CDP task connection",
+                )
+                assert expected_identity is not None
+                for key in REMOTE_CDP_IDENTITY_FIELDS:
+                    expected = expected_identity[key]
+                    actual = actual_identity[key]
+                    if actual != expected:
+                        raise BenchError(
+                            "remote CDP identity changed on the task connection: "
+                            f"{key} expected {expected!r}, got {actual!r}"
+                        )
+                # Experimental callers persist this same-connection identity
+                # in their per-task observations.
+                client.remote_identity = identity
+            creation_state = "requested"
+            try:
+                created = client.command(
+                    "Target.createTarget", {"url": "about:blank"}
+                )
+            except CDPCommandError:
+                # A normal CDP error envelope proves that createTarget was
+                # rejected. Transport/parse failures remain ambiguous because
+                # the target may have been created before the response was lost.
+                creation_state = "rejected"
+                raise
+            except Exception:
+                creation_state = "ambiguous"
+                raise
             target_id = created.get("targetId")
             if target_id:
+                creation_state = "created"
                 attached = client.command("Target.attachToTarget", {"targetId": target_id, "flatten": True})
                 session_id = attached.get("sessionId")
                 if session_id:
                     return client, str(session_id), str(target_id)
+            else:
+                creation_state = "ambiguous"
+            if strict_remote:
+                raise BenchError(
+                    "remote CDP endpoint did not create and attach a fresh target"
+                )
             client.close()
-        except Exception:
+        except Exception as exc:
+            cleanup_confirmed = creation_state in {"not_requested", "rejected"}
+            cleanup_attempts: list[dict[str, Any]] = []
+            if strict_remote and target_id:
+                for cleanup_attempt in range(1, 3):
+                    try:
+                        close_result = client.command(
+                            "Target.closeTarget", {"targetId": target_id}
+                        )
+                        confirmed = close_result.get("success") is True
+                        cleanup_attempts.append(
+                            {
+                                "attempt": cleanup_attempt,
+                                "success": close_result.get("success"),
+                                "confirmed": confirmed,
+                            }
+                        )
+                        if confirmed:
+                            cleanup_confirmed = True
+                            creation_state = "closed"
+                            break
+                    except Exception as cleanup_exc:
+                        cleanup_attempts.append(
+                            {
+                                "attempt": cleanup_attempt,
+                                "confirmed": False,
+                                "error": (
+                                    f"{type(cleanup_exc).__name__}: {cleanup_exc}"
+                                ),
+                            }
+                        )
+            if target_id and not cleanup_confirmed:
+                creation_state = "cleanup_unconfirmed"
             client.close()
+            if strict_remote:
+                cleanup_metrics = {
+                    "cdp_call_count": int(getattr(client, "call_count", 0)),
+                    "cdp_error_count": int(getattr(client, "error_count", 0)),
+                    "ws_disconnect_count": int(
+                        getattr(client, "disconnect_count", 0)
+                    ),
+                }
+                cleanup_observations = {
+                    "target_cleanup": {
+                        "backend": "Target.closeTarget",
+                        "target_id": target_id,
+                        "confirmed": cleanup_confirmed,
+                        "creation_state": creation_state,
+                        "ambiguous_create": creation_state == "ambiguous",
+                        "attempts": cleanup_attempts,
+                    },
+                    "isolation_restored": cleanup_confirmed,
+                }
+                setattr(exc, "cdp_metrics", cleanup_metrics)
+                setattr(exc, "cdp_observations", cleanup_observations)
+                setattr(exc, "isolation_restored", cleanup_confirmed)
+                if not cleanup_confirmed:
+                    if is_cdp_transport_exception(exc):
+                        # Cleanup evidence still forces the L1 sequence to
+                        # stop, but the original timeout/disconnect type must
+                        # reach its transport breaker unchanged.
+                        raise
+                    cleanup_error = BenchError(
+                        "remote page bootstrap target cleanup was not confirmed"
+                    )
+                    setattr(cleanup_error, "cdp_metrics", cleanup_metrics)
+                    setattr(
+                        cleanup_error,
+                        "cdp_observations",
+                        cleanup_observations,
+                    )
+                    setattr(cleanup_error, "isolation_restored", False)
+                    raise cleanup_error from exc
+                raise
+    if strict_remote:
+        raise BenchError(
+            "remote CDP probes require one browser-level WebSocket with no fallback"
+        )
     client = CDPClient(create_page_ws(browser), cdp_path, timeout_s=timeout_s)
     client.connect()
     return client, None, None
@@ -2896,6 +3123,9 @@ class CDPClient:
         self.call_count = 0
         self.error_count = 0
         self.disconnect_count = 0
+        # Bytes read past the HTTP upgrade terminator belong to the first
+        # WebSocket frame and must survive the handshake parser.
+        self._recv_buf = bytearray()
         # Buffer for CDP events that arrive while a command response is awaited
         # or while pumping for a specific event; consumed by wait_for_event.
         self.events: list[dict[str, Any]] = []
@@ -2908,35 +3138,69 @@ class CDPClient:
         self.close()
 
     def connect(self) -> None:
+        self._recv_buf.clear()
         parsed = urllib.parse.urlparse(self.ws_url)
-        if parsed.scheme != "ws":
-            raise BenchError(f"only ws:// CDP endpoints are supported by this runner: {self.ws_url}")
-        port = parsed.port or 80
+        if parsed.scheme not in {"ws", "wss"}:
+            raise BenchError(
+                f"only ws:// and wss:// CDP endpoints are supported by this runner: {self.ws_url}"
+            )
+        secure = parsed.scheme == "wss"
+        port = parsed.port or (443 if secure else 80)
         host = parsed.hostname or LOCAL_HOST
         path = parsed.path or "/"
         if parsed.query:
             path = f"{path}?{parsed.query}"
-        sock = socket.create_connection((host, port), timeout=self.timeout_s)
-        sock.settimeout(self.timeout_s)
-        key = base64.b64encode(secrets.token_bytes(16)).decode("ascii")
-        request = (
-            f"GET {path} HTTP/1.1\r\n"
-            f"Host: {host}:{port}\r\n"
-            "Upgrade: websocket\r\n"
-            "Connection: Upgrade\r\n"
-            f"Sec-WebSocket-Key: {key}\r\n"
-            "Sec-WebSocket-Version: 13\r\n"
-            "\r\n"
-        )
-        sock.sendall(request.encode("ascii"))
-        response = b""
-        while b"\r\n\r\n" not in response:
-            chunk = sock.recv(4096)
-            if not chunk:
-                raise BenchError("websocket handshake closed")
-            response += chunk
-        if b" 101 " not in response.split(b"\r\n", 1)[0]:
-            raise BenchError(f"websocket handshake failed: {response[:200]!r}")
+        try:
+            raw_sock = socket.create_connection(
+                (host, port), timeout=self.timeout_s
+            )
+        except TimeoutError as exc:
+            raise CDPTransportTimeout("TCP connection timed out") from exc
+        if secure:
+            try:
+                sock = ssl.create_default_context().wrap_socket(
+                    raw_sock,
+                    server_hostname=host,
+                )
+            except TimeoutError as exc:
+                raw_sock.close()
+                raise CDPTransportTimeout("TLS handshake timed out") from exc
+            except Exception:
+                raw_sock.close()
+                raise
+        else:
+            sock = raw_sock
+        try:
+            sock.settimeout(self.timeout_s)
+            key = base64.b64encode(secrets.token_bytes(16)).decode("ascii")
+            request = (
+                f"GET {path} HTTP/1.1\r\n"
+                f"Host: {host}:{port}\r\n"
+                "Upgrade: websocket\r\n"
+                "Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Key: {key}\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "\r\n"
+            )
+            sock.sendall(request.encode("ascii"))
+            response = b""
+            while b"\r\n\r\n" not in response:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    raise CDPTransportError("websocket handshake closed")
+                response += chunk
+            header, trailing = response.split(b"\r\n\r\n", 1)
+            if b" 101 " not in header.split(b"\r\n", 1)[0]:
+                raise CDPTransportError(
+                    f"websocket handshake failed: {response[:200]!r}"
+                )
+        except TimeoutError as exc:
+            sock.close()
+            raise CDPTransportTimeout("websocket handshake timed out") from exc
+        except Exception:
+            sock.close()
+            raise
+        self._recv_buf.extend(trailing)
         self.sock = sock
         self.cdp_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.cdp_path.exists():
@@ -2985,7 +3249,15 @@ class CDPClient:
             # command was in flight (e.g. Fetch.requestPaused during Page.navigate).
             if data.get("method") is not None:
                 self.events.append(data)
-            self._trace({"ts": now_iso(), "direction": "event", "method": data.get("method"), "params": data.get("params", {}), "sessionId": data.get("sessionId")})
+            self._trace({
+                "ts": now_iso(),
+                "direction": "event",
+                "method": data.get("method"),
+                "params": data.get("params", {}),
+                "params_present": "params" in data,
+                "wire_keys": sorted(data),
+                "sessionId": data.get("sessionId"),
+            })
 
     def _event_matches(
         self, data: dict[str, Any], method: str, match: Any, session_id: str | None
@@ -2995,6 +3267,26 @@ class CDPClient:
         if session_id is not None and data.get("sessionId") != session_id:
             return False
         return event_params_match(data.get("params", {}), match)
+
+    def _has_decrypted_data_pending(self) -> bool:
+        """Return whether a TLS socket already has decrypted bytes buffered.
+
+        ``select`` only observes the underlying file descriptor.  An
+        ``SSLSocket`` can have additional frames buffered inside OpenSSL after
+        that descriptor has been drained, so callers must check ``pending``
+        before waiting for another OS-level readiness notification.
+        """
+        if self.sock is None:
+            return False
+        pending = getattr(self.sock, "pending", None)
+        if not callable(pending):
+            return False
+        try:
+            return int(pending()) > 0
+        except (OSError, ValueError) as exc:
+            raise ConnectionError(
+                f"checking pending TLS data failed: {exc}"
+            ) from exc
 
     def wait_for_event(
         self,
@@ -3021,10 +3313,17 @@ class CDPClient:
             remaining = deadline - time.time()
             if remaining <= 0:
                 break
-            try:
-                ready, _, _ = select.select([self.sock], [], [], min(0.2, remaining))
-            except (OSError, ValueError) as exc:
-                raise ConnectionError(f"select on CDP socket failed: {exc}") from exc
+            if self._recv_buf or self._has_decrypted_data_pending():
+                ready = [self.sock]
+            else:
+                try:
+                    ready, _, _ = select.select(
+                        [self.sock], [], [], min(0.2, remaining)
+                    )
+                except (OSError, ValueError) as exc:
+                    raise ConnectionError(
+                        f"select on CDP socket failed: {exc}"
+                    ) from exc
             if not ready:
                 continue
             frame = self._recv_frame()
@@ -3036,7 +3335,15 @@ class CDPClient:
                 # Stray command response arriving during a wait; trace and skip.
                 self._trace({"ts": now_iso(), "direction": "recv", "id": data.get("id"), "note": "response-during-wait"})
                 continue
-            self._trace({"ts": now_iso(), "direction": "event", "method": data.get("method"), "params": data.get("params", {}), "sessionId": data.get("sessionId")})
+            self._trace({
+                "ts": now_iso(),
+                "direction": "event",
+                "method": data.get("method"),
+                "params": data.get("params", {}),
+                "params_present": "params" in data,
+                "wire_keys": sorted(data),
+                "sessionId": data.get("sessionId"),
+            })
             if self._event_matches(data, method, match, session_id):
                 return data
             self.events.append(data)
@@ -3058,17 +3365,20 @@ class CDPClient:
             remaining = deadline - time.time()
             if remaining <= 0:
                 return buffered
-            try:
-                ready, _, _ = select.select(
-                    [self.sock],
-                    [],
-                    [],
-                    min(0.05, remaining),
-                )
-            except (OSError, ValueError) as exc:
-                raise ConnectionError(
-                    f"select on CDP socket failed: {exc}"
-                ) from exc
+            if self._recv_buf or self._has_decrypted_data_pending():
+                ready = [self.sock]
+            else:
+                try:
+                    ready, _, _ = select.select(
+                        [self.sock],
+                        [],
+                        [],
+                        min(0.05, remaining),
+                    )
+                except (OSError, ValueError) as exc:
+                    raise ConnectionError(
+                        f"select on CDP socket failed: {exc}"
+                    ) from exc
             if not ready:
                 continue
             frame = self._recv_frame()
@@ -3087,6 +3397,8 @@ class CDPClient:
                         "direction": "event",
                         "method": data.get("method"),
                         "params": data.get("params", {}),
+                        "params_present": "params" in data,
+                        "wire_keys": sorted(data),
                         "sessionId": data.get("sessionId"),
                         "note": "cleanup-pump",
                     }
@@ -3123,35 +3435,77 @@ class CDPClient:
     def _recv_frame(self) -> bytes | None:
         if self.sock is None:
             return None
-        header = self._recv_exact(2)
-        if not header:
-            return None
-        first, second = header
-        opcode = first & 0x0F
-        length = second & 0x7F
-        masked = bool(second & 0x80)
-        if length == 126:
-            length = struct.unpack("!H", self._recv_exact(2))[0]
-        elif length == 127:
-            length = struct.unpack("!Q", self._recv_exact(8))[0]
-        mask = self._recv_exact(4) if masked else b""
-        payload = self._recv_exact(length) if length else b""
-        if masked:
-            payload = bytes(byte ^ mask[i % 4] for i, byte in enumerate(payload))
-        if opcode == 8:
-            return None
-        if opcode == 9:
-            self._send_frame(payload, opcode=10)
-            return self._recv_frame()
-        if opcode not in {1, 2, 0}:
-            return self._recv_frame()
-        return payload
+        fragments = bytearray()
+        fragmented_opcode: int | None = None
+        while True:
+            header = self._recv_exact(2)
+            if not header:
+                return None
+            first, second = header
+            final = bool(first & 0x80)
+            opcode = first & 0x0F
+            length = second & 0x7F
+            masked = bool(second & 0x80)
+            if length == 126:
+                length = struct.unpack("!H", self._recv_exact(2))[0]
+            elif length == 127:
+                length = struct.unpack("!Q", self._recv_exact(8))[0]
+            mask = self._recv_exact(4) if masked else b""
+            payload = self._recv_exact(length) if length else b""
+            if masked:
+                payload = bytes(
+                    byte ^ mask[i % 4] for i, byte in enumerate(payload)
+                )
+
+            # Control frames can be interleaved with a fragmented data message.
+            if opcode in {8, 9, 10}:
+                if not final or length > 125:
+                    raise ConnectionError("invalid fragmented WebSocket control frame")
+                if opcode == 8:
+                    return None
+                if opcode == 9:
+                    self._send_frame(payload, opcode=10)
+                continue
+
+            if opcode in {1, 2}:
+                if fragmented_opcode is not None:
+                    raise ConnectionError(
+                        "new WebSocket data frame before fragmented message ended"
+                    )
+                if final:
+                    return payload
+                fragmented_opcode = opcode
+                fragments.extend(payload)
+                continue
+
+            if opcode == 0:
+                if fragmented_opcode is None:
+                    raise ConnectionError(
+                        "unexpected WebSocket continuation frame"
+                    )
+                fragments.extend(payload)
+                if final:
+                    return bytes(fragments)
+                continue
+
+            # Ignore extension/reserved opcodes while preserving any active
+            # fragmented message; the next valid continuation may still finish it.
 
     def _recv_exact(self, n: int) -> bytes:
         assert self.sock is not None
         chunks = bytearray()
+        if self._recv_buf:
+            buffered = min(n, len(self._recv_buf))
+            chunks.extend(self._recv_buf[:buffered])
+            del self._recv_buf[:buffered]
         while len(chunks) < n:
-            chunk = self.sock.recv(n - len(chunks))
+            try:
+                chunk = self.sock.recv(n - len(chunks))
+            except TimeoutError as exc:
+                # A socket deadline is a transport stall. Keep it distinct
+                # from the semantic TimeoutError raised by wait_for_event()
+                # after a complete stream simply omits the required event.
+                raise CDPTransportTimeout("websocket receive timed out") from exc
             if not chunk:
                 raise ConnectionError("websocket closed")
             chunks.extend(chunk)
@@ -3274,7 +3628,14 @@ class FixtureServer:
         fixtures_dir: pathlib.Path | None = None,
         expected_answers: dict[str, Any] | None = None,
         traffic_tracker: resource_metrics.FixtureTrafficTracker | None = None,
+        bind_host: str = LOCAL_HOST,
+        bind_port: int = 0,
     ) -> None:
+        # Loopback + ephemeral port by default (harness-internal use). The
+        # fixture-serve subcommand passes an explicit stable port so an HTTPS
+        # tunnel can front the server for remote-endpoint runs.
+        self.bind_host = bind_host
+        self.bind_port = bind_port
         self.events: dict[str, list[str]] = {}
         # Server-side sessions for the multi-step mini-app:
         # sid -> {"user": str, "cart": {name: qty}}.
@@ -3315,6 +3676,65 @@ class FixtureServer:
             except Exception:
                 pass
         return target.read_bytes(), headers
+
+    def deployment_contract(self) -> dict[str, Any]:
+        """Describe the exact fixture implementation and effective content.
+
+        Public-tunnel experiments cannot treat an origin URL as a content
+        identity.  This compact, read-only contract lets an external verifier
+        bind the remote process to the checked-out runner implementation, the
+        merged expected-answer registry, and every registered static route.
+        It deliberately exposes hashes rather than grader answers.
+        """
+
+        static_routes: list[dict[str, Any]] = []
+        for route, source in sorted(self.routes.items()):
+            found = self.read_fixture_file(route)
+            if found is None:
+                raise BenchError(
+                    f"registered fixture route cannot be resolved: {route} -> {source}"
+                )
+            body, headers = found
+            static_routes.append(
+                {
+                    "path": route,
+                    "source": source,
+                    "status": 200,
+                    "size": len(body),
+                    "sha256": hashlib.sha256(body).hexdigest(),
+                    "headers": {
+                        str(name).lower(): str(value)
+                        for name, value in sorted(
+                            headers.items(),
+                            key=lambda item: item[0].lower(),
+                        )
+                    },
+                }
+            )
+        expected_payload = json.dumps(
+            self.expected_answers,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        try:
+            fixture_root = self.fixtures_dir.relative_to(BENCH_ROOT).as_posix()
+        except ValueError:
+            # The endpoint is reachable through a public tunnel in remote
+            # experiments; never disclose an arbitrary host filesystem path.
+            fixture_root = "<external>"
+        return {
+            "schema": "abb.fixture_deployment.v1",
+            "implementation": {
+                "path": rel_to_bench(RUNNER_SOURCE_PATH),
+                "sha256": RUNNER_SOURCE_SHA256,
+            },
+            "fixture_root": fixture_root,
+            "expected_answers": {
+                "entries": len(self.expected_answers),
+                "sha256": hashlib.sha256(expected_payload).hexdigest(),
+            },
+            "static_routes": static_routes,
+        }
 
     def grade_expected(self, payload: dict[str, Any]) -> dict[str, Any]:
         task_id = str(payload.get("task_id", ""))
@@ -3426,6 +3846,18 @@ class FixtureServer:
             def do_GET(self) -> None:
                 parsed = urllib.parse.urlparse(self.path)
                 self._traffic_begin(self.path)
+                if parsed.path == "/__fixture__/deployment-contract":
+                    body = json.dumps(
+                        fixture.deployment_contract(),
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Cache-Control", "no-store")
+                    self.send_header("Content-Length", str(len(body)))
+                    self._finish_response(body)
+                    return
                 if parsed.path == "/favicon.ico":
                     self.send_response(204)
                     self.send_header("Content-Length", "0")
@@ -3772,9 +4204,9 @@ class FixtureServer:
                     "items": [{"name": name, "qty": qty} for name, qty in sorted(cart.items())],
                 }
 
-        self.server = http.server.ThreadingHTTPServer((LOCAL_HOST, 0), Handler)
+        self.server = http.server.ThreadingHTTPServer((self.bind_host, self.bind_port), Handler)
         port = int(self.server.server_address[1])
-        self.base_url = f"http://{LOCAL_HOST}:{port}"
+        self.base_url = f"http://{self.bind_host}:{port}"
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         return self.base_url
@@ -4426,8 +4858,9 @@ def cleanup_raw_cdp_downloads(
     renamed.  Observe command-buffered lifecycle events, cancel/drain any guid
     that is not terminal, then restore every domain whose configuration command
     was attempted. Recording before the response matters because an engine can
-    apply the behavior even if its response times out. Cleanup diagnostics
-    never become task failures.
+    apply the behavior even if its response times out. Formal local callers
+    retain these errors as diagnostics; strict remote callers promote any error
+    to unconfirmed isolation and stop their sequence.
     """
     errors: list[str] = []
 
@@ -4514,6 +4947,9 @@ def run_raw_cdp_driver(
     fixture_base_url: str | None = None,
 ) -> dict[str, Any]:
     cdp_path = artifact_dir / "cdp.jsonl"
+    strict_remote = (
+        getattr(browser, "version_info", {}).get("transport") == "remote_cdp"
+    )
     saved: dict[str, Any] = {}
     answer: Any = None
     fixture_url: str | None = None
@@ -4531,11 +4967,27 @@ def run_raw_cdp_driver(
     }
     timeout_s = task.task.get("timeouts", {}).get("task_ms", 10000) / 1000
     client, session_id, target_id = open_page_session(browser, cdp_path, timeout_s)
+    remote_identity = getattr(client, "remote_identity", None)
+    if isinstance(remote_identity, dict):
+        saved["__remote_identity__"] = dict(remote_identity)
     download_behavior_configs: list[
         tuple[str, str | None, str | None]
     ] = []
     download_domains: dict[str, set[str]] = {}
     terminal_downloads: set[str] = set()
+    driver_result: dict[str, Any] | None = None
+    primary_error: Exception | None = None
+    target_cleanup: dict[str, Any] = {
+        "backend": "Target.closeTarget",
+        "target_id": target_id,
+        "confirmed": target_id is None,
+        "attempts": [],
+    }
+    download_cleanup: dict[str, Any] = {
+        "required": False,
+        "confirmed": True,
+        "errors": [],
+    }
     try:
         # Named sessions for step-level addressing. "page" is the default page
         # session materialized by open_page_session; "browser" is the root
@@ -4608,6 +5060,11 @@ def run_raw_cdp_driver(
                 wait_s = min(int(step.get("timeout_ms", 5000)), 30000) / 1000
                 try:
                     event = client.wait_for_event(method, match, event_session_filter(step), wait_s)
+                except CDPTransportTimeout:
+                    # CDPTransportTimeout is also a TimeoutError. Preserve the
+                    # transport classification before handling the healthy
+                    # semantic deadline below.
+                    raise
                 except TimeoutError:
                     if step.get("optional"):
                         saved.setdefault("__event_timeouts__", []).append(method)
@@ -4691,7 +5148,7 @@ def run_raw_cdp_driver(
                 saved[f"{name}__raw"] = result
                 answer = remote.get("value")
         grader = grade_inline(task, saved)
-        return {
+        driver_result = {
             "ok": grader["ok"],
             "answer": answer,
             "observations": saved,
@@ -4702,6 +5159,22 @@ def run_raw_cdp_driver(
                 "ws_disconnect_count": client.disconnect_count,
             },
         }
+    except Exception as exc:
+        # Preserve transport accounting and partial observations when a raw
+        # command/event step raises before the normal driver result is built.
+        # Callers still receive the original exception type and classification
+        # after cleanup has been attempted and recorded.
+        setattr(
+            exc,
+            "cdp_metrics",
+            {
+                "cdp_call_count": client.call_count,
+                "cdp_error_count": client.error_count,
+                "ws_disconnect_count": client.disconnect_count,
+            },
+        )
+        setattr(exc, "cdp_observations", dict(saved))
+        primary_error = exc
     finally:
         cleanup_errors = cleanup_raw_cdp_downloads(
             client,
@@ -4709,14 +5182,128 @@ def run_raw_cdp_driver(
             download_domains,
             terminal_downloads,
         )
+        download_cleanup = {
+            "required": bool(download_behavior_configs or download_domains),
+            "confirmed": not cleanup_errors,
+            "errors": list(cleanup_errors),
+        }
+        saved["download_cleanup"] = download_cleanup
         if cleanup_errors:
             saved["__download_cleanup_errors__"] = cleanup_errors
         if target_id:
-            try:
-                client.command("Target.closeTarget", {"targetId": target_id})
-            except Exception:
-                pass
+            for cleanup_attempt in range(1, 3):
+                try:
+                    close_result = client.command(
+                        "Target.closeTarget", {"targetId": target_id}
+                    )
+                    confirmed = close_result.get("success") is True
+                    target_cleanup["attempts"].append(
+                        {
+                            "attempt": cleanup_attempt,
+                            "success": close_result.get("success"),
+                            "confirmed": confirmed,
+                        }
+                    )
+                    if confirmed:
+                        target_cleanup["confirmed"] = True
+                        break
+                except Exception as exc:
+                    target_cleanup["attempts"].append(
+                        {
+                            "attempt": cleanup_attempt,
+                            "confirmed": False,
+                            "error": f"{type(exc).__name__}: {exc}",
+                        }
+                    )
+        saved["target_cleanup"] = target_cleanup
+        saved["isolation_restored"] = (
+            target_cleanup["confirmed"] is True
+            and (not strict_remote or download_cleanup["confirmed"] is True)
+        )
         client.close()
+
+    metrics = (
+        dict(driver_result.get("metrics") or {})
+        if driver_result is not None
+        else dict(getattr(primary_error, "cdp_metrics", {}) or {})
+    )
+    cleanup_error: BenchError | None = None
+    preserve_transport_error = False
+    if strict_remote and (
+        target_cleanup["confirmed"] is not True
+        or download_cleanup["confirmed"] is not True
+    ):
+        if driver_result is not None:
+            saved["primary_outcome"] = {
+                "kind": "driver_result",
+                "status": "pass" if driver_result.get("ok") else "fail",
+                "ok": driver_result.get("ok"),
+                "answer": driver_result.get("answer"),
+                "grader": driver_result.get("grader"),
+            }
+        elif primary_error is not None:
+            saved["primary_outcome"] = {
+                "kind": "exception",
+                "status": "error",
+                "error_type": type(primary_error).__name__,
+                "error": str(primary_error),
+            }
+        cleanup_failures = []
+        if target_cleanup["confirmed"] is not True:
+            cleanup_failures.append("Target.closeTarget unconfirmed")
+        if download_cleanup["confirmed"] is not True:
+            cleanup_failures.append(
+                "download cleanup errors="
+                + json.dumps(download_cleanup["errors"], sort_keys=True)
+            )
+        saved["isolation_restored"] = False
+        preserve_transport_error = bool(
+            primary_error is not None
+            and is_cdp_transport_exception(primary_error)
+        )
+        if not preserve_transport_error:
+            cleanup_error = BenchError(
+                "remote raw-CDP isolation cleanup was not explicitly confirmed: "
+                + "; ".join(cleanup_failures)
+            )
+            setattr(cleanup_error, "cdp_metrics", metrics)
+            setattr(cleanup_error, "cdp_observations", dict(saved))
+            setattr(
+                cleanup_error,
+                "target_cleanup_confirmed",
+                target_cleanup["confirmed"] is True,
+            )
+            setattr(
+                cleanup_error,
+                "download_cleanup_confirmed",
+                download_cleanup["confirmed"] is True,
+            )
+            setattr(cleanup_error, "isolation_restored", False)
+
+    if primary_error is not None:
+        setattr(primary_error, "cdp_metrics", metrics)
+        setattr(primary_error, "cdp_observations", dict(saved))
+        if preserve_transport_error:
+            setattr(
+                primary_error,
+                "target_cleanup_confirmed",
+                target_cleanup["confirmed"] is True,
+            )
+            setattr(
+                primary_error,
+                "download_cleanup_confirmed",
+                download_cleanup["confirmed"] is True,
+            )
+            setattr(primary_error, "isolation_restored", False)
+    if cleanup_error is not None:
+        if primary_error is not None:
+            raise cleanup_error from primary_error
+        raise cleanup_error
+    if primary_error is not None:
+        raise primary_error
+    if driver_result is None:
+        raise BenchError("raw CDP driver produced no result")
+    return driver_result
 
 
 def browser_cdp_product(browser: BrowserProcess) -> str:
@@ -4774,6 +5361,10 @@ def run_framework_driver(
         "{artifact_dir}": str(artifact_dir),
     }
     env = subprocess_env()
+    # This flag controls strict remote identity and cleanup behavior inside the
+    # probe. Never let an unrelated parent-shell value turn a local benchmark
+    # attempt into a remote one.
+    env.pop("REMOTE_CDP_IDENTITY_JSON", None)
     env.update(
         {
             "FRAMEWORK": FRAMEWORK_DRIVER_KINDS[task.driver["kind"]],
@@ -4801,7 +5392,36 @@ def run_framework_driver(
             "ARTIFACT_DIR": str(artifact_dir),
         }
     )
-    return run_node_driver_process(task, FRAMEWORK_PROBE_SCRIPT, env, artifact_dir, fixture_base_url, run_id, engine, attempt, seed, session)
+    if browser.version_info.get("transport") == "remote_cdp":
+        env["REMOTE_CDP_IDENTITY_JSON"] = json.dumps(
+            {
+                "product": (
+                    browser.version_info.get("product")
+                    or browser.version_info.get("Browser")
+                    or ""
+                ),
+                "protocolVersion": browser.version_info.get("protocolVersion"),
+                "revision": browser.version_info.get("revision"),
+            }
+        )
+    output = run_node_driver_process(
+        task,
+        FRAMEWORK_PROBE_SCRIPT,
+        env,
+        artifact_dir,
+        fixture_base_url,
+        run_id,
+        engine,
+        attempt,
+        seed,
+        session,
+    )
+    if browser.version_info.get("transport") == "remote_cdp":
+        output = enforce_remote_driver_cleanup(
+            output,
+            driver_key=FRAMEWORK_DRIVER_KINDS[task.driver["kind"]],
+        )
+    return output
 
 
 def run_scenario_adapter_driver(
@@ -4869,12 +5489,23 @@ def run_scenario_adapter_driver(
         # Preserve the legacy payload contract for every other adapter.
         expect_product = str(browser.version_info.get("Browser") or "")
         expect_product_live = browser_cdp_product(browser)
+    strict_remote = browser.version_info.get("transport") == "remote_cdp"
+    expected_remote_identity = (
+        require_remote_cdp_identity(
+            browser.version_info,
+            label="remote scenario-adapter preflight",
+        )
+        if strict_remote
+        else None
+    )
     payload = {
         "protocol": "abb_scenario_adapter/1",
         "driver_kind": task.driver["kind"],
         "driver_key": spec["driver_key"],
         "browser_ws": browser_ws,
         "cdp_port": browser.port,
+        "remote_cdp": strict_remote,
+        "expected_remote_identity": expected_remote_identity,
         "expect_product": expect_product,
         "expect_ua": str(browser.version_info.get("User-Agent") or ""),
         "expect_product_live": expect_product_live,
@@ -4897,11 +5528,7 @@ def run_scenario_adapter_driver(
     }
     if spec["driver_key"] == "selenium":
         payload["binding"] = runtime_binding
-    script_path = str(BENCH_ROOT / spec["script"])
-    if any("{script}" in arg for arg in spec["argv"]):
-        argv = [arg.replace("{script}", script_path) for arg in spec["argv"]]
-    else:
-        argv = list(spec["argv"]) + [script_path]
+    argv = scenario_adapter_argv(spec)
     env = subprocess_env()
     if spec.get("env_setup") == "agent_browser":
         configure_agent_browser_attempt_env(
@@ -4911,7 +5538,7 @@ def run_scenario_adapter_driver(
         if "AB_BIN" not in env and local_ab.exists():
             env["AB_BIN"] = str(local_ab)
     try:
-        return run_driver_subprocess(
+        output = run_driver_subprocess(
             task,
             argv,
             env,
@@ -4924,6 +5551,18 @@ def run_scenario_adapter_driver(
             session,
             stdin_text=json.dumps(payload),
         )
+        if strict_remote:
+            assert expected_remote_identity is not None
+            output = enforce_remote_scenario_adapter_identity(
+                output,
+                expected_remote_identity,
+                driver_key=str(spec["driver_key"]),
+            )
+            output = enforce_remote_driver_cleanup(
+                output,
+                driver_key=str(spec["driver_key"]),
+            )
+        return output
     finally:
         if spec.get("env_setup") == "agent_browser":
             # The adapter closes its named session itself.  Confirm the whole
@@ -4931,6 +5570,160 @@ def run_scenario_adapter_driver(
             # can keep daemon work alive briefly after the adapter returns.
             force_close_agent_browser_attempt(env)
             remove_agent_browser_namespace_state(env)
+
+
+def enforce_remote_scenario_adapter_identity(
+    output: dict[str, Any],
+    expected: dict[str, str],
+    *,
+    driver_key: str,
+) -> dict[str, Any]:
+    """Fail closed when a remote adapter lacks complete live binding.
+
+    A remote compatibility result is attributable only when the same live
+    client connection supplied all three immutable preflight fields. Explicit
+    infra/timeout/transport rows remain diagnostic; any otherwise gradable
+    output is converted to a binding-unverified infra exclusion. Connection
+    evidence is retained so the experimental driver runner can independently
+    classify recognized endpoint/network failures as transport outcomes.
+    """
+
+    observations = output.get("observations") or {}
+    if not isinstance(observations, dict):
+        observations = {}
+    binding = observations.get("binding") or {}
+    if not isinstance(binding, dict):
+        binding = {}
+
+    actual = binding.get("actual")
+    claimed_expected = binding.get("expected")
+    compared_fields = binding.get("compared_fields")
+    valid = (
+        isinstance(actual, dict)
+        and isinstance(claimed_expected, dict)
+        and compared_fields == list(REMOTE_CDP_IDENTITY_FIELDS)
+        and binding.get("same_connection_as_task") is True
+        and binding.get("reconnect_allowed") is False
+        and all(
+            str(actual.get(field) or "") == expected[field]
+            and str(claimed_expected.get(field) or "") == expected[field]
+            for field in REMOTE_CDP_IDENTITY_FIELDS
+        )
+    )
+    if valid:
+        return output
+
+    reported_status = str(output.get("status") or "").strip().lower()
+    derived_status = reported_status or (
+        "pass" if output.get("ok") is True else "fail"
+    )
+    gradable = output.get("ok") is True or derived_status not in {
+        "infra",
+        "timeout",
+        "transport_error",
+    }
+    if not gradable:
+        return output
+
+    rejected_binding = dict(binding)
+    rejected_binding.update(
+        {
+            "verified": False,
+            "excluded": True,
+            "gate": "remote_full_identity_unverified",
+            "required_fields": list(REMOTE_CDP_IDENTITY_FIELDS),
+        }
+    )
+    rejected_observations = dict(observations)
+    rejected_observations.update(
+        {
+            "binding": rejected_binding,
+            "failure_class": "binding_unverified",
+            "formal_score_eligible": False,
+            "rejected_driver_output": output,
+        }
+    )
+    if binding.get("verified") is True:
+        detail = (
+            f"remote {driver_key} adapter claimed a verified binding without "
+            "same-connection product/protocolVersion/revision evidence"
+        )
+    else:
+        detail = (
+            f"remote {driver_key} adapter produced a gradable result before "
+            "same-connection product/protocolVersion/revision verification"
+        )
+    return {
+        "ok": False,
+        "status": "infra",
+        "failure": failure_obj("script_error", detail),
+        "error": {"class": "script_error", "message": detail},
+        "answer": output.get("answer"),
+        "observations": rejected_observations,
+        "grader": {
+            "ok": False,
+            "checks": [],
+            "failure": failure_obj("script_error", detail),
+        },
+        "metrics": output.get("metrics") or {},
+    }
+
+
+def enforce_remote_driver_cleanup(
+    output: dict[str, Any],
+    *,
+    driver_key: str,
+) -> dict[str, Any]:
+    """Reject a remote pass without same-connection cleanup evidence.
+
+    Kitesurf target identifiers are connection-local, so a second diagnostic
+    connection cannot prove that an adapter-owned page was removed. Adapters
+    must finish cleanup before emitting a successful result and persist the
+    acknowledgement observed through their task connection.
+    """
+
+    if output.get("ok") is not True:
+        return output
+    observations = output.get("observations") or {}
+    if not isinstance(observations, dict):
+        observations = {}
+    cleanup = observations.get("target_cleanup")
+    valid = (
+        isinstance(cleanup, dict)
+        and cleanup.get("confirmed") is True
+        and cleanup.get("same_connection_as_task") is True
+        and observations.get("isolation_restored") is True
+    )
+    if valid:
+        return output
+
+    detail = (
+        f"remote {driver_key} result lacks confirmed same-connection "
+        "target cleanup"
+    )
+    rejected_observations = dict(observations)
+    rejected_observations.update(
+        {
+            "target_cleanup": cleanup,
+            "isolation_restored": False,
+            "cleanup_contract_error": detail,
+            "primary_outcome": output,
+        }
+    )
+    return {
+        "ok": False,
+        "status": "infra",
+        "failure": failure_obj("script_error", detail),
+        "error": {"class": "script_error", "message": detail},
+        "answer": output.get("answer"),
+        "observations": rejected_observations,
+        "grader": {
+            "ok": False,
+            "checks": [],
+            "failure": failure_obj("script_error", detail),
+        },
+        "metrics": output.get("metrics") or {},
+    }
 
 
 def browser_page_target_ids(browser: BrowserProcess) -> set[str]:
@@ -4964,6 +5757,7 @@ def cleanup_new_page_targets(
 ) -> dict[str, Any]:
     diagnostic: dict[str, Any] = {
         "backend": "Target.getTargets/Target.closeTarget",
+        "confirmed": False,
         "before": sorted(before) if before is not None else None,
         "after": None,
         "final": None,
@@ -4993,7 +5787,7 @@ def cleanup_new_page_targets(
             for target_id in new_targets:
                 try:
                     result = client.command("Target.closeTarget", {"targetId": target_id})
-                    if result.get("success") is not False:
+                    if result.get("success") is True:
                         diagnostic["closed_targets"].append(target_id)
                     else:
                         diagnostic["errors"].append(
@@ -5028,7 +5822,7 @@ def cleanup_new_page_targets(
                             result = retry_client.command(
                                 "Target.closeTarget", {"targetId": target_id}
                             )
-                            if result.get("success") is not False:
+                            if result.get("success") is True:
                                 if target_id not in diagnostic["closed_targets"]:
                                     diagnostic["closed_targets"].append(target_id)
                                 diagnostic["retry_closed_targets"].append(target_id)
@@ -5055,6 +5849,8 @@ def cleanup_new_page_targets(
                 "new page targets remain after cleanup: "
                 + ", ".join(sorted(remaining))
             )
+        else:
+            diagnostic["confirmed"] = True
     except Exception as exc:
         diagnostic["errors"].append(f"post-cleanup target snapshot failed: {exc}")
     return diagnostic
@@ -5086,8 +5882,9 @@ def run_node_cdp_probe_driver(
     if "AB_BIN" not in env and local_ab.exists():
         env["AB_BIN"] = str(local_ab)
     # Browser-level ws: scripts bootstrap their own page session (Target.create/
-    # attach), which Lightpanda requires; /json/new page endpoints stay as the
-    # in-script fallback via CDP_PORT.
+    # attach), which Lightpanda requires. Local engines retain the /json/new
+    # compatibility fallback. Remote attempts must verify Browser.getVersion
+    # and run the task on this exact connection, with no reconnect fallback.
     browser_ws = browser.version_info.get("webSocketDebuggerUrl") or create_page_ws(browser)
     env.update(
         {
@@ -5113,15 +5910,40 @@ def run_node_cdp_probe_driver(
     for key, value in extra_env.items():
         text = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
         env[str(key)] = substitute_params(text, replacements)
+    # This variable switches both Node probes into strict remote identity and
+    # cleanup mode. Clear parent-shell and task-provided values after merging
+    # task env so a stale Kitesurf expectation cannot reclassify a formal
+    # local Chrome/Moli/Lightpanda/Obscura attempt.
+    env.pop("REMOTE_CDP_IDENTITY_JSON", None)
+    strict_remote = browser.version_info.get("transport") == "remote_cdp"
+    if strict_remote:
+        # Apply this after task-provided env so a task cannot replace the
+        # runner-owned identity expectation used for attribution.
+        env["REMOTE_CDP_IDENTITY_JSON"] = json.dumps(
+            {
+                "product": (
+                    browser.version_info.get("product")
+                    or browser.version_info.get("Browser")
+                    or ""
+                ),
+                "protocolVersion": browser.version_info.get("protocolVersion"),
+                "revision": browser.version_info.get("revision"),
+            }
+        )
     before_targets: set[str] | None
     pre_error: str | None = None
-    try:
-        before_targets = browser_page_target_ids(browser)
-    except Exception as exc:
+    if strict_remote:
         before_targets = None
-        pre_error = str(exc)
+    else:
+        try:
+            before_targets = browser_page_target_ids(browser)
+        except Exception as exc:
+            before_targets = None
+            pre_error = str(exc)
+    driver_output: dict[str, Any] | None = None
+    driver_error: BaseException | None = None
     try:
-        return run_node_driver_process(
+        driver_output = run_node_driver_process(
             task,
             script,
             env,
@@ -5133,6 +5955,8 @@ def run_node_cdp_probe_driver(
             seed,
             session,
         )
+    except BaseException as exc:
+        driver_error = exc
     finally:
         if script.name == "l1_ab_probe.js":
             # Always confirm closure outside the Node probe.  A successful
@@ -5140,18 +5964,129 @@ def run_node_cdp_probe_driver(
             # download finalizer) that outlives its JavaScript finally block.
             force_close_agent_browser_attempt(env)
         remove_agent_browser_namespace_state(env)
-        # Target reclamation is best-effort harness hygiene. It must run on
-        # pass, driver error and subprocess timeout paths, but a cleanup or
-        # diagnostic-write failure must never replace the task's real result.
-        try:
-            diagnostic = cleanup_new_page_targets(browser, before_targets)
-            if pre_error:
-                diagnostic["errors"].insert(
-                    0, f"pre-attempt target snapshot failed: {pre_error}"
+        if strict_remote:
+            # Kitesurf's public endpoint exposes a connection-local target
+            # namespace: opening a second WebSocket for Target.getTargets can
+            # itself produce a different default target. Cross-connection
+            # before/after IDs therefore cannot prove cleanup. Require the
+            # close acknowledgement emitted on the exact task connection.
+            cleanup_source = driver_output
+            if cleanup_source is None:
+                try:
+                    loaded = json.loads(
+                        (artifact_dir / "stdout.log").read_text(encoding="utf-8")
+                    )
+                    cleanup_source = loaded if isinstance(loaded, dict) else None
+                except Exception:
+                    cleanup_source = None
+            source_observations = (
+                (cleanup_source or {}).get("observations") or {}
+            )
+            same_connection_cleanup = (
+                source_observations.get("target_cleanup")
+                if isinstance(source_observations, dict)
+                else None
+            )
+            diagnostic = {
+                "backend": "driver_same_connection_target_cleanup",
+                "confirmed": (
+                    isinstance(same_connection_cleanup, dict)
+                    and same_connection_cleanup.get("confirmed") is True
+                ),
+                "driver_target_cleanup": same_connection_cleanup,
+                "cross_connection_snapshot_skipped": True,
+                "errors": [],
+            }
+            if diagnostic["confirmed"] is not True:
+                diagnostic["errors"].append(
+                    "driver did not provide confirmed same-connection target cleanup"
                 )
             write_json(artifact_dir / "target_cleanup.json", diagnostic)
+        else:
+            try:
+                diagnostic = cleanup_new_page_targets(browser, before_targets)
+                if pre_error:
+                    diagnostic["errors"].insert(
+                        0, f"pre-attempt target snapshot failed: {pre_error}"
+                    )
+                write_json(artifact_dir / "target_cleanup.json", diagnostic)
+            except Exception as exc:
+                diagnostic = {
+                    "backend": "Target.getTargets/Target.closeTarget",
+                    "confirmed": False,
+                    "errors": [
+                        f"target cleanup guard failed: {type(exc).__name__}: {exc}"
+                    ],
+                }
+
+    assert isinstance(diagnostic, dict)
+    if driver_output is not None:
+        observations = driver_output.get("observations") or {}
+        if not isinstance(observations, dict):
+            observations = {}
+        observations = dict(observations)
+        observations["outer_target_cleanup"] = diagnostic
+        driver_output["observations"] = observations
+    elif driver_error is not None and strict_remote:
+        try:
+            raw_output = json.loads(
+                (artifact_dir / "stdout.log").read_text(encoding="utf-8")
+            )
         except Exception:
-            pass
+            raw_output = {}
+        raw_observations = raw_output.get("observations") or {}
+        if not isinstance(raw_observations, dict):
+            raw_observations = {}
+        exception_observations = {
+            **raw_observations,
+            "outer_target_cleanup": diagnostic,
+            "isolation_restored": diagnostic.get("confirmed") is True,
+        }
+        setattr(driver_error, "cdp_observations", exception_observations)
+        setattr(
+            driver_error,
+            "isolation_restored",
+            diagnostic.get("confirmed") is True,
+        )
+    if strict_remote and diagnostic.get("confirmed") is not True:
+        detail = "remote target cleanup guard could not confirm isolation restoration"
+        if driver_error is not None:
+            # Preserve the original timeout/transport/process classification.
+            # The attached observations still force the caller to stop before
+            # another remote attempt starts.
+            raise driver_error
+        primary: dict[str, Any]
+        if driver_output is not None:
+            primary = driver_output
+        elif driver_error is not None:
+            primary = {
+                "exception": f"{type(driver_error).__name__}: {driver_error}"
+            }
+        else:
+            primary = {"error": "driver produced no result"}
+        return {
+            "ok": False,
+            "status": "infra",
+            "failure": failure_obj("script_error", detail),
+            "answer": (driver_output or {}).get("answer"),
+            "observations": {
+                **((driver_output or {}).get("observations") or {}),
+                "outer_target_cleanup": diagnostic,
+                "isolation_restored": False,
+                "primary_outcome": primary,
+            },
+            "grader": {
+                "ok": False,
+                "checks": [],
+                "failure": failure_obj("script_error", detail),
+            },
+            "metrics": (driver_output or {}).get("metrics") or {},
+        }
+    if driver_error is not None:
+        raise driver_error
+    if driver_output is None:
+        raise BenchError("node CDP probe produced no result")
+    return driver_output
 
 
 def run_node_driver_process(
@@ -6125,6 +7060,7 @@ def run_driver_attempt(
     stdout_text = ""
     stderr_text = ""
     observed_engine_process: dict[str, Any] | None = None
+    caught_exception: BaseException | None = None
     try:
         if unavailable_reason:
             incompatibility = failure_obj(
@@ -6215,6 +7151,7 @@ def run_driver_attempt(
             }
         )
     except subprocess.TimeoutExpired as exc:
+        caught_exception = exc
         stdout_text = exc.stdout or ""
         stderr_text = exc.stderr or ""
         engine_process = process_diagnostic("engine", browser.process)
@@ -6243,6 +7180,7 @@ def run_driver_attempt(
         )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     except TimeoutError as exc:
+        caught_exception = exc
         # socket.timeout is an alias/subclass of TimeoutError and must be
         # handled before OSError below.  A command/task deadline while the
         # engine process remains alive is a timeout, not a browser crash.
@@ -6268,6 +7206,7 @@ def run_driver_attempt(
         )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     except CDPCommandError as exc:
+        caught_exception = exc
         status = "unsupported" if is_unsupported_error(exc) else "fail"
         klass = "engine_unsupported" if status == "unsupported" else "cdp_semantic"
         result.update(
@@ -6279,6 +7218,7 @@ def run_driver_attempt(
         )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     except ConnectionError as exc:
+        caught_exception = exc
         engine_process = process_diagnostic("engine", browser.process)
         observed_engine_process = engine_process
         engine_exited = engine_process["state"] == "exited"
@@ -6296,6 +7236,7 @@ def run_driver_attempt(
         )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     except OSError as exc:
+        caught_exception = exc
         detail = str(exc) or type(exc).__name__
         engine_process = process_diagnostic("engine", browser.process)
         observed_engine_process = engine_process
@@ -6341,6 +7282,7 @@ def run_driver_attempt(
             )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     except Exception as exc:
+        caught_exception = exc
         result.update(
             {
                 "status": "infra",
@@ -6350,6 +7292,21 @@ def run_driver_attempt(
         )
         grader = {"ok": False, "checks": [], "failure": result["failure"]}
     finally:
+        exception_metrics = getattr(caught_exception, "cdp_metrics", None)
+        if isinstance(exception_metrics, dict):
+            result.update(
+                {
+                    "cdp_call_count": int(
+                        exception_metrics.get("cdp_call_count") or 0
+                    ),
+                    "cdp_error_count": int(
+                        exception_metrics.get("cdp_error_count") or 0
+                    ),
+                    "ws_disconnect_count": int(
+                        exception_metrics.get("ws_disconnect_count") or 0
+                    ),
+                }
+            )
         # On the subprocess-timeout kill path the captured streams can still
         # be bytes; a bytes payload must not crash the whole run.
         if isinstance(stdout_text, bytes):
@@ -8204,6 +9161,32 @@ def command_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_fixture_serve(args: argparse.Namespace) -> int:
+    """Serve the fixture tree standalone for a tunnel-fronted deployment.
+
+    This is the dynamic-origin half of the Kitesurf fixture contract: the
+    operator runs this server, fronts it with an HTTPS tunnel, then verifies
+    the deployment with `tools/kitesurf_dynamic_fixture.py verify <url>`
+    before any recipe run. The server itself stays loopback-only unless
+    --host is set explicitly.
+    """
+    server = FixtureServer(bind_host=args.host, bind_port=args.port)
+    base_url = server.start()
+    print(f"fixture server listening on {base_url}")
+    print("routes: static fixture tree + dynamic probes (ws/sse/auth/cart/graders)")
+    print("verify a fronting deployment with:")
+    print(f"  python3 tools/kitesurf_dynamic_fixture.py verify <public-base-url>")
+    print("press Ctrl-C to stop")
+    try:
+        while True:
+            time.sleep(3600)
+    except KeyboardInterrupt:
+        print("stopping")
+    finally:
+        server.stop()
+    return 0
+
+
 def command_inspect(args: argparse.Namespace) -> int:
     run_dir = resolve_path(args.run, pathlib.Path())
     rows = read_jsonl(run_dir / "results.jsonl")
@@ -8380,6 +9363,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--debug", action="store_true")
     run.set_defaults(func=command_run)
+
+    fixture_serve = sub.add_parser(
+        "fixture-serve",
+        help="serve the fixture tree standalone (for a tunnel-fronted Kitesurf deployment)",
+    )
+    fixture_serve.add_argument("--host", default="127.0.0.1", help="bind address (default loopback)")
+    fixture_serve.add_argument("--port", type=int, default=8907, help="stable port for the tunnel (default 8907)")
+    fixture_serve.set_defaults(func=command_fixture_serve)
 
     report = sub.add_parser("report", help="generate scores and scorecard from an existing run")
     report.add_argument("--run", required=True)

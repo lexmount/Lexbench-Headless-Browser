@@ -21,10 +21,61 @@ use std::time::{Duration, Instant};
 use chromiumoxide::browser::Browser;
 use chromiumoxide::cdp::browser_protocol::{accessibility, css, dom};
 use chromiumoxide::page::Page;
+use chromiumoxide::{Command, Method};
 use futures::StreamExt;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 const CLIENT_VERSION: &str = "0.9.1"; // kept in sync with Cargo.toml
+
+// chromiumoxide_cdp 0.9.1 generates CloseTargetReturns as an empty struct, so
+// its typed command silently discards the endpoint's `success` field. Bind the
+// same CDP method to an audited response that requires an explicit boolean.
+#[derive(Debug, Serialize)]
+struct AuditedCloseTargetParams {
+    #[serde(rename = "targetId")]
+    target_id: String,
+}
+
+impl AuditedCloseTargetParams {
+    fn new(target_id: String) -> Self {
+        Self { target_id }
+    }
+}
+
+impl Method for AuditedCloseTargetParams {
+    fn identifier(&self) -> chromiumoxide::types::MethodId {
+        "Target.closeTarget".into()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct AuditedCloseTargetReturns {
+    success: bool,
+}
+
+impl Command for AuditedCloseTargetParams {
+    type Response = AuditedCloseTargetReturns;
+}
+
+fn record_close_acknowledgement(
+    attempts: &mut Vec<Value>,
+    target_id: &str,
+    attempt: u8,
+    success: bool,
+) -> bool {
+    let mut record = json!({
+        "target_id": target_id,
+        "attempt": attempt,
+        "success": success,
+        "confirmed": success,
+    });
+    if !success {
+        record["error"] = json!("Target.closeTarget returned success=false");
+    }
+    attempts.push(record);
+    success
+}
 
 fn emit(obj: Value) {
     print!("{}", obj);
@@ -37,6 +88,37 @@ fn emit_infra(message: &str, binding: &Value, calls: u64, errs: u64) {
         "observations": {"binding": binding},
         "metrics": {"cdp_call_count": calls, "cdp_error_count": errs, "ws_disconnect_count": 0},
     }));
+}
+
+fn apply_cleanup_contract(mut outcome: Value, cleanup: Value, label: &str) -> Value {
+    let confirmed = cleanup["confirmed"].as_bool() == Some(true);
+    if !outcome["observations"].is_object() {
+        outcome["observations"] = json!({});
+    }
+    if let Some(observations) = outcome["observations"].as_object_mut() {
+        observations.insert("target_cleanup".to_string(), cleanup.clone());
+        observations.insert("isolation_restored".to_string(), json!(confirmed));
+    }
+    if confirmed {
+        return outcome;
+    }
+    let answer = outcome["answer"].clone();
+    let metrics = outcome["metrics"].clone();
+    json!({
+        "ok": false,
+        "status": "infra",
+        "error": {
+            "class": "script_error",
+            "message": format!("{label} target cleanup was not confirmed: {cleanup}"),
+        },
+        "answer": answer,
+        "observations": {
+            "target_cleanup": cleanup,
+            "isolation_restored": false,
+            "primary_outcome": outcome,
+        },
+        "metrics": metrics,
+    })
 }
 
 fn to_saved_string(value: &Value) -> String {
@@ -71,7 +153,11 @@ fn ax_value(value: Option<&accessibility::AxValue>) -> String {
     }
 }
 
-fn find_ax_identity(nodes: &[accessibility::AxNode], role: &str, name: &str) -> Result<String, String> {
+fn find_ax_identity(
+    nodes: &[accessibility::AxNode],
+    role: &str,
+    name: &str,
+) -> Result<String, String> {
     let node = nodes
         .iter()
         .find(|node| ax_value(node.role.as_ref()) == role && ax_value(node.name.as_ref()) == name)
@@ -102,9 +188,11 @@ fn format_computed_style(step: &Value, computed: &[css::CssComputedStyleProperty
         .iter()
         .map(|entry| (entry.name.as_str(), entry.value.as_str()))
         .collect();
-    let readable = required
-        .iter()
-        .all(|name| properties.get(name.as_str()).is_some_and(|value| !value.is_empty()));
+    let readable = required.iter().all(|name| {
+        properties
+            .get(name.as_str())
+            .is_some_and(|value| !value.is_empty())
+    });
     let prefix = if properties.len() >= minimum && readable {
         "breadth-ok"
     } else {
@@ -115,7 +203,10 @@ fn format_computed_style(step: &Value, computed: &[css::CssComputedStyleProperty
         .map(|name| {
             format!(
                 "{name}={}",
-                properties.get(name.as_str()).copied().unwrap_or("<missing>")
+                properties
+                    .get(name.as_str())
+                    .copied()
+                    .unwrap_or("<missing>")
             )
         })
         .collect::<Vec<_>>()
@@ -132,6 +223,8 @@ struct Adapter {
     budget_deadline: Instant,
     browser: Option<Browser>,
     page: Option<Page>,
+    page_creations: Vec<Value>,
+    created_target_ids: Vec<String>,
     saved: HashMap<String, String>,
     steps: Vec<(bool, Option<Value>, String)>, // (ok, value, err)
     op_calls: u64,
@@ -142,7 +235,11 @@ struct Adapter {
 impl Adapter {
     fn trace(&self, obj: Value) {
         use std::io::Write;
-        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&self.trace_path) {
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.trace_path)
+        {
             let _ = writeln!(f, "{}", obj);
         }
     }
@@ -155,11 +252,96 @@ impl Adapter {
     }
 
     fn op_timeout(&self, timeout_ms: u64) -> Result<Duration, String> {
-        let remaining = self.budget_deadline.saturating_duration_since(Instant::now());
+        let remaining = self
+            .budget_deadline
+            .saturating_duration_since(Instant::now());
         if remaining.is_zero() {
             return Err("task budget exhausted before op could run".to_string());
         }
         Ok(Duration::from_millis(timeout_ms).min(remaining))
+    }
+
+    async fn cleanup_pages(&mut self) -> Value {
+        let mut attempts = Vec::new();
+        for target_id in self.created_target_ids.clone().into_iter().rev() {
+            let mut closed = false;
+            for attempt in 1..=2 {
+                let result = match self.browser.as_ref() {
+                    Some(browser) => {
+                        tokio::time::timeout(
+                            Duration::from_secs(3),
+                            browser.execute(AuditedCloseTargetParams::new(target_id.clone())),
+                        )
+                        .await
+                    }
+                    None => {
+                        attempts.push(json!({
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "confirmed": false,
+                            "error": "browser connection unavailable during cleanup",
+                        }));
+                        break;
+                    }
+                };
+                match result {
+                    Err(_) => {
+                        attempts.push(json!({
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "confirmed": false,
+                            "timed_out": true,
+                            "error": "Target.closeTarget timeout",
+                        }));
+                        break;
+                    }
+                    Ok(Err(error)) => {
+                        attempts.push(json!({
+                            "target_id": target_id,
+                            "attempt": attempt,
+                            "confirmed": false,
+                            "error": truncate(&error.to_string(), 500),
+                        }));
+                    }
+                    Ok(Ok(response)) => {
+                        closed = record_close_acknowledgement(
+                            &mut attempts,
+                            &target_id,
+                            attempt,
+                            response.result.success,
+                        );
+                    }
+                }
+                if closed {
+                    break;
+                }
+            }
+            if let Some(creation) = self
+                .page_creations
+                .iter_mut()
+                .find(|creation| creation["target_id"].as_str() == Some(target_id.as_str()))
+            {
+                creation["state"] = json!(if closed {
+                    "closed"
+                } else {
+                    "cleanup_unconfirmed"
+                });
+            }
+        }
+        let confirmed = self.page_creations.iter().all(|creation| {
+            matches!(
+                creation["state"].as_str(),
+                Some("closed") | Some("rejected")
+            )
+        });
+        json!({
+            "backend": "chromiumoxide.Target.closeTarget",
+            "required": !self.page_creations.is_empty(),
+            "confirmed": confirmed,
+            "same_connection_as_task": true,
+            "creation_attempts": self.page_creations.clone(),
+            "attempts": attempts,
+        })
     }
 
     async fn eval_value(&mut self, timeout_ms: u64, expression: &str) -> Result<Value, String> {
@@ -190,7 +372,12 @@ impl Adapter {
         }
     }
 
-    async fn poll_until(&mut self, timeout_ms: u64, expression: &str, what: &str) -> Result<(), String> {
+    async fn poll_until(
+        &mut self,
+        timeout_ms: u64,
+        expression: &str,
+        what: &str,
+    ) -> Result<(), String> {
         let d = self.op_timeout(timeout_ms)?;
         let deadline = Instant::now() + d;
         loop {
@@ -214,7 +401,11 @@ impl Adapter {
     }
 
     async fn settle_navigation(&mut self, timeout_ms: u64, target: &str) -> Result<(), String> {
-        let path = target.splitn(2, "://").nth(1).and_then(|rest| rest.find('/').map(|i| &rest[i..])).unwrap_or("/");
+        let path = target
+            .splitn(2, "://")
+            .nth(1)
+            .and_then(|rest| rest.find('/').map(|i| &rest[i..]))
+            .unwrap_or("/");
         let path_no_hash = path.split('#').next().unwrap_or(path);
         let want = serde_json::to_string(path_no_hash).unwrap();
         self.poll_until(
@@ -228,7 +419,9 @@ impl Adapter {
     fn sel_expr(sel: &str, body: &str) -> String {
         let quoted = serde_json::to_string(sel).unwrap();
         let escaped = sel.replace('"', "\\\"");
-        format!(r#"(() => {{ const el = document.querySelector({quoted}); if (!el) throw new Error("no element matches {escaped}"); {body} }})()"#)
+        format!(
+            r#"(() => {{ const el = document.querySelector({quoted}); if (!el) throw new Error("no element matches {escaped}"); {body} }})()"#
+        )
     }
 
     async fn with_timeout<T, F>(&mut self, timeout_ms: u64, fut: F) -> Result<T, String>
@@ -262,11 +455,15 @@ impl Adapter {
         let element = self
             .with_timeout(timeout_ms, async { page.find_element(sel_owned).await })
             .await?;
-        self.with_timeout(timeout_ms, async { element.click().await }).await?;
+        self.with_timeout(timeout_ms, async { element.click().await })
+            .await?;
         Ok(())
     }
 
-    async fn full_ax_tree(&mut self, timeout_ms: u64) -> Result<Vec<accessibility::AxNode>, String> {
+    async fn full_ax_tree(
+        &mut self,
+        timeout_ms: u64,
+    ) -> Result<Vec<accessibility::AxNode>, String> {
         let page = self.page.as_ref().ok_or("no page")?.clone();
         self.with_timeout(timeout_ms, async {
             page.execute(accessibility::EnableParams::default()).await
@@ -285,7 +482,9 @@ impl Adapter {
     async fn run_op(&mut self, step: &Value) -> Result<Value, String> {
         let op = step["op"].as_str().unwrap_or("");
         let sel = step["selector"].as_str().map(|s| self.substitute(s));
-        let timeout = step["timeout_ms"].as_u64().unwrap_or(self.action_timeout_ms);
+        let timeout = step["timeout_ms"]
+            .as_u64()
+            .unwrap_or(self.action_timeout_ms);
 
         match op {
             "wait_ms" => {
@@ -294,7 +493,10 @@ impl Adapter {
             }
             "version" | "user_agent" => {
                 let browser = self.browser.as_mut().ok_or("no browser")?;
-                let ver = browser.version().await.map_err(|e| truncate(&e.to_string(), 500))?;
+                let ver = browser
+                    .version()
+                    .await
+                    .map_err(|e| truncate(&e.to_string(), 500))?;
                 self.op_calls += 1;
                 if op == "version" {
                     Ok(Value::String(ver.product))
@@ -303,47 +505,114 @@ impl Adapter {
                 }
             }
             "new_page" => {
-                let browser = self.browser.as_mut().ok_or("no browser")?;
-                let d = self.budget_deadline.saturating_duration_since(Instant::now());
+                let creation_index = self.page_creations.len();
+                self.page_creations.push(json!({
+                    "attempt": creation_index + 1,
+                    "state": "requested",
+                }));
+                let d = self
+                    .budget_deadline
+                    .saturating_duration_since(Instant::now());
                 if d.is_zero() {
+                    self.page_creations[creation_index]["state"] = json!("rejected");
+                    self.page_creations[creation_index]["error"] =
+                        json!("task budget exhausted before op could run");
                     return Err("task budget exhausted before op could run".to_string());
                 }
                 self.op_calls += 1;
-                match tokio::time::timeout(Duration::from_millis(timeout).min(d), browser.new_page("about:blank")).await {
+                let creation_result = {
+                    let browser = self.browser.as_mut().ok_or("no browser")?;
+                    tokio::time::timeout(
+                        Duration::from_millis(timeout).min(d),
+                        browser.new_page("about:blank"),
+                    )
+                    .await
+                };
+                match creation_result {
                     Err(_) => {
                         self.op_errors += 1;
+                        self.page_creations[creation_index]["state"] = json!("ambiguous");
+                        self.page_creations[creation_index]["error"] =
+                            json!(format!("timeout after {timeout}ms creating page"));
                         Err(format!("timeout after {timeout}ms creating page"))
                     }
                     Ok(Err(e)) => {
                         self.op_errors += 1;
-                        Err(truncate(&e.to_string(), 500))
+                        let message = truncate(&e.to_string(), 500);
+                        // Browser::new_page combines create, discovery and
+                        // attachment. Its error cannot prove target rejection.
+                        self.page_creations[creation_index]["state"] = json!("ambiguous");
+                        self.page_creations[creation_index]["error"] = json!(message);
+                        Err(message)
                     }
                     Ok(Ok(page)) => {
+                        let target_id = page.target_id().inner().clone();
+                        if target_id.is_empty() {
+                            self.page_creations[creation_index]["state"] = json!("ambiguous");
+                            self.page_creations[creation_index]["error"] =
+                                json!("Browser::new_page returned no target id");
+                            return Err("Browser::new_page returned no target id".to_string());
+                        }
+                        self.page_creations[creation_index]["state"] = json!("created");
+                        self.page_creations[creation_index]["target_id"] = json!(target_id.clone());
+                        self.created_target_ids.push(target_id);
                         self.page = Some(page);
                         Ok(json!("page_created"))
                     }
                 }
             }
             "goto" => {
-                let target = step["url"].as_str().map(|u| self.substitute(u)).unwrap_or_else(|| self.task_url.clone());
-                let page = self.page.as_ref().ok_or("no page (run new_page first)")?.clone();
+                let target = step["url"]
+                    .as_str()
+                    .map(|u| self.substitute(u))
+                    .unwrap_or_else(|| self.task_url.clone());
+                let page = self
+                    .page
+                    .as_ref()
+                    .ok_or("no page (run new_page first)")?
+                    .clone();
                 let target_clone = target.clone();
-                self.with_timeout(timeout, async { page.goto(target_clone).await }).await?;
+                self.with_timeout(timeout, async { page.goto(target_clone).await })
+                    .await?;
                 self.settle_navigation(timeout, &target).await?;
                 Ok(json!("navigated"))
             }
             "reload" => {
-                self.eval_value(timeout, r#"window.__abb_reload_probe = 1, "marked""#).await?;
+                self.eval_value(timeout, r#"window.__abb_reload_probe = 1, "marked""#)
+                    .await?;
                 let page = self.page.as_ref().ok_or("no page")?.clone();
-                self.with_timeout(timeout, async { page.reload().await }).await?;
-                self.poll_until(timeout, r#"document.readyState === "complete" && !window.__abb_reload_probe"#, "reload to settle").await?;
+                self.with_timeout(timeout, async { page.reload().await })
+                    .await?;
+                self.poll_until(
+                    timeout,
+                    r#"document.readyState === "complete" && !window.__abb_reload_probe"#,
+                    "reload to settle",
+                )
+                .await?;
                 Ok(json!("reloaded"))
             }
             "go_back" | "go_forward" => {
-                let nav_nonce = format!("np{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0));
-                self.eval_value(timeout, &format!(r#"window.__abb_nav_probe = "{nav_nonce}|" + location.href, "marked""#)).await?;
-                let fn_call = if op == "go_back" { "history.back()" } else { "history.forward()" };
-                self.eval_value(timeout, &format!("{fn_call}, 'initiated'")).await?;
+                let nav_nonce = format!(
+                    "np{}",
+                    std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map(|d| d.as_nanos())
+                        .unwrap_or(0)
+                );
+                self.eval_value(
+                    timeout,
+                    &format!(
+                        r#"window.__abb_nav_probe = "{nav_nonce}|" + location.href, "marked""#
+                    ),
+                )
+                .await?;
+                let fn_call = if op == "go_back" {
+                    "history.back()"
+                } else {
+                    "history.forward()"
+                };
+                self.eval_value(timeout, &format!("{fn_call}, 'initiated'"))
+                    .await?;
                 self.poll_until(timeout, &format!(r#"document.readyState === "complete" && window.__abb_nav_probe !== "{nav_nonce}|" + location.href"#), op).await?;
                 Ok(json!("ok"))
             }
@@ -357,22 +626,34 @@ impl Adapter {
             }
             "fill" => {
                 let sel = sel.ok_or("fill requires selector")?;
-                let value = step["value"].as_str().map(|v| self.substitute(v)).unwrap_or_default();
+                let value = step["value"]
+                    .as_str()
+                    .map(|v| self.substitute(v))
+                    .unwrap_or_default();
                 // Focus + select-all so type_str replaces the existing value.
                 self.eval_value(timeout, &Self::sel_expr(&sel, r#"el.focus(); if (typeof el.select === "function") el.select(); return "focused";"#)).await?;
                 let page = self.page.as_ref().ok_or("no page")?.clone();
                 let sel_owned = sel.clone();
-                let element = self.with_timeout(timeout, async { page.find_element(sel_owned).await }).await?;
-                self.with_timeout(timeout, async { element.type_str(value).await }).await?;
+                let element = self
+                    .with_timeout(timeout, async { page.find_element(sel_owned).await })
+                    .await?;
+                self.with_timeout(timeout, async { element.type_str(value).await })
+                    .await?;
                 Ok(json!("filled"))
             }
             "type" => {
                 let sel = sel.ok_or("type requires selector")?;
-                let text = step["text"].as_str().map(|v| self.substitute(v)).unwrap_or_default();
+                let text = step["text"]
+                    .as_str()
+                    .map(|v| self.substitute(v))
+                    .unwrap_or_default();
                 let page = self.page.as_ref().ok_or("no page")?.clone();
                 let sel_owned = sel.clone();
-                let element = self.with_timeout(timeout, async { page.find_element(sel_owned).await }).await?;
-                self.with_timeout(timeout, async { element.type_str(text).await }).await?;
+                let element = self
+                    .with_timeout(timeout, async { page.find_element(sel_owned).await })
+                    .await?;
+                self.with_timeout(timeout, async { element.type_str(text).await })
+                    .await?;
                 Ok(json!("typed"))
             }
             "press" => {
@@ -383,16 +664,25 @@ impl Adapter {
                 }
                 // press_key dispatches raw key events without focusing the
                 // element first; focus explicitly so the key lands on target.
-                self.eval_value(timeout, &Self::sel_expr(&sel, "el.focus(); return 'focused';")).await?;
+                self.eval_value(
+                    timeout,
+                    &Self::sel_expr(&sel, "el.focus(); return 'focused';"),
+                )
+                .await?;
                 let page = self.page.as_ref().ok_or("no page")?.clone();
                 let sel_owned = sel.clone();
-                let element = self.with_timeout(timeout, async { page.find_element(sel_owned).await }).await?;
-                self.with_timeout(timeout, async { element.press_key("Enter").await }).await?;
+                let element = self
+                    .with_timeout(timeout, async { page.find_element(sel_owned).await })
+                    .await?;
+                self.with_timeout(timeout, async { element.press_key("Enter").await })
+                    .await?;
                 Ok(json!("pressed Enter"))
             }
             "check" => {
                 let sel = sel.ok_or("check requires selector")?;
-                let already = self.eval_value(timeout, &Self::sel_expr(&sel, "return !!el.checked;")).await?;
+                let already = self
+                    .eval_value(timeout, &Self::sel_expr(&sel, "return !!el.checked;"))
+                    .await?;
                 if already != Value::Bool(true) {
                     self.click_selector(timeout, &sel).await?;
                 }
@@ -400,7 +690,10 @@ impl Adapter {
             }
             "select_option" => {
                 let sel = sel.ok_or("select_option requires selector")?;
-                let value = step["value"].as_str().map(|v| self.substitute(v)).unwrap_or_default();
+                let value = step["value"]
+                    .as_str()
+                    .map(|v| self.substitute(v))
+                    .unwrap_or_default();
                 let quoted = serde_json::to_string(&value).unwrap();
                 self.eval_value(timeout, &Self::sel_expr(&sel, &format!(
                     r#"el.value = {quoted}; el.dispatchEvent(new Event("input", {{bubbles: true}})); el.dispatchEvent(new Event("change", {{bubbles: true}})); return [el.value];"#
@@ -408,7 +701,11 @@ impl Adapter {
             }
             "focus" => {
                 let sel = sel.ok_or("focus requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, r#"el.focus(); return "focused";"#)).await?;
+                self.eval_value(
+                    timeout,
+                    &Self::sel_expr(&sel, r#"el.focus(); return "focused";"#),
+                )
+                .await?;
                 Ok(json!("focused"))
             }
             "evaluate" => {
@@ -432,30 +729,42 @@ impl Adapter {
                     ),
                     _ => format!("!!document.querySelector({quoted})"),
                 };
-                self.poll_until(timeout, &expression, &format!("selector {sel}")).await?;
+                self.poll_until(timeout, &expression, &format!("selector {sel}"))
+                    .await?;
                 Ok(json!("selector_ready"))
             }
             "text_content" => {
                 let sel = sel.ok_or("text_content requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.textContent;")).await
+                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.textContent;"))
+                    .await
             }
             "inner_text" => {
                 let sel = sel.ok_or("inner_text requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.innerText;")).await
+                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.innerText;"))
+                    .await
             }
             "get_attribute" => {
                 let sel = sel.ok_or("get_attribute requires selector")?;
                 let name = serde_json::to_string(step["name"].as_str().unwrap_or("")).unwrap();
-                self.eval_value(timeout, &Self::sel_expr(&sel, &format!("return el.getAttribute({name});"))).await
+                self.eval_value(
+                    timeout,
+                    &Self::sel_expr(&sel, &format!("return el.getAttribute({name});")),
+                )
+                .await
             }
             "input_value" => {
                 let sel = sel.ok_or("input_value requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.value;")).await
+                self.eval_value(timeout, &Self::sel_expr(&sel, "return el.value;"))
+                    .await
             }
             "count" => {
                 let sel = sel.ok_or("count requires selector")?;
                 let quoted = serde_json::to_string(&sel).unwrap();
-                self.eval_value(timeout, &format!("document.querySelectorAll({quoted}).length")).await
+                self.eval_value(
+                    timeout,
+                    &format!("document.querySelectorAll({quoted}).length"),
+                )
+                .await
             }
             "is_visible" => {
                 let sel = sel.ok_or("is_visible requires selector")?;
@@ -466,11 +775,13 @@ impl Adapter {
             }
             "is_checked" => {
                 let sel = sel.ok_or("is_checked requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, "return !!el.checked;")).await
+                self.eval_value(timeout, &Self::sel_expr(&sel, "return !!el.checked;"))
+                    .await
             }
             "is_enabled" => {
                 let sel = sel.ok_or("is_enabled requires selector")?;
-                self.eval_value(timeout, &Self::sel_expr(&sel, "return !el.disabled;")).await
+                self.eval_value(timeout, &Self::sel_expr(&sel, "return !el.disabled;"))
+                    .await
             }
             "ax_snapshot" => {
                 let nodes = self.full_ax_tree(timeout).await?;
@@ -481,7 +792,10 @@ impl Adapter {
                 let name = self.substitute(step["name"].as_str().unwrap_or(""));
                 let nodes = self.full_ax_tree(timeout).await?;
                 let identity = find_ax_identity(&nodes, role, &name)?;
-                if let Some(compare_to) = step["compare_to"].as_str().filter(|value| !value.is_empty()) {
+                if let Some(compare_to) = step["compare_to"]
+                    .as_str()
+                    .filter(|value| !value.is_empty())
+                {
                     let before = self.saved.get(compare_to).map(String::as_str).unwrap_or("");
                     if before == identity {
                         Ok(json!(format!("stable|{identity}")))
@@ -540,32 +854,79 @@ impl Adapter {
                 let value = saved(name);
                 let expected = to_saved_string(&check["expected"]);
                 let ok = value.map(|v| v == &expected).unwrap_or(false);
-                (ok, format!("{name}={} expected={expected:?}", value.map(|v| format!("{v:?}")).unwrap_or("null".into())))
+                (
+                    ok,
+                    format!(
+                        "{name}={} expected={expected:?}",
+                        value.map(|v| format!("{v:?}")).unwrap_or("null".into())
+                    ),
+                )
             }
             "saved_contains" | "saved_not_contains" => {
                 let value = saved(name);
                 let want = self.substitute(&to_saved_string(&check["expected"]));
                 let contains = value.map(|v| v.contains(&want)).unwrap_or(false);
-                let ok = if kind == "saved_contains" { contains } else { value.is_some() && !contains };
-                let clause = if kind == "saved_contains" { "must contain" } else { "must NOT contain" };
-                (ok, format!("{name}={} {clause} {want:?}", value.map(|v| format!("{:?}", truncate(v, 300))).unwrap_or("null".into())))
+                let ok = if kind == "saved_contains" {
+                    contains
+                } else {
+                    value.is_some() && !contains
+                };
+                let clause = if kind == "saved_contains" {
+                    "must contain"
+                } else {
+                    "must NOT contain"
+                };
+                (
+                    ok,
+                    format!(
+                        "{name}={} {clause} {want:?}",
+                        value
+                            .map(|v| format!("{:?}", truncate(v, 300)))
+                            .unwrap_or("null".into())
+                    ),
+                )
             }
             "saved_truthy" => {
                 let value = saved(name);
                 let truthy = value
-                    .map(|v| !v.is_empty() && v != "undefined" && v != "null" && v != "false" && !v.starts_with("ERROR:"))
+                    .map(|v| {
+                        !v.is_empty()
+                            && v != "undefined"
+                            && v != "null"
+                            && v != "false"
+                            && !v.starts_with("ERROR:")
+                    })
                     .unwrap_or(false);
-                (truthy, format!("{name}={}", value.map(|v| format!("{:?}", truncate(v, 300))).unwrap_or("null".into())))
+                (
+                    truthy,
+                    format!(
+                        "{name}={}",
+                        value
+                            .map(|v| format!("{:?}", truncate(v, 300)))
+                            .unwrap_or("null".into())
+                    ),
+                )
             }
             "step_ok" | "step_fails" => {
                 let idx = check["step"].as_u64().unwrap_or(u64::MAX) as usize;
                 let row = self.steps.get(idx);
                 let ok_flag = row.map(|r| r.0).unwrap_or(false);
-                let err_text = row.map(|r| if r.2.is_empty() { "none".to_string() } else { r.2.clone() }).unwrap_or("none".into());
+                let err_text = row
+                    .map(|r| {
+                        if r.2.is_empty() {
+                            "none".to_string()
+                        } else {
+                            r.2.clone()
+                        }
+                    })
+                    .unwrap_or("none".into());
                 if kind == "step_ok" {
                     (ok_flag, format!("step {idx} ok={ok_flag} error={err_text}"))
                 } else {
-                    (row.map(|r| !r.0).unwrap_or(false), format!("step {idx} ok={ok_flag} (must fail) error={err_text}"))
+                    (
+                        row.map(|r| !r.0).unwrap_or(false),
+                        format!("step {idx} ok={ok_flag} (must fail) error={err_text}"),
+                    )
                 }
             }
             "file_nonempty" => {
@@ -576,7 +937,8 @@ impl Adapter {
             "any_of" => {
                 let empty = vec![];
                 let subs = check["checks"].as_array().unwrap_or(&empty);
-                let results: Vec<(bool, String)> = subs.iter().map(|sub| self.evaluate_check(sub)).collect();
+                let results: Vec<(bool, String)> =
+                    subs.iter().map(|sub| self.evaluate_check(sub)).collect();
                 let any_ok = results.iter().any(|(ok, _)| *ok);
                 let evidence = results
                     .iter()
@@ -587,6 +949,64 @@ impl Adapter {
             }
             other => (false, format!("unknown check kind {other}")),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn replay_acknowledgements(values: &[bool]) -> (bool, Vec<Value>) {
+        let mut attempts = Vec::new();
+        let mut closed = false;
+        for (index, success) in values.iter().copied().take(2).enumerate() {
+            closed = record_close_acknowledgement(
+                &mut attempts,
+                "target-test",
+                (index + 1) as u8,
+                success,
+            );
+            if closed {
+                break;
+            }
+        }
+        (closed, attempts)
+    }
+
+    #[test]
+    fn repeated_false_close_acknowledgements_remain_unconfirmed() {
+        let (closed, attempts) = replay_acknowledgements(&[false, false]);
+
+        assert!(!closed);
+        assert_eq!(attempts.len(), 2);
+        assert_eq!(attempts[0]["success"], json!(false));
+        assert_eq!(attempts[1]["confirmed"], json!(false));
+    }
+
+    #[test]
+    fn false_then_true_close_acknowledgement_confirms_retry() {
+        let (closed, attempts) = replay_acknowledgements(&[false, true]);
+
+        assert!(closed);
+        assert_eq!(attempts.len(), 2);
+        assert_eq!(attempts[0]["confirmed"], json!(false));
+        assert_eq!(attempts[1]["success"], json!(true));
+        assert_eq!(attempts[1]["confirmed"], json!(true));
+    }
+
+    #[test]
+    fn close_response_requires_explicit_success_field() {
+        let acknowledged = AuditedCloseTargetParams::response_from_value(json!({"success": true}))
+            .expect("success=true should deserialize");
+        let rejected = AuditedCloseTargetParams::response_from_value(json!({"success": false}))
+            .expect("success=false should deserialize for fail-closed handling");
+        let missing = AuditedCloseTargetParams::response_from_value(json!({}));
+        let wrong_type = AuditedCloseTargetParams::response_from_value(json!({"success": "true"}));
+
+        assert!(acknowledged.success);
+        assert!(!rejected.success);
+        assert!(missing.is_err());
+        assert!(wrong_type.is_err());
     }
 }
 
@@ -601,6 +1021,19 @@ fn check_name(check: &Value, idx: usize) -> String {
 
 #[tokio::main]
 async fn main() {
+    if rustls::crypto::CryptoProvider::get_default().is_none()
+        && rustls::crypto::ring::default_provider()
+            .install_default()
+            .is_err()
+    {
+        emit_infra(
+            "failed to install rustls ring crypto provider",
+            &Value::Null,
+            0,
+            0,
+        );
+        return;
+    }
     let mut stdin = String::new();
     if std::io::stdin().read_to_string(&mut stdin).is_err() {
         emit_infra("cannot read stdin", &Value::Null, 0, 0);
@@ -609,7 +1042,12 @@ async fn main() {
     let payload: Value = match serde_json::from_str(&stdin) {
         Ok(v) => v,
         Err(e) => {
-            emit_infra(&format!("invalid payload JSON on stdin: {e}"), &Value::Null, 0, 0);
+            emit_infra(
+                &format!("invalid payload JSON on stdin: {e}"),
+                &Value::Null,
+                0,
+                0,
+            );
             return;
         }
     };
@@ -619,8 +1057,18 @@ async fn main() {
     let expect_ua = payload["expect_ua"].as_str().unwrap_or("").to_string();
     let expect_live = {
         let v = payload["expect_product_live"].as_str().unwrap_or("");
-        if v.is_empty() { expect_product.clone() } else { v.to_string() }
+        if v.is_empty() {
+            expect_product.clone()
+        } else {
+            v.to_string()
+        }
     };
+    let remote_cdp = payload["remote_cdp"].as_bool().unwrap_or(false);
+    let expected_remote_identity = json!({
+        "product": payload["expected_remote_identity"]["product"].as_str().unwrap_or(""),
+        "protocolVersion": payload["expected_remote_identity"]["protocolVersion"].as_str().unwrap_or(""),
+        "revision": payload["expected_remote_identity"]["revision"].as_str().unwrap_or(""),
+    });
     let task_url = payload["task_url"].as_str().unwrap_or("").to_string();
     let artifact_dir = payload["artifact_dir"].as_str().unwrap_or(".").to_string();
     let connect_timeout_ms = payload["connect_timeout_ms"].as_u64().unwrap_or(15000);
@@ -640,18 +1088,35 @@ async fn main() {
 
     // ---- Binding gate 1/2: HTTP identity of the endpoint, verbatim.
     if cdp_port == 0 || expect_product.is_empty() {
-        emit_infra("binding gate: cdp_port and expect_product are required (refusing to run unverified)", &binding, 0, 0);
+        emit_infra(
+            "binding gate: cdp_port and expect_product are required (refusing to run unverified)",
+            &binding,
+            0,
+            0,
+        );
         return;
     }
     let version_info = match http_json(&format!("http://127.0.0.1:{cdp_port}/json/version")) {
         Ok(v) => v,
         Err(e) => {
-            emit_infra(&format!("binding gate: /json/version unreachable on port {cdp_port}: {e}"), &binding, 0, 0);
+            emit_infra(
+                &format!("binding gate: /json/version unreachable on port {cdp_port}: {e}"),
+                &binding,
+                0,
+                0,
+            );
             return;
         }
     };
-    let http_product = version_info["Browser"].as_str().or(version_info["Product"].as_str()).unwrap_or("").to_string();
-    let http_ua = version_info["User-Agent"].as_str().unwrap_or("").to_string();
+    let http_product = version_info["Browser"]
+        .as_str()
+        .or(version_info["Product"].as_str())
+        .unwrap_or("")
+        .to_string();
+    let http_ua = version_info["User-Agent"]
+        .as_str()
+        .unwrap_or("")
+        .to_string();
     binding["http_product"] = json!(http_product);
     if http_product != expect_product || (!expect_ua.is_empty() && http_ua != expect_ua) {
         emit_infra(
@@ -662,23 +1127,41 @@ async fn main() {
     }
     if let Some(ws_from_version) = version_info["webSocketDebuggerUrl"].as_str() {
         if !ws_from_version.is_empty() && ws_from_version != browser_ws {
-            emit_infra(&format!("binding gate: browser_ws {browser_ws} != verified endpoint {ws_from_version}"), &binding, 0, 0);
+            emit_infra(
+                &format!(
+                    "binding gate: browser_ws {browser_ws} != verified endpoint {ws_from_version}"
+                ),
+                &binding,
+                0,
+                0,
+            );
             return;
         }
     }
     binding["gate"] = json!("http_json_version");
 
-    let fixture_origin = task_url.splitn(4, '/').take(3).collect::<Vec<_>>().join("/");
-    let fixture_host = fixture_origin.splitn(2, "://").nth(1).unwrap_or("").to_string();
+    let fixture_origin = task_url
+        .splitn(4, '/')
+        .take(3)
+        .collect::<Vec<_>>()
+        .join("/");
+    let fixture_host = fixture_origin
+        .splitn(2, "://")
+        .nth(1)
+        .unwrap_or("")
+        .to_string();
     let mut adapter = Adapter {
         task_url: task_url.clone(),
         fixture_origin,
         fixture_host,
         artifact_dir: artifact_dir.clone(),
         action_timeout_ms,
-        budget_deadline: Instant::now() + Duration::from_millis(task_timeout_ms.saturating_sub(3000)),
+        budget_deadline: Instant::now()
+            + Duration::from_millis(task_timeout_ms.saturating_sub(3000)),
         browser: None,
         page: None,
+        page_creations: Vec::new(),
+        created_target_ids: Vec::new(),
         saved: HashMap::new(),
         steps: Vec::new(),
         op_calls: 0,
@@ -692,10 +1175,10 @@ async fn main() {
         let (browser, mut handler) = Browser::connect(browser_ws.clone()).await?;
         tokio::spawn(async move { while handler.next().await.is_some() {} });
         let ver = browser.version().await?;
-        Ok::<(Browser, String), chromiumoxide::error::CdpError>((browser, ver.product))
+        Ok::<(Browser, _), chromiumoxide::error::CdpError>((browser, ver))
     })
     .await;
-    let (browser, live_product) = match connect_result {
+    let (browser, live_version) = match connect_result {
         Err(_) | Ok(Err(_)) => {
             let connect_error = match connect_result {
                 Err(_) => format!("connect timeout after {connect_timeout_ms}ms"),
@@ -713,29 +1196,62 @@ async fn main() {
             for (idx, check) in checks.iter().enumerate() {
                 rows.push(json!({"name": check_name(check, idx), "status": "fail", "evidence": "client did not connect; scenario not executed"}));
             }
-            emit(json!({
+            let outcome = json!({
                 "ok": true,
                 "answer": format!("0/{} checks", rows.len()),
                 "observations": {"checks": rows, "saved": {}, "binding": binding, "connect_error": connect_error, "failure_class": "cdp_semantic"},
                 "metrics": {"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
-            }));
+            });
+            let cleanup = adapter.cleanup_pages().await;
+            emit(apply_cleanup_contract(outcome, cleanup, "chromiumoxide"));
             return;
         }
         Ok(Ok(pair)) => pair,
     };
+    let live_product = live_version.product.clone();
     adapter.trace(json!({"direction": "chromiumoxide", "step": "connect", "ok": true}));
     binding["expect_product_live"] = json!(expect_live);
     binding["live_product"] = json!(live_product);
     binding["live_check"] = json!("chromiumoxide_browser_version");
-    if live_product != expect_live {
-        emit_infra(
-            &format!("binding gate: live chromiumoxide transport reports product={live_product:?}; expected {expect_live:?} — the client is not bound to the engine under test"),
-            &binding, 1, 1,
-        );
+    let mut identity_verified = live_product == expect_live;
+    if remote_cdp {
+        let actual = json!({
+            "product": live_version.product,
+            "protocolVersion": live_version.protocol_version,
+            "revision": live_version.revision,
+        });
+        let fields = ["product", "protocolVersion", "revision"];
+        let mismatches: Vec<&str> = fields
+            .iter()
+            .copied()
+            .filter(|field| actual[*field] != expected_remote_identity[*field])
+            .collect();
+        identity_verified = mismatches.is_empty();
+        binding["transport"] = json!("remote_cdp");
+        binding["expected"] = expected_remote_identity;
+        binding["actual"] = actual;
+        binding["compared_fields"] = json!(fields);
+        binding["mismatches"] = json!(mismatches);
+        binding["verified"] = json!(identity_verified);
+        binding["same_connection_as_task"] = json!(true);
+        binding["reconnect_allowed"] = json!(false);
+    }
+    if !identity_verified {
+        let outcome = json!({
+            "ok": false,
+            "error": {
+                "class": "script_error",
+                "message": format!("binding gate: live chromiumoxide transport identity does not match the expected engine: {:?}", binding["actual"]),
+            },
+            "observations": {"binding": binding},
+            "metrics": {"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
+        });
+        let cleanup = adapter.cleanup_pages().await;
+        emit(apply_cleanup_contract(outcome, cleanup, "chromiumoxide"));
         return;
     }
     binding["verified"] = json!(true);
-    adapter.trace(json!({"direction": "chromiumoxide", "step": "binding_verified", "product": live_product}));
+    adapter.trace(json!({"direction": "chromiumoxide", "step": "binding_verified", "identity": binding["actual"]}));
     adapter.browser = Some(browser);
 
     // ---- Scenario steps.
@@ -784,7 +1300,7 @@ async fn main() {
         .cloned()
         .unwrap_or_else(|| format!("{pass_count}/{} checks", rows.len()));
     let op_errors_total = adapter.steps.iter().filter(|(ok, _, _)| !ok).count();
-    emit(json!({
+    let outcome = json!({
         "ok": true,
         "answer": answer,
         "observations": {
@@ -793,7 +1309,9 @@ async fn main() {
             "failure_class": "cdp_semantic",
         },
         "metrics": {"cdp_call_count": adapter.op_calls, "cdp_error_count": adapter.op_errors, "ws_disconnect_count": 0},
-    }));
+    });
+    let cleanup = adapter.cleanup_pages().await;
+    emit(apply_cleanup_contract(outcome, cleanup, "chromiumoxide"));
     // The handler task keeps the runtime alive; the result is on stdout.
     std::process::exit(0);
 }

@@ -17,6 +17,7 @@
 
 require "json"
 require "net/http"
+require "openssl"
 require "timeout"
 require "ferrum"
 
@@ -33,6 +34,26 @@ def emit_infra(message, binding_info, calls, errs)
     "observations" => { "binding" => binding_info },
     "metrics" => { "cdp_call_count" => calls, "cdp_error_count" => errs, "ws_disconnect_count" => 0 }
   )
+end
+
+def apply_cleanup_contract(outcome, cleanup, label)
+  observations = (outcome["observations"] || {}).merge(
+    "target_cleanup" => cleanup,
+    "isolation_restored" => cleanup["confirmed"] == true
+  )
+  return outcome.merge("observations" => observations) if cleanup["confirmed"] == true
+
+  {
+    "ok" => false,
+    "status" => "infra",
+    "error" => {
+      "class" => "script_error",
+      "message" => "#{label} target cleanup was not confirmed: #{cleanup.inspect}"
+    },
+    "answer" => outcome["answer"],
+    "observations" => observations.merge("primary_outcome" => outcome),
+    "metrics" => outcome["metrics"] || {}
+  }
 end
 
 def to_saved_string(value)
@@ -75,10 +96,95 @@ class Adapter
     @steps = []
     @op_calls = 0
     @op_errors = 0
+    @pages = []
+    @page_creations = []
     @trace_path = File.join(@artifact_dir, "cdp.jsonl")
     File.write(@trace_path, "")
   rescue Errno::ENOENT
     nil
+  end
+
+  def create_tracked_page(timeout_ms)
+    creation = {
+      "attempt" => @page_creations.length + 1,
+      "state" => "requested"
+    }
+    @page_creations << creation
+    begin
+      created = call_op(timeout_ms) { @browser.create_page }
+      target_id = created&.target_id.to_s
+      if target_id.empty?
+        creation["state"] = "ambiguous"
+        raise "Ferrum created a page without exposing its target id"
+      end
+      creation.merge!("state" => "created", "target_id" => target_id, "page" => created)
+      @pages << created
+      created
+    rescue StandardError => e
+      creation["state"] = "ambiguous" unless creation["state"] == "created"
+      creation["error"] = e.message.to_s[0, 500]
+      raise
+    end
+  end
+
+  def cleanup_pages
+    attempts = []
+    @pages.reverse_each do |created|
+      creation = @page_creations.find { |candidate| candidate["page"].equal?(created) }
+      target_id = creation && creation["target_id"]
+      closed = false
+      2.times do |offset|
+        attempt = offset + 1
+        begin
+          raise "created page has no target id" if target_id.to_s.empty?
+
+          response = Timeout.timeout(3) do
+            @browser.command("Target.closeTarget", targetId: target_id)
+          end
+          success = response.is_a?(Hash) && response["success"] == true
+          closed = success
+          attempts << {
+            "target_id" => target_id,
+            "attempt" => attempt,
+            "success" => response.is_a?(Hash) ? response["success"] : nil,
+            "confirmed" => closed
+          }
+        rescue Timeout::Error
+          attempts << {
+            "target_id" => target_id,
+            "attempt" => attempt,
+            "confirmed" => false,
+            "timed_out" => true,
+            "error" => "Target.closeTarget timeout"
+          }
+          break
+        rescue StandardError => e
+          attempts << {
+            "target_id" => target_id,
+            "attempt" => attempt,
+            "confirmed" => false,
+            "error" => e.message.to_s[0, 500]
+          }
+        end
+        break if closed
+      end
+      creation["state"] = closed ? "closed" : "cleanup_unconfirmed" if creation
+      created.close_connection if closed
+    rescue StandardError
+      # Cleanup evidence already records the protocol outcome. Closing the
+      # local per-page subscriber is best effort and cannot confirm a target.
+      nil
+    end
+
+    confirmed = @page_creations.all? { |creation| creation["state"] == "closed" }
+    {
+      "backend" => "ferrum.Target.closeTarget",
+      "required" => !@page_creations.empty?,
+      "confirmed" => confirmed,
+      "same_connection_as_task" => true,
+      "creation_attempts" => @page_creations.map { |creation| creation.reject { |key, _| key == "page" } },
+      "attempts" => attempts
+    }
   end
 
   def trace(obj)
@@ -211,7 +317,7 @@ class Adapter
     when "user_agent"
       call_op(timeout) { @browser.command("Browser.getVersion")["userAgent"] }
     when "new_page"
-      @page = call_op(timeout) { @browser.create_page }
+      @page = create_tracked_page(timeout)
       "page_created"
     when "goto"
       target = step["url"] ? substitute(step["url"]) : @task_url
@@ -405,6 +511,11 @@ expect_product = payload["expect_product"].to_s
 expect_ua = payload["expect_ua"].to_s
 expect_live = payload["expect_product_live"].to_s
 expect_live = expect_product if expect_live.empty?
+identity_fields = %w[product protocolVersion revision].freeze
+expected_remote_identity = if payload["remote_cdp"] == true
+                             source = payload["expected_remote_identity"] || {}
+                             identity_fields.to_h { |field| [field, source[field].to_s] }
+                           end
 checks = payload["checks"] || []
 client_version = Gem::Specification.find_by_name("ferrum").version.to_s
 
@@ -413,8 +524,29 @@ binding_info = {
   "expect_product" => expect_product, "verified" => false, "gate" => nil,
   "client_version" => client_version
 }
+
+# Ferrum 0.17.2's WebSocket transport creates an SSLSocket without assigning
+# the URI hostname, so SNI-based remote WSS endpoints can reject the TLS
+# handshake before any CDP data is sent. Preserve the unmodified local route;
+# for an explicitly marked remote-CDP experiment, supply only the missing SNI
+# hostname while continuing to use Ferrum's own Browser/Page surface.
+if payload["remote_cdp"] == true && URI(browser_ws).scheme == "wss"
+  remote_sni_host = URI(browser_ws).host
+  sni_patch = Module.new do
+    define_method(:connect) do |*args|
+      self.hostname = remote_sni_host if respond_to?(:hostname=)
+      super(*args)
+    end
+  end
+  OpenSSL::SSL::SSLSocket.prepend(sni_patch)
+  binding_info["transport_patch"] = "remote_wss_sni_hostname"
+end
 if browser_ws.empty? || payload["task_url"].to_s.empty?
   emit_infra("payload requires browser_ws and task_url", binding_info, 0, 0)
+  exit 0
+end
+if expected_remote_identity && identity_fields.any? { |field| expected_remote_identity[field].empty? }
+  emit_infra("binding gate: expected_remote_identity requires product/protocolVersion/revision", binding_info, 0, 0)
   exit 0
 end
 
@@ -449,12 +581,14 @@ binding_info["gate"] = "http_json_version"
 
 # ---- Connect + binding gate 2/2: live-transport identity.
 connect_error = nil
+live_identity = nil
 live_product = nil
 browser = nil
 begin
   Timeout.timeout((payload["connect_timeout_ms"] || 15_000).to_i / 1000.0) do
     browser = Ferrum::Browser.new(ws_url: browser_ws)
-    live_product = browser.command("Browser.getVersion")["product"].to_s
+    live_identity = browser.command("Browser.getVersion")
+    live_product = live_identity["product"].to_s
   end
 rescue StandardError, Timeout::Error => e
   connect_error = e.message.to_s[0, 1000]
@@ -469,25 +603,53 @@ if connect_error
   checks.each_with_index do |check, idx|
     rows << { "name" => check_name(check, idx), "status" => "fail", "evidence" => "client did not connect; scenario not executed" }
   end
-  emit(
+  outcome = {
     "ok" => true,
     "answer" => "0/#{rows.length} checks",
     "observations" => { "checks" => rows, "saved" => {}, "binding" => binding_info,
                         "connect_error" => connect_error, "failure_class" => "cdp_semantic" },
     "metrics" => { "cdp_call_count" => 1, "cdp_error_count" => 1, "ws_disconnect_count" => 0 }
-  )
+  }
+  adapter.browser = browser
+  emit(apply_cleanup_contract(outcome, adapter.cleanup_pages, "Ferrum"))
   exit 0
 end
 
 binding_info["expect_product_live"] = expect_live
 binding_info["live_product"] = live_product
 binding_info["live_check"] = "ferrum_browser_get_version"
-if live_product != expect_live
-  emit_infra("binding gate: live ferrum transport reports product=#{live_product.inspect}; expected #{expect_live.inspect} — the client is not bound to the engine under test", binding_info, 1, 1)
+identity_verified = live_product == expect_live
+if expected_remote_identity
+  actual_remote_identity = identity_fields.to_h { |field| [field, (live_identity || {})[field].to_s] }
+  mismatches = identity_fields.select { |field| actual_remote_identity[field] != expected_remote_identity[field] }
+  binding_info.merge!(
+    "transport" => "remote_cdp",
+    "expected" => expected_remote_identity,
+    "actual" => actual_remote_identity,
+    "compared_fields" => identity_fields,
+    "mismatches" => mismatches,
+    "verified" => mismatches.empty?,
+    "same_connection_as_task" => true,
+    "reconnect_allowed" => false
+  )
+  identity_verified = mismatches.empty?
+end
+unless identity_verified
+  outcome = {
+    "ok" => false,
+    "error" => {
+      "class" => "script_error",
+      "message" => "binding gate: live ferrum transport identity does not match the expected engine: #{binding_info['actual'].inspect}"
+    },
+    "observations" => { "binding" => binding_info },
+    "metrics" => { "cdp_call_count" => 1, "cdp_error_count" => 1, "ws_disconnect_count" => 0 }
+  }
+  adapter.browser = browser
+  emit(apply_cleanup_contract(outcome, adapter.cleanup_pages, "Ferrum"))
   exit 0
 end
 binding_info["verified"] = true
-adapter.trace("direction" => "ferrum", "step" => "binding_verified", "product" => live_product)
+adapter.trace("direction" => "ferrum", "step" => "binding_verified", "identity" => binding_info["actual"] || { "product" => live_product })
 adapter.browser = browser
 
 # ---- Scenario steps.
@@ -517,7 +679,7 @@ end
 
 answer = adapter.saved.fetch("answer", "#{pass_count}/#{rows.length} checks")
 op_error_rows = adapter.steps.count { |row| !row[:ok] }
-emit(
+outcome = {
   "ok" => true,
   "answer" => answer,
   "observations" => {
@@ -526,6 +688,7 @@ emit(
     "failure_class" => "cdp_semantic"
   },
   "metrics" => { "cdp_call_count" => adapter.op_calls, "cdp_error_count" => adapter.op_errors, "ws_disconnect_count" => 0 }
-)
+}
+emit(apply_cleanup_contract(outcome, adapter.cleanup_pages, "Ferrum"))
 # Never browser.quit: with ws_url that could reach the engine under test.
 exit 0

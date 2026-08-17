@@ -61,7 +61,7 @@ L2 按行为判语义。fixture 跑在框架自己的服务器上，由服务端
 
 ## 五引擎与口径
 
-main 分支报告四个本地固定二进制。[`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支加入远程端点 Kitesurf，并在两个显式口径下发布对比：口径 A 剔除跨远程边界后失败无法归因的 subset，口径 B 进一步剔除端到端系统性阻塞的 subset。口径定义、裁定规则和五引擎表都在那个分支的报告里；一句话版本是：远程端点只有在显式声明的分母之内才可比。
+main 分支报告四个本地固定二进制。你所在的 `kitesurf-eval` 分支加入远程端点 Kitesurf，并在两个显式口径下发布对比：口径 A 剔除跨远程边界后失败无法归因的 subset，口径 B 进一步剔除端到端系统性阻塞的 subset。口径定义、裁定规则和五引擎表都在[五引擎报告](reports/five-engine-report-20260813.md)里；一句话版本是：远程端点只有在显式声明的分母之内才可比。
 
 ## 为什么测这些机制
 

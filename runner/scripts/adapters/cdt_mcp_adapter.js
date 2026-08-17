@@ -198,6 +198,40 @@ async function main() {
 
   // ---- Binding gate 1/2: HTTP identity of the endpoint, verbatim.
   const binding = { driver: "chrome_devtools_mcp", browser_ws: browserWs, expect_product: expectProduct, verified: false, gate: null };
+  if (payload.remote_cdp === true) {
+    Object.assign(binding, {
+      excluded: true,
+      gate: "remote_live_identity_unavailable",
+      required_fields: ["product", "protocolVersion", "revision"],
+    });
+    emit({
+      ok: false,
+      error: {
+        class: "script_error",
+        message: "binding unverified: chrome-devtools-mcp does not expose Browser.getVersion on its live task connection",
+      },
+      observations: {
+        binding,
+        failure_class: "binding_unverified",
+        formal_score_eligible: false,
+        binding_exclusion_isolation: {
+          schema: "abb.binding_exclusion_isolation.v1",
+          driver: "chrome_devtools_mcp",
+          phase: "before_driver_start",
+          scenario_started: false,
+          target_creation_requested: false,
+          cleanup: {
+            backend: "not_started",
+            required: false,
+            confirmed: true,
+          },
+        },
+        isolation_restored: true,
+      },
+      metrics: {},
+    });
+    return;
+  }
   if (!cdpPort || !expectProduct) {
     emit({ ok: false, error: { class: "script_error", message: "binding gate: cdp_port and expect_product are required (refusing to run unverified)" }, observations: { binding }, metrics: {} });
     return;

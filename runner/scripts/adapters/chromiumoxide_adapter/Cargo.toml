@@ -7,6 +7,16 @@ description = "chromiumoxide scenario adapter for Agent Browser Bench (abb_scena
 
 [dependencies]
 chromiumoxide = "=0.9.1"
+# chromiumoxide enables async-tungstenite's Tokio transport but not a TLS
+# backend. Feature unification through this direct dependency keeps local
+# ws:// behavior unchanged and makes the same pinned client usable with remote
+# wss:// endpoints such as Kitesurf.
+async-tungstenite = { version = "0.32", features = ["tokio-rustls-webpki-roots"] }
+# async-tungstenite deliberately leaves rustls' process-wide crypto provider
+# unselected. Enable exactly one provider so the first WSS handshake does not
+# panic before chromiumoxide can bind the session.
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "io-std", "io-util"] }
 futures = "0.3"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"

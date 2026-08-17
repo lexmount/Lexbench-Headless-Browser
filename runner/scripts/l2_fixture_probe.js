@@ -29,11 +29,17 @@ function emit(obj) {
   process.stdout.write(JSON.stringify(obj));
 }
 
-function fail(errorClass, message, session) {
+function bindingObservations(session) {
+  return session && session.remoteBinding
+    ? { binding: session.remoteBinding }
+    : {};
+}
+
+function fail(errorClass, message, session, extraObservations = {}) {
   emit({
     ok: false,
     error: { class: errorClass, message },
-    observations: {},
+    observations: { ...bindingObservations(session), ...extraObservations },
     metrics: {
       cdp_call_count: session ? session.callCount : 0,
       cdp_error_count: session ? session.errorCount : 0,
@@ -84,15 +90,30 @@ async function main() {
   fs.mkdirSync(artifactDir, { recursive: true });
   fs.writeFileSync(cdpPath, "", "utf8");
   const session = new CdpSession(browserWs, cdpPath);
+  const remoteIdentity = process.env.REMOTE_CDP_IDENTITY_JSON || "";
 
   try {
     await session.connect();
-    await session.openPage(process.env.CDP_PORT);
+    await session.bindRemoteIdentity(remoteIdentity);
+    await session.openPage(process.env.CDP_PORT, {
+      allowHttpFallback: !remoteIdentity,
+    });
   } catch (err) {
-    fail("script_error", `websocket connect failed: ${err.message}`, session);
+    const closeResult = await session.close().catch((cleanupError) => ({
+      confirmed: false,
+      error: String(cleanupError && cleanupError.message ? cleanupError.message : cleanupError)
+    }));
+    const cleanup = err && err.targetCleanup ? err.targetCleanup : closeResult;
+    fail(
+      err && err.cdpRejected === true ? "engine_unsupported" : "script_error",
+      `connection/binding/page bootstrap failed: ${err.message}`,
+      session,
+      { target_cleanup: cleanup, isolation_restored: cleanup.confirmed === true }
+    );
     return;
   }
 
+  let outcome;
   try {
     await session.command("Page.enable");
     await session.command("Runtime.enable");
@@ -145,26 +166,65 @@ async function main() {
     }
 
     const answer = text == null ? "" : String(text).trim();
-    emit({
+    outcome = {
       ok: true,
       answer,
       observations: {
         selector,
         settled,
-        element_found: text !== null
+        element_found: text !== null,
+        ...(session.remoteBinding ? { binding: session.remoteBinding } : {})
       },
       metrics: {
         cdp_call_count: session.callCount,
         cdp_error_count: session.errorCount,
         ws_disconnect_count: 0
       }
-    });
+    };
   } catch (err) {
     const msg = String(err && err.message ? err.message : err);
-    fail(classifyError(msg), msg, session);
-  } finally {
-    await session.close();
+    outcome = {
+      ok: false,
+      error: { class: classifyError(msg), message: msg },
+      observations: bindingObservations(session),
+      metrics: {
+        cdp_call_count: session.callCount,
+        cdp_error_count: session.errorCount,
+        ws_disconnect_count: 0
+      }
+    };
   }
+
+  const cleanup = await session.close().catch((err) => ({
+    confirmed: false,
+    error: String(err && err.message ? err.message : err)
+  }));
+  outcome.observations = {
+    ...(outcome.observations || {}),
+    target_cleanup: cleanup,
+    isolation_restored: cleanup.confirmed === true
+  };
+  outcome.metrics = {
+    ...(outcome.metrics || {}),
+    cdp_call_count: session.callCount,
+    cdp_error_count: session.errorCount,
+    ws_disconnect_count: 0
+  };
+  if (remoteIdentity && cleanup.confirmed !== true) {
+    outcome = {
+      ok: false,
+      error: {
+        class: "script_error",
+        message: `remote target cleanup was not confirmed: ${JSON.stringify(cleanup)}`
+      },
+      observations: {
+        ...outcome.observations,
+        primary_outcome: outcome
+      },
+      metrics: outcome.metrics
+    };
+  }
+  emit(outcome);
 }
 
 main().catch((err) => {

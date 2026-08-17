@@ -31,18 +31,46 @@ import (
 )
 
 type payloadT struct {
-	BrowserWS         string           `json:"browser_ws"`
-	CDPPort           int              `json:"cdp_port"`
-	ExpectProduct     string           `json:"expect_product"`
-	ExpectUA          string           `json:"expect_ua"`
-	ExpectProductLive string           `json:"expect_product_live"`
-	TaskURL           string           `json:"task_url"`
-	Steps             []map[string]any `json:"steps"`
-	Checks            []map[string]any `json:"checks"`
-	ConnectTimeoutMS  int              `json:"connect_timeout_ms"`
-	ActionTimeoutMS   int              `json:"action_timeout_ms"`
-	TaskTimeoutMS     int              `json:"task_timeout_ms"`
-	ArtifactDir       string           `json:"artifact_dir"`
+	BrowserWS              string           `json:"browser_ws"`
+	RemoteCDP              bool             `json:"remote_cdp"`
+	ExpectedRemoteIdentity remoteIdentityT  `json:"expected_remote_identity"`
+	CDPPort                int              `json:"cdp_port"`
+	ExpectProduct          string           `json:"expect_product"`
+	ExpectUA               string           `json:"expect_ua"`
+	ExpectProductLive      string           `json:"expect_product_live"`
+	TaskURL                string           `json:"task_url"`
+	Steps                  []map[string]any `json:"steps"`
+	Checks                 []map[string]any `json:"checks"`
+	ConnectTimeoutMS       int              `json:"connect_timeout_ms"`
+	ActionTimeoutMS        int              `json:"action_timeout_ms"`
+	TaskTimeoutMS          int              `json:"task_timeout_ms"`
+	ArtifactDir            string           `json:"artifact_dir"`
+}
+
+type remoteIdentityT struct {
+	Product         string `json:"product"`
+	ProtocolVersion string `json:"protocolVersion"`
+	Revision        string `json:"revision"`
+}
+
+func remoteIdentityBinding(expected, actual remoteIdentityT) map[string]any {
+	fields := []string{"product", "protocolVersion", "revision"}
+	mismatches := []string{}
+	if actual.Product != expected.Product {
+		mismatches = append(mismatches, "product")
+	}
+	if actual.ProtocolVersion != expected.ProtocolVersion {
+		mismatches = append(mismatches, "protocolVersion")
+	}
+	if actual.Revision != expected.Revision {
+		mismatches = append(mismatches, "revision")
+	}
+	return map[string]any{
+		"transport": "remote_cdp", "expected": expected, "actual": actual,
+		"compared_fields": fields, "mismatches": mismatches,
+		"verified": len(mismatches) == 0, "same_connection_as_task": true,
+		"reconnect_allowed": false,
+	}
 }
 
 type checkRow struct {
@@ -55,6 +83,20 @@ type stepResult struct {
 	OK    bool
 	Value any
 	Err   string
+}
+
+type pageCreationResult struct {
+	page *rod.Page
+	err  error
+}
+
+type pageCreation struct {
+	Attempt  int
+	State    string
+	TargetID string
+	Error    string
+	Page     *rod.Page
+	Pending  <-chan pageCreationResult
 }
 
 var clientVersion = "v0.116.2" // kept in sync with go.mod
@@ -122,16 +164,185 @@ func httpJSON(rawURL string, timeout time.Duration) (map[string]any, error) {
 }
 
 type adapter struct {
-	payload        payloadT
-	fixture        *url.URL
-	trace          *os.File
-	browser        *rod.Browser
-	page           *rod.Page
-	saved          map[string]string
-	steps          []stepResult
-	opCalls        int
-	opErrors       int
-	budgetDeadline time.Time
+	payload         payloadT
+	fixture         *url.URL
+	trace           *os.File
+	browser         *rod.Browser
+	page            *rod.Page
+	pages           []*rod.Page
+	pageCreations   []*pageCreation
+	saved           map[string]string
+	steps           []stepResult
+	opCalls         int
+	opErrors        int
+	budgetDeadline  time.Time
+	closeTargetHook func(proto.TargetTargetID, time.Duration) (bool, error)
+}
+
+func (a *adapter) resolvePageCreation(creation *pageCreation, result pageCreationResult) error {
+	creation.Pending = nil
+	if result.err != nil {
+		creation.Error = result.err.Error()
+		// Browser.Page performs target creation, attachment and optional
+		// navigation behind one error. Even a CDP error here may arrive after
+		// creation, so it cannot prove that no target exists.
+		creation.State = "ambiguous"
+		return result.err
+	}
+	if result.page == nil || result.page.TargetID == "" {
+		creation.State = "ambiguous"
+		creation.Error = "Browser.Page returned no target id"
+		return fmt.Errorf("%s", creation.Error)
+	}
+	creation.State = "created"
+	creation.Page = result.page
+	creation.TargetID = string(result.page.TargetID)
+	a.pages = append(a.pages, result.page)
+	a.page = result.page
+	return nil
+}
+
+func (a *adapter) closeTargetForIsolation(
+	targetID proto.TargetTargetID,
+	timeout time.Duration,
+) (success bool, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			success = false
+			err = fmt.Errorf("%v", recovered)
+		}
+	}()
+	if a.closeTargetHook != nil {
+		return a.closeTargetHook(targetID, timeout)
+	}
+	if a.browser == nil {
+		return false, fmt.Errorf("rod root browser connection is unavailable")
+	}
+	timedBrowser := a.browser.Timeout(timeout)
+	defer timedBrowser.CancelTimeout()
+	result, err := (proto.TargetCloseTarget{TargetID: targetID}).Call(timedBrowser)
+	if err != nil {
+		return false, err
+	}
+	if result == nil {
+		return false, fmt.Errorf("Target.closeTarget returned no result")
+	}
+	return result.Success, nil
+}
+
+func (a *adapter) cleanupPages() map[string]any {
+	attempts := []map[string]any{}
+	// A timed-out Browser.Page call may have completed after its caller returned.
+	// Recover the page if its buffered result is now available so it can still
+	// be closed on the original Rod connection.
+	for _, creation := range a.pageCreations {
+		if creation.Pending == nil {
+			continue
+		}
+		select {
+		case result := <-creation.Pending:
+			_ = a.resolvePageCreation(creation, result)
+		default:
+		}
+	}
+	for index := len(a.pages) - 1; index >= 0; index-- {
+		created := a.pages[index]
+		creation := (*pageCreation)(nil)
+		for _, candidate := range a.pageCreations {
+			if candidate.Page == created {
+				creation = candidate
+				break
+			}
+		}
+		closed := false
+		for attempt := 1; attempt <= 2 && !closed; attempt++ {
+			success, err := a.closeTargetForIsolation(
+				created.TargetID,
+				3*time.Second,
+			)
+			confirmed := err == nil && success
+			timedOut := err != nil && strings.Contains(strings.ToLower(err.Error()), "deadline")
+			entry := map[string]any{
+				"target_id": string(created.TargetID),
+				"attempt":   attempt,
+				"success":   success,
+				"confirmed": confirmed,
+			}
+			if err != nil {
+				entry["error"] = err.Error()
+			} else if !success {
+				entry["error"] = "Target.closeTarget returned success=false"
+			}
+			if timedOut {
+				entry["timed_out"] = true
+			}
+			attempts = append(attempts, entry)
+			closed = confirmed
+		}
+		if creation != nil {
+			if closed {
+				creation.State = "closed"
+			} else {
+				creation.State = "cleanup_unconfirmed"
+			}
+		}
+	}
+
+	creationRows := make([]map[string]any, 0, len(a.pageCreations))
+	confirmed := true
+	for _, creation := range a.pageCreations {
+		row := map[string]any{
+			"attempt": creation.Attempt,
+			"state":   creation.State,
+		}
+		if creation.TargetID != "" {
+			row["target_id"] = creation.TargetID
+		}
+		if creation.Error != "" {
+			row["error"] = creation.Error
+		}
+		creationRows = append(creationRows, row)
+		if creation.State != "closed" && creation.State != "rejected" {
+			confirmed = false
+		}
+	}
+	return map[string]any{
+		"backend":                 "Target.closeTarget via rod root connection",
+		"required":                len(a.pageCreations) > 0,
+		"confirmed":               confirmed,
+		"same_connection_as_task": true,
+		"creation_attempts":       creationRows,
+		"attempts":                attempts,
+	}
+}
+
+func applyCleanupContract(outcome, cleanup map[string]any, label string) map[string]any {
+	observations, _ := outcome["observations"].(map[string]any)
+	if observations == nil {
+		observations = map[string]any{}
+	}
+	observations["target_cleanup"] = cleanup
+	confirmed := cleanup["confirmed"] == true
+	observations["isolation_restored"] = confirmed
+	outcome["observations"] = observations
+	if confirmed {
+		return outcome
+	}
+	return map[string]any{
+		"ok":     false,
+		"status": "infra",
+		"error": map[string]any{
+			"class":   "script_error",
+			"message": fmt.Sprintf("%s target cleanup was not confirmed: %v", label, cleanup),
+		},
+		"answer": outcome["answer"],
+		"observations": map[string]any{
+			"target_cleanup":     cleanup,
+			"isolation_restored": false,
+			"primary_outcome":    outcome,
+		},
+		"metrics": outcome["metrics"],
+	}
 }
 
 func (a *adapter) traceLine(obj map[string]any) {
@@ -275,19 +486,24 @@ func (a *adapter) newPage(timeoutMS int) error {
 	// rod gotcha: browser.Timeout(d).Page(...) + CancelTimeout() poisons the
 	// page's context lineage — element ops later die with "context canceled".
 	// Create the page with a clean context and race the timeout instead.
+	creation := &pageCreation{
+		Attempt: len(a.pageCreations) + 1,
+		State:   "requested",
+	}
+	a.pageCreations = append(a.pageCreations, creation)
 	return a.call(func() error {
-		done := make(chan error, 1)
+		done := make(chan pageCreationResult, 1)
+		creation.Pending = done
 		go func() {
 			page, pageErr := a.browser.Page(proto.TargetCreateTarget{URL: "about:blank"})
-			if pageErr == nil {
-				a.page = page
-			}
-			done <- pageErr
+			done <- pageCreationResult{page: page, err: pageErr}
 		}()
 		select {
-		case pageErr := <-done:
-			return pageErr
+		case result := <-done:
+			return a.resolvePageCreation(creation, result)
 		case <-time.After(d):
+			creation.State = "ambiguous"
+			creation.Error = fmt.Sprintf("timeout after %dms creating page", timeoutMS)
 			return fmt.Errorf("timeout after %dms creating page", timeoutMS)
 		}
 	})
@@ -854,7 +1070,7 @@ func main() {
 		expectLive = payload.ExpectProduct
 	}
 	browser := rod.New().ControlURL(payload.BrowserWS)
-	var liveProduct string
+	var liveIdentity remoteIdentityT
 	connectErr := a.call(func() error {
 		done := make(chan error, 1)
 		go func() {
@@ -867,7 +1083,7 @@ func main() {
 				done <- verErr
 				return
 			}
-			liveProduct = ver.Product
+			liveIdentity = remoteIdentityT{Product: ver.Product, ProtocolVersion: ver.ProtocolVersion, Revision: ver.Revision}
 			done <- nil
 		}()
 		select {
@@ -877,6 +1093,7 @@ func main() {
 			return fmt.Errorf("connect timeout after %dms", payload.ConnectTimeoutMS)
 		}
 	})
+	liveProduct := liveIdentity.Product
 	a.traceLine(map[string]any{"direction": "rod", "step": "connect", "ok": connectErr == nil, "error": errText(connectErr)})
 	if connectErr != nil {
 		// A refused/failed connect is a genuine compatibility result: the
@@ -885,7 +1102,7 @@ func main() {
 		for idx, check := range payload.Checks {
 			rows = append(rows, checkRow{Name: checkName(check, idx), Status: "fail", Evidence: "client did not connect; scenario not executed"})
 		}
-		emit(map[string]any{
+		outcome := map[string]any{
 			"ok":     true,
 			"answer": fmt.Sprintf("0/%d checks", len(rows)),
 			"observations": map[string]any{
@@ -893,19 +1110,36 @@ func main() {
 				"connect_error": truncate(connectErr.Error(), 500), "failure_class": "cdp_semantic",
 			},
 			"metrics": map[string]any{"cdp_call_count": 1, "cdp_error_count": 1, "ws_disconnect_count": 0},
-		})
+		}
+		emit(applyCleanupContract(outcome, a.cleanupPages(), "rod"))
 		return
 	}
 	a.browser = browser
 	binding["expect_product_live"] = expectLive
 	binding["live_product"] = liveProduct
 	binding["live_check"] = "rod_browser_version"
-	if liveProduct != expectLive {
-		emitInfra(fmt.Sprintf("binding gate: live rod transport reports product=%q; expected %q — the client is not bound to the engine under test", liveProduct, expectLive), binding, a.opCalls, a.opErrors)
+	identityVerified := liveProduct == expectLive
+	if payload.RemoteCDP {
+		for key, value := range remoteIdentityBinding(payload.ExpectedRemoteIdentity, liveIdentity) {
+			binding[key] = value
+		}
+		identityVerified = binding["verified"] == true
+	}
+	if !identityVerified {
+		outcome := map[string]any{
+			"ok": false,
+			"error": map[string]any{
+				"class":   "script_error",
+				"message": fmt.Sprintf("binding gate: live rod transport identity does not match the expected engine (product=%q protocolVersion=%q revision=%q)", liveIdentity.Product, liveIdentity.ProtocolVersion, liveIdentity.Revision),
+			},
+			"observations": map[string]any{"binding": binding},
+			"metrics":      map[string]any{"cdp_call_count": a.opCalls, "cdp_error_count": a.opErrors, "ws_disconnect_count": 0},
+		}
+		emit(applyCleanupContract(outcome, a.cleanupPages(), "rod"))
 		return
 	}
 	binding["verified"] = true
-	a.traceLine(map[string]any{"direction": "rod", "step": "binding_verified", "product": liveProduct})
+	a.traceLine(map[string]any{"direction": "rod", "step": "binding_verified", "identity": liveIdentity})
 
 	// ---- Scenario steps.
 	for idx, step := range payload.Steps {
@@ -951,7 +1185,7 @@ func main() {
 			driverOpErrors++
 		}
 	}
-	emit(map[string]any{
+	outcome := map[string]any{
 		"ok":     true,
 		"answer": answer,
 		"observations": map[string]any{
@@ -960,7 +1194,8 @@ func main() {
 			"failure_class": "cdp_semantic",
 		},
 		"metrics": map[string]any{"cdp_call_count": a.opCalls, "cdp_error_count": a.opErrors, "ws_disconnect_count": 0},
-	})
+	}
+	emit(applyCleanupContract(outcome, a.cleanupPages(), "rod"))
 }
 
 func errText(err error) any {

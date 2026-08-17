@@ -49,8 +49,8 @@ individual failure rather than only the result row.
 | `artifacts-resource_baseline_20260812.tar.gz` | 59,366 files | 7.1 MiB | 111 MiB |
 | `artifacts-resource_engine_20260812.tar.gz` | 70,505 files | 13.1 MiB | 171 MiB |
 
-The Kitesurf lane ships two more assets on the same release, indexed by
-[`docs/EVIDENCE.md` on the `kitesurf-eval` branch](../../tree/kitesurf-eval/docs/EVIDENCE.md).
+The Kitesurf lane ships two more assets on the same release, indexed in
+[the Kitesurf lane section](#the-kitesurf-lane) below.
 
 ### sha256
 
@@ -85,8 +85,8 @@ python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
 ```
 
 Both published reports were regenerated this way from the release archives and
-came out byte-identical to the committed copies. The five-engine report is
-generated on the `kitesurf-eval` branch, where its inputs live.
+came out byte-identical to the committed copies. The five-engine report's own
+regeneration command is in the Kitesurf lane section below.
 
 ## What was removed before publication
 
@@ -123,3 +123,84 @@ discovered from the products, and a scrubbed product no longer names one, so
 the check needs the original tree to know what to look for. Asked to check a
 scrubbed tree without it, the script refuses rather than reporting a clean
 result it never tested.
+
+## The Kitesurf lane
+
+The five-engine report draws on two sources: the four local engines come from
+the four-engine run indexed above, and the Kitesurf column comes from the lane
+collected on this branch.
+
+### What ships in the repository
+
+`docs/evidence/<run_id>/` carries the per-round fingerprints for all 49 rounds
+of the lane, about 1.2 MB in total.
+
+| File | What it fixes |
+|:---|:---|
+| `provenance.json` | Branch, HEAD, tree digest, worktree state, and the sha256 of every compiled adapter the round invoked |
+| `summary.json` | The endpoint, the expected and observed identity, status tallies, latency, and the fixture-verification result the round ran on |
+| `summary.md` | The same round in readable form |
+| `identity.cdp.jsonl` | The live-transport identity exchange, one row per connection |
+
+Two lane-level contract reports sit alongside them:
+`ks_static_verification.json` (19 static fixture files verified against their
+content contract) and `ks_dynamic_verification.json` (127 static routes plus 28
+dynamic probes verified before the round started).
+
+Every round pins the same source commit, `7b6fe89e2e18d07484d630a46dac61f46c0a84f9`.
+
+### Release assets
+
+Attached to [v0.5.0](https://github.com/lexmount/Lexbench-Headless-Browser/releases/tag/v0.5.0),
+alongside the four-engine archives.
+
+| Asset | Contents | Download | Expanded |
+|:---|:---|---:|---:|
+| `evidence-kitesurf_lane_20260813.tar.gz` | All 49 rounds: `results.jsonl`, per-round `fixture_verification.json`, and the fingerprint files above | 1.2 MiB | 13 MiB |
+| `artifacts-kitesurf_lane_20260813.tar.gz` | 4,989 per-attempt protocol artifacts | 888 KiB | 12 MiB |
+
+```
+003b4af6eb7ccecfd13e7bf09cfb7d00db95c0e5d40338629b8663efa4fb5fd8  evidence-kitesurf_lane_20260813.tar.gz
+71b55f610b5b2f40742c43297a6f4e44a6baceec70f228ec7556eec3175a4a75  artifacts-kitesurf_lane_20260813.tar.gz
+```
+
+The four-engine archives, and the scrubbing rules that apply to this lane as
+well, are indexed in the sections above.
+
+### Regenerating the five-engine report
+
+The lane is 49 rounds rather than one run, because the probe trips a circuit
+breaker whenever a task cannot confirm target cleanup and the wrapper restarts
+a continuation over the remaining tasks. Playwright alone ended up in 25
+segments. Every segment is an input, and every failure's rerun evidence is a
+second input:
+
+```bash
+python3 tools/report_five_engine.py \
+    --four-engine-run ../main/runs/four_engine_full_20260812 \
+    --kitesurf-results runs/ks_raw_full/results.jsonl \
+                       runs/ks_driver_full/results.jsonl \
+                       runs/ks_l2_full/results.jsonl \
+                       runs/ks_blocked_*/results.jsonl \
+                       runs/ks_sweep_*/results.jsonl \
+    --kitesurf-rerun runs/ks_adj_*/results.jsonl \
+                     runs/ks_l2_full/results.jsonl \
+    -o docs/reports/five-engine-report-20260813.md
+```
+
+`ks_l2_full` appears on both sides because that round carries two rows per
+task, its own primary attempt and its own rerun.
+
+Running this reproduces every generated section of the published report
+byte-for-byte, from the scrubbed archives as well as from the original tree.
+The report's closing "Run notes" section is prose written by hand after
+generation; it describes method and observations and cites only numbers the
+generated sections above it already computed.
+
+### What the Kitesurf column is not
+
+A remote endpoint carries no binary digest, no process tree and no cgroup, so
+`formal_score_eligible` is false for this lane and no resource figure exists
+for it. An empty resource cell means unmeasurable, never zero. The readings are
+a snapshot of a service that can change under us, which is a weaker
+reproducibility class than the four pinned binaries above.

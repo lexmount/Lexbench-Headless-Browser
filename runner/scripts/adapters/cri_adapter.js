@@ -21,6 +21,11 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const CDP = require("chrome-remote-interface");
+const {
+  compareRemoteIdentity,
+  requireRemoteIdentity,
+} = require("../lib/remote_identity");
+const { applyCleanupContract } = require("../lib/remote_cleanup");
 
 function emit(obj) {
   process.stdout.write(JSON.stringify(obj));
@@ -109,6 +114,18 @@ async function main() {
   const expectProduct = payload.expect_product || "";
   const expectUA = payload.expect_ua || "";
   const expectProductLive = payload.expect_product_live || expectProduct;
+  let expectedRemoteIdentity = null;
+  try {
+    if (payload.remote_cdp === true) {
+      expectedRemoteIdentity = requireRemoteIdentity(
+        payload.expected_remote_identity,
+        "expected_remote_identity"
+      );
+    }
+  } catch (err) {
+    emit({ ok: false, error: { class: "script_error", message: `binding gate: ${err.message}` }, observations: {}, metrics: {} });
+    return;
+  }
   const steps = payload.steps || [];
   const checks = payload.checks || [];
   const artifactDir = payload.artifact_dir || ".";
@@ -203,22 +220,31 @@ async function main() {
       opErrors += 1;
       const message = String((err && err.response && err.response.message) || (err && err.message) || err);
       trace({ ts: new Date().toISOString(), direction: "cri", method, sessionId: sessionId || undefined, ok: false, error: message });
-      throw new Error(`${method}: ${message}`);
+      const wrapped = new Error(`${method}: ${message}`);
+      wrapped.cdpRejected = Boolean(err && err.response && err.response.code != null);
+      throw wrapped;
     }
   };
 
   // ---- Binding gate 2/2: the live client transport must identify as the
   // engine under test.
   if (client) {
+    let liveIdentity = null;
     let liveProduct = null;
     try {
-      const ver = await send("Browser.getVersion");
-      liveProduct = String(ver.product || "");
+      liveIdentity = await send("Browser.getVersion");
+      liveProduct = String(liveIdentity.product || "");
     } catch { /* handled below: null !== expectProductLive */ }
     binding.expect_product_live = expectProductLive;
     binding.live_product = liveProduct;
     binding.live_check = "cri_browser_get_version";
-    if (liveProduct !== expectProductLive) {
+    if (expectedRemoteIdentity) {
+      Object.assign(binding, compareRemoteIdentity(expectedRemoteIdentity, liveIdentity));
+    }
+    const identityVerified = expectedRemoteIdentity
+      ? binding.verified === true
+      : liveProduct === expectProductLive;
+    if (!identityVerified) {
       try {
         await client.close();
       } catch { /* best effort */ }
@@ -226,7 +252,9 @@ async function main() {
         ok: false,
         error: {
           class: "script_error",
-          message: `binding gate: live chrome-remote-interface transport reports product=${JSON.stringify(liveProduct)}; expected ${JSON.stringify(expectProductLive)} — the client is not bound to the engine under test`,
+          message: expectedRemoteIdentity
+            ? `binding gate: live chrome-remote-interface transport reports identity=${JSON.stringify(binding.actual)}; expected ${JSON.stringify(binding.expected)} — the client is not bound to the remote engine under test`
+            : `binding gate: live chrome-remote-interface transport reports product=${JSON.stringify(liveProduct)}; expected ${JSON.stringify(expectProductLive)} — the client is not bound to the engine under test`,
         },
         observations: { binding },
         metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
@@ -234,12 +262,13 @@ async function main() {
       return;
     }
     binding.verified = true;
-    trace({ ts: new Date().toISOString(), direction: "cri", step: "binding_verified", product: liveProduct });
+    trace({ ts: new Date().toISOString(), direction: "cri", step: "binding_verified", identity: expectedRemoteIdentity ? binding.actual : { product: liveProduct } });
   }
 
   const saved = {};
   const stepResults = [];
   const createdTargets = [];
+  const targetCreations = [];
   let sessionId = null;
 
   const evalExpr = async (expression, opts) => {
@@ -271,7 +300,25 @@ async function main() {
 
   const ensureSession = async () => {
     if (sessionId) return sessionId;
-    const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+    const creation = {
+      attempt: targetCreations.length + 1,
+      state: "requested",
+    };
+    targetCreations.push(creation);
+    let targetId;
+    try {
+      ({ targetId } = await send("Target.createTarget", { url: "about:blank" }));
+    } catch (error) {
+      creation.state = error && error.cdpRejected ? "rejected" : "ambiguous";
+      creation.error = String(error && error.message ? error.message : error);
+      throw error;
+    }
+    if (!targetId) {
+      creation.state = "ambiguous";
+      throw new Error("Target.createTarget returned no targetId");
+    }
+    creation.state = "created";
+    creation.target_id = targetId;
     createdTargets.push(targetId);
     const attached = await send("Target.attachToTarget", { targetId, flatten: true });
     sessionId = attached.sessionId;
@@ -512,6 +559,59 @@ async function main() {
     }
   }
 
+  async function cleanupCreatedTargets() {
+    const attempts = [];
+    for (const targetId of [...createdTargets]) {
+      let closed = false;
+      for (let attempt = 1; attempt <= 2 && !closed; attempt += 1) {
+        let cleanupTimer;
+        try {
+          const closeOperation = send("Target.closeTarget", { targetId });
+          closeOperation.catch(() => {});
+          const result = await Promise.race([
+            closeOperation,
+            new Promise((_, reject) => {
+              cleanupTimer = setTimeout(() => {
+                const error = new Error("Target.closeTarget cleanup timeout");
+                error.cleanupTimedOut = true;
+                reject(error);
+              }, 3000);
+              if (cleanupTimer.unref) cleanupTimer.unref();
+            }),
+          ]);
+          closed = result.success === true;
+          attempts.push({ target_id: targetId, attempt, success: result.success, confirmed: closed });
+        } catch (error) {
+          attempts.push({
+            target_id: targetId,
+            attempt,
+            confirmed: false,
+            error: String(error && error.message ? error.message : error),
+            ...(error && error.cleanupTimedOut ? { timed_out: true } : {}),
+          });
+          if (error && error.cleanupTimedOut) break;
+        } finally {
+          clearTimeout(cleanupTimer);
+        }
+      }
+      const creation = targetCreations.find((entry) => entry.target_id === targetId);
+      if (creation) creation.state = closed ? "closed" : "cleanup_unconfirmed";
+      if (closed) createdTargets.splice(createdTargets.indexOf(targetId), 1);
+    }
+    const confirmed = targetCreations.every((entry) =>
+      ["closed", "rejected"].includes(entry.state)
+    );
+    return {
+      backend: "chrome_remote_interface.Target.closeTarget",
+      required: targetCreations.length > 0,
+      confirmed,
+      same_connection_as_task: true,
+      creation_attempts: targetCreations.map((entry) => ({ ...entry })),
+      attempts,
+    };
+  }
+
+  let outcome;
   try {
     if (connectError) {
       // A refused/failed connect is a genuine compatibility result: the engine
@@ -525,118 +625,114 @@ async function main() {
           evidence: "client did not connect; scenario not executed",
         }))
       );
-      emit({
+      outcome = {
         ok: true,
         answer: `0/${checkRows.length} checks`,
         observations: { checks: checkRows, saved: {}, binding, connect_error: connectError, failure_class: "cdp_semantic" },
         metrics: { cdp_call_count: 1, cdp_error_count: 1, ws_disconnect_count: 0 },
-      });
-      return;
-    }
-
-    for (let i = 0; i < steps.length; i += 1) {
-      const step = steps[i];
-      let result;
-      try {
-        const value = await runOp(step);
-        result = { ok: true, value };
-      } catch (err) {
-        const message = String(err && err.message ? err.message : err).slice(0, 1000);
-        result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
-      }
-      stepResults.push(result);
-      trace({ ts: new Date().toISOString(), direction: "cri", step: i, op: step.op, selector: step.selector, ok: result.ok, error: result.error || undefined });
-      if (result.ok && step.expect_fail) result.unexpected_success = true;
-      if (step.save_as) {
-        saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
-      }
-    }
-
-    const evaluateCheck = (check) => {
-      const kind = check.kind;
-      const stepAt = (idx) => stepResults[idx] || {};
-      if (kind === "saved_equals") {
-        const value = saved[check.name];
-        return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
-      }
-      if (kind === "saved_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_not_contains") {
-        const value = saved[check.name];
-        const want = substitute(String(check.expected));
-        return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
-      }
-      if (kind === "saved_truthy") {
-        const value = saved[check.name];
-        const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
-        return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
-      }
-      if (kind === "step_ok") {
-        const r = stepAt(check.step);
-        return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
-      }
-      if (kind === "step_fails") {
-        const r = stepAt(check.step);
-        return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
-      }
-      if (kind === "file_nonempty") {
-        const filePath = substitute(check.path);
-        let size = 0;
+      };
+    } else {
+      for (let i = 0; i < steps.length; i += 1) {
+        const step = steps[i];
+        let result;
         try {
-          size = fs.statSync(filePath).size;
-        } catch {
-          size = 0;
+          const value = await runOp(step);
+          result = { ok: true, value };
+        } catch (err) {
+          const message = String(err && err.message ? err.message : err).slice(0, 1000);
+          result = { ok: false, error: message, unsupported: isUnsupportedMessage(message) };
         }
-        return [size > 0, `${filePath} size=${size}`];
+        stepResults.push(result);
+        trace({ ts: new Date().toISOString(), direction: "cri", step: i, op: step.op, selector: step.selector, ok: result.ok, error: result.error || undefined });
+        if (result.ok && step.expect_fail) result.unexpected_success = true;
+        if (step.save_as) {
+          saved[step.save_as] = toSavedString(result.ok ? result.value : `ERROR: ${result.error}`);
+        }
       }
-      if (kind === "any_of") {
-        const results = (check.checks || []).map(evaluateCheck);
-        return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
-      }
-      return [false, `unknown check kind ${kind}`];
-    };
 
-    const checkRows = [
-      { name: "driver_connect", status: "pass", evidence: `chrome-remote-interface@${clientVersion} bound to ${binding.live_product}` },
-    ].concat(
-      checks.map((check, idx) => {
-        const [ok, evidence] = evaluateCheck(check);
-        return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
-      })
-    );
+      const evaluateCheck = (check) => {
+        const kind = check.kind;
+        const stepAt = (idx) => stepResults[idx] || {};
+        if (kind === "saved_equals") {
+          const value = saved[check.name];
+          return [value === String(check.expected), `${check.name}=${JSON.stringify(value)} expected=${JSON.stringify(String(check.expected))}`];
+        }
+        if (kind === "saved_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_not_contains") {
+          const value = saved[check.name];
+          const want = substitute(String(check.expected));
+          return [typeof value === "string" && !value.includes(want), `${check.name}=${JSON.stringify(value && value.slice(0, 300))} must NOT contain ${JSON.stringify(want)}`];
+        }
+        if (kind === "saved_truthy") {
+          const value = saved[check.name];
+          const truthy = value !== undefined && value !== "undefined" && value !== "" && value !== "null" && value !== "false" && !String(value).startsWith("ERROR:");
+          return [truthy, `${check.name}=${JSON.stringify(value && String(value).slice(0, 300))}`];
+        }
+        if (kind === "step_ok") {
+          const r = stepAt(check.step);
+          return [!!r.ok, `step ${check.step} ok=${!!r.ok} error=${r.error || "none"}`];
+        }
+        if (kind === "step_fails") {
+          const r = stepAt(check.step);
+          return [r.ok === false, `step ${check.step} ok=${!!r.ok} (must fail) error=${r.error || "none"}`];
+        }
+        if (kind === "file_nonempty") {
+          const filePath = substitute(check.path);
+          let size = 0;
+          try {
+            size = fs.statSync(filePath).size;
+          } catch {
+            size = 0;
+          }
+          return [size > 0, `${filePath} size=${size}`];
+        }
+        if (kind === "any_of") {
+          const results = (check.checks || []).map(evaluateCheck);
+          return [results.some(([ok]) => ok), results.map(([ok, ev]) => `${ok ? "pass" : "fail"}: ${ev}`).join(" | ")];
+        }
+        return [false, `unknown check kind ${kind}`];
+      };
 
-    emit({
-      ok: true,
-      answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
-      observations: {
-        checks: checkRows,
-        saved,
-        binding,
-        driver_ops: stepResults.length,
-        driver_op_errors: stepResults.filter((r) => !r.ok).length,
-        failure_class: "cdp_semantic",
-      },
-      metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+      const checkRows = [
+        { name: "driver_connect", status: "pass", evidence: `chrome-remote-interface@${clientVersion} bound to ${binding.live_product}` },
+      ].concat(
+        checks.map((check, idx) => {
+          const [ok, evidence] = evaluateCheck(check);
+          return { name: check.label || check.kind || `check${idx}`, status: ok ? "pass" : "fail", evidence };
+        })
+      );
+
+      outcome = {
+        ok: true,
+        answer: saved.answer !== undefined ? saved.answer : `${checkRows.filter((c) => c.status === "pass").length}/${checkRows.length} checks`,
+        observations: {
+          checks: checkRows,
+          saved,
+          binding,
+          driver_ops: stepResults.length,
+          driver_op_errors: stepResults.filter((r) => !r.ok).length,
+          failure_class: "cdp_semantic",
+        },
+        metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
+      };
+    }
   } catch (err) {
     const msg = String(err && err.message ? err.message : err);
     const klass = isUnsupportedMessage(msg) ? "engine_unsupported" : "script_error";
-    emit({
+    outcome = {
       ok: false,
       error: { class: klass, message: msg },
       observations: { saved, binding },
       metrics: { cdp_call_count: opCalls, cdp_error_count: opErrors, ws_disconnect_count: 0 },
-    });
+    };
   } finally {
+    const cleanup = await cleanupCreatedTargets();
+    emit(applyCleanupContract(outcome, cleanup, "CRI"));
     if (client) {
-      for (const targetId of createdTargets) {
-        try {
-          await client.send("Target.closeTarget", { targetId });
-        } catch { /* target may already be gone */ }
-      }
       try {
         await client.close();
       } catch { /* best effort */ }
