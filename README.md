@@ -13,7 +13,14 @@
   <a href="README.md">English</a> · <a href="README.zh.md">中文</a>
 </p>
 
-<p align="center"><strong>The next user of the headless browser is the agent.</strong></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="https://img.shields.io/badge/The%20next%20user%20of%20the%20headless%20browser%20is%20the%20agent.-A371F7?style=for-the-badge">
+    <img src="https://img.shields.io/badge/The%20next%20user%20of%20the%20headless%20browser%20is%20the%20agent.-8250DF?style=for-the-badge"
+         alt="The next user of the headless browser is the agent.">
+  </picture>
+</p>
 
 Agents are taking over the web chores that used to be done by hand: searching, comparing prices, filling forms, placing orders. The page is no longer rendered for a person to look at. It is the agent's execution environment, where it reads state, performs operations and collects results, and the browser has turned from a display tool into a runtime.
 
