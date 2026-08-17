@@ -65,6 +65,15 @@ Headless browser 最大的亮点是低资源消耗，轻量引擎替代 Chrome �
 
 单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 39 MiB、Moli 92 MiB、Chrome 697 MiB。同一批任务的单题引擎 CPU 中位数依次是 36 ms、38 ms、101 ms、687 ms。细节和校准记录见[资源卡片](docs/reports/resource-card-20260812.md)。
 
+## Documentation
+
+| 文档 | 回答什么 |
+|:---|:---|
+| [docs/RUNNING.zh.md](docs/RUNNING.zh.md) | 怎么装引擎和 driver，怎么把 bench 跑起来 |
+| [docs/REPRODUCE.zh.md](docs/REPRODUCE.zh.md) | 怎么复现已发布的 run，怎么重新生成报告 |
+| [docs/RESULTS.zh.md](docs/RESULTS.zh.md) | 结果怎么读：判定边界、口径与适用范围 |
+| [docs/reports/](docs/reports/) | 报告本身，由 run 产物生成 |
+
 ## Benchmark Composition
 
 当前 bench 版本 `2026.08.17-v0_4.2`：1,928 道 task，18 个 subset，分两层。上面的已发布 run 仍固定在 `2026.08.02-v0_4.1`；当前版本只调整 task 描述与不参与执行的元数据，没有改变任务集、driver、grader、fixture 或 capability 归属。
@@ -85,15 +94,6 @@ Headless browser 最大的亮点是低资源消耗，轻量引擎替代 Chrome �
 功能轮和资源轮从不共用同一次 run。资源数字来自上面那套 A/B 协议，只有 `resource_comparison_eligible` 为真时才会公布。
 
 `run_manifest.json` 记录了 runner 源码树、fixture 树和编译后 adapter 二进制的摘要，任何人都能核对某次 run 是由哪份代码产出的。时间戳统一为 UTC，结果行不含绝对路径，`--provenance-level minimal` 保留硬件事实、去掉部署指纹。
-
-## Documentation
-
-| 文档 | 回答什么 |
-|:---|:---|
-| [docs/RUNNING.zh.md](docs/RUNNING.zh.md) | 怎么装引擎和 driver，怎么把 bench 跑起来 |
-| [docs/REPRODUCE.zh.md](docs/REPRODUCE.zh.md) | 怎么复现已发布的 run，怎么重新生成报告 |
-| [docs/RESULTS.zh.md](docs/RESULTS.zh.md) | 结果怎么读：判定边界、口径与适用范围 |
-| [docs/reports/](docs/reports/) | 报告本身，由 run 产物生成 |
 
 ## Repository Layout
 
