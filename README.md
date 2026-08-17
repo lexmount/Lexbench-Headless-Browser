@@ -65,6 +65,15 @@ The measurement itself is a two-round A/B design: the same tasks run once with t
 
 Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
 
+## Documentation
+
+| Document | What it answers |
+|:---|:---|
+| [docs/RUNNING.md](docs/RUNNING.md) | Installing the engines and drivers, and running the bench |
+| [docs/REPRODUCE.md](docs/REPRODUCE.md) | Reproducing the published runs and regenerating their reports |
+| [docs/RESULTS.md](docs/RESULTS.md) | Reading the results: scoring boundaries, calibers and limits |
+| [docs/reports/](docs/reports/) | The reports themselves, generated from run artifacts |
+
 ## Benchmark Composition
 
 Current bench version `2026.08.17-v0_4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above remains pinned to `2026.08.02-v0_4.1`; the current version changes task descriptions and non-executable metadata, not task membership, drivers, graders, fixtures, or capability assignments.
@@ -85,15 +94,6 @@ Reports under `docs/reports/` come from generators that read a run's `results.js
 Functional and resource rounds never share a run. Resource figures come from the A/B protocol above and are published only when `resource_comparison_eligible` is true.
 
 `run_manifest.json` records digests of the runner source tree, the fixture tree and the compiled adapter binaries, so anyone can check which code produced a run. Timestamps are UTC, result rows carry no absolute host paths, and `--provenance-level minimal` keeps hardware facts while dropping deployment fingerprints.
-
-## Documentation
-
-| Document | What it answers |
-|:---|:---|
-| [docs/RUNNING.md](docs/RUNNING.md) | Installing the engines and drivers, and running the bench |
-| [docs/REPRODUCE.md](docs/REPRODUCE.md) | Reproducing the published runs and regenerating their reports |
-| [docs/RESULTS.md](docs/RESULTS.md) | Reading the results: scoring boundaries, calibers and limits |
-| [docs/reports/](docs/reports/) | The reports themselves, generated from run artifacts |
 
 ## Repository Layout
 
