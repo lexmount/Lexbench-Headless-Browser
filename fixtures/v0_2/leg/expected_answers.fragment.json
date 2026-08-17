@@ -1,0 +1,133 @@
+{
+  "v2_leg_g_dialog": {
+    "expected": "DIALOG_OPEN",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_g_dialog bake)"
+  },
+  "v2_leg_g_durationformat": {
+    "expected": "DURFMT_OK:1 hour, 30 minutes",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_g_durationformat bake)"
+  },
+  "v2_leg_g_io": {
+    "expected": "IO_FIRED",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_g_io bake)"
+  },
+  "v2_leg_g_segmenter": {
+    "expected": "SEG_OK:5",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_g_segmenter bake)"
+  },
+  "v2_leg_probe_a11_cssaware_extract": {
+    "expected": "CSSAWARE_A11:PRICE_VISIBLE_A11_99|PRICE_VISIBLE_A11_42",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_a11 bake)"
+  },
+  "v2_leg_probe_a3_checked_reveal": {
+    "expected": "ANSWER_CHECKED_A3",
+    "mode": "contains",
+    "oracle": "chrome (manually verified: rendered innerText includes revealed marker)"
+  },
+  "v2_leg_probe_b1_localstorage": {
+    "expected": "LOCALSTORAGE_VAL_B1",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_b1 bake)"
+  },
+  "v2_leg_probe_b2_sessionstorage": {
+    "expected": "SESSIONSTORAGE_VAL_B2",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_b2 bake)"
+  },
+  "v2_leg_probe_b3_cookie": {
+    "expected": "COOKIE_VAL_B3",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_b3 bake)"
+  },
+  "v2_leg_probe_c11_domparser": {
+    "expected": "DOMPARSER_C11",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c11 bake)"
+  },
+  "v2_leg_probe_c12_treewalker": {
+    "expected": "TREEWALK_C12:SPAN,B",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c12 bake)"
+  },
+  "v2_leg_probe_c13_intl": {
+    "expected": "INTL_C13:$1,234.50",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c13 bake)"
+  },
+  "v2_leg_probe_c14_crypto_uuid": {
+    "expected": "UUID_C14:",
+    "mode": "contains",
+    "note": "volatile answer; matched on stable prefix",
+    "oracle": "chrome (same build as r3_probe_c14 bake)"
+  },
+  "v2_leg_probe_c17_textencoder": {
+    "expected": "TEXTENC_C17:2:AB",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c17 bake)"
+  },
+  "v2_leg_probe_c18_range_fragment": {
+    "expected": "RANGE_C18:RANGE_C18",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c18 bake)"
+  },
+  "v2_leg_probe_c19_ci_attr": {
+    "expected": "CIATTR_C19:CIATTR_C19",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c19 bake)"
+  },
+  "v2_leg_probe_c1_shadow": {
+    "expected": "SHADOW_C1:SHADOW_CONTENT_C1",
+    "mode": "equals",
+    "oracle": "chrome oracle bake (v0_2/leg, no prior r3_ counterpart)"
+  },
+  "v2_leg_probe_c20_not_has": {
+    "expected": "NOTHAS_C20:NOTHAS_C20",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c20 bake)"
+  },
+  "v2_leg_probe_c21_matches_has": {
+    "expected": "MATCHESHAS_C21:ok",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c21 bake)"
+  },
+  "v2_leg_probe_c23_scope_sel": {
+    "expected": "SCOPE_C23:SCOPE_C23",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c23 bake)"
+  },
+  "v2_leg_probe_c2_template_slot": {
+    "expected": "TEMPLATE_ROW_C2",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c2 bake)"
+  },
+  "v2_leg_probe_c4_structuredclone": {
+    "expected": "STRUCTURED_CLONE_C4_7",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c4 bake)"
+  },
+  "v2_leg_probe_c5_customelements": {
+    "expected": "CUSTOM_EL_C5",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c5 bake)"
+  },
+  "v2_leg_probe_c6_cssom_rules": {
+    "expected": "CSSOM_MARKER_C6:rgb(1, 2, 3)",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c6 bake)"
+  },
+  "v2_leg_probe_c7_is_where": {
+    "expected": "ISWHERE:B_TEXT_C7",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c7 bake)"
+  },
+  "v2_leg_probe_c8_matchmedia": {
+    "expected": "MATCHMEDIA_WIDE_C8",
+    "mode": "equals",
+    "oracle": "chrome (same build as r3_probe_c8 bake)"
+  }
+}

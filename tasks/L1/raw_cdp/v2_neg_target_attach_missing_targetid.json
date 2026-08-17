@@ -1,0 +1,47 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative (missing required param): Target.attachToTarget requires targetId; omitting it must yield a clean InvalidParams rejection on the browser session rather than a hang. Exercises the browser-scope negative path.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Target.attachToTarget",
+        "params": {
+          "flatten": true
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.attach_to_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Target.attachToTarget"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_target_attach_missing_targetid",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "target_attach_missing_targetid"
+}

@@ -1,0 +1,38 @@
+[project]
+name = "lexbench-headless-browser"
+version = "0.5.0"
+description = "Agent Browser Bench: a native-capability benchmark for browser runtimes across real automation driver stacks (CDP, WebDriver, and framework clients)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = ["browser", "benchmark", "cdp", "devtools", "webdriver", "automation"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Software Development :: Testing",
+]
+
+# The runner itself is stdlib-only. Driver-side packages are pinned in
+# harness_pins.json and installed per ecosystem (npm ci, pip, gem, go, cargo);
+# these extras mirror the Python-side pins for convenience.
+[project.optional-dependencies]
+drivers = [
+  "selenium==4.46.0",
+  "pydoll-python==2.23.1",
+]
+dev = [
+  "pytest>=8",
+]
+
+[project.urls]
+Repository = "https://github.com/lexmount/Lexbench-Headless-Browser"
+
+# The repo is a flat workspace (runner/, tools/, test/, tasks/ ...); only the
+# harness package is importable/installable. Without this, setuptools
+# auto-discovery refuses the layout and `pip install -e .` fails.
+[tool.setuptools]
+packages = ["runner"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]

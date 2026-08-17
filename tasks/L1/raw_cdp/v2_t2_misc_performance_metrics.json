@@ -1,0 +1,52 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Performance.enable + Performance.getMetrics return the runtime metric set; asserts a well-known metric ('Timestamp') is present (puppeteer page.metrics path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Performance.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Performance.getMetrics",
+        "save_result_as": "m"
+      }
+    ]
+  },
+  "features": [
+    "cdp.performance.get_metrics"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "Timestamp"
+        },
+        "kind": "array_contains",
+        "name": "m",
+        "path": "metrics"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_performance_metrics",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Performance.getMetrics"
+}

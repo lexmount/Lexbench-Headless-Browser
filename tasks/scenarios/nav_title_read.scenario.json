@@ -1,0 +1,20 @@
+{
+  "scenario_id": "nav_title_read",
+  "family": "navigation_lifecycle",
+  "title": "Navigate and read the page heading",
+  "description": "Opens a page, navigates to the core fixture, and reads the #title heading text. Exercises the most basic navigation + DOM-read contract that every driver must honor.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/l1/core"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "text_content", "selector": "#title", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "goto_ok", "step": 1},
+    {"kind": "saved_equals", "label": "heading_is_core_fixture", "name": "answer", "expected": "CDP Core Fixture"}
+  ],
+  "cdp_anchors": ["cdp.page.navigate"],
+  "expected_answer": {"mode": "equals", "expected": "CDP Core Fixture"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

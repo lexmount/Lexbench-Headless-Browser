@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The fixture is served with a restrictive script-src CSP; with Audits enabled, injecting an unnonced inline script triggers a Content-Security-Policy violation reported as Audits.issueAdded. Asserts the issue arrived with a code.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Audits.enable",
+        "params": {},
+        "session": "page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var s=document.createElement('script'); s.text='window.__t2bBlocked=1;'; document.body.appendChild(s);})()"
+        }
+      },
+      {
+        "save_result_as": "issue",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Audits.issueAdded"
+      }
+    ]
+  },
+  "features": [
+    "cdp.audits.issue_added"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Audits.issueAdded",
+        "name": "issue"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "issue",
+        "path": "issue.code"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/csp_violation"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_audits_issue",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Audits.issueAdded on a CSP violation"
+}

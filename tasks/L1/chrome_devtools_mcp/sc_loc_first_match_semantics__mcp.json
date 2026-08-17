@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/loc_first_match_semantics.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Clicks .btn where two buttons match; querySelector semantics require the FIRST one, whose handler records its rank.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "click_ok",
+        "step": 2
+      },
+      {
+        "expected": "clicked-first",
+        "kind": "saved_equals",
+        "label": "first_won",
+        "name": "answer"
+      }
+    ],
+    "kind": "mcp_chrome_devtools",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": ".btn"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#btn-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_devtools_mcp.op.new_page",
+    "fw.chrome_devtools_mcp.op.goto",
+    "fw.chrome_devtools_mcp.op.click",
+    "fw.chrome_devtools_mcp.op.text_content",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.chrome_devtools_mcp",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_first_match_semantics__mcp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A multi-match selector acts on the first match (chrome_devtools_mcp)"
+}

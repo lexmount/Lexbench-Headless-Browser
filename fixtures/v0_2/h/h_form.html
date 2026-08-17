@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>h form checksum</title></head>
+<body>
+<h1>typed-value checksum</h1>
+<input id="name" type="text" value="" placeholder="type here">
+<button id="compute">compute</button>
+<output id="out"></output>
+<script>
+document.getElementById('compute').addEventListener('click', function(){
+  var v = document.getElementById('name').value;
+  var sum = 0;
+  for (var i = 0; i < v.length; i++) { sum += v.charCodeAt(i); }
+  document.getElementById('out').textContent = String(sum % 1000);
+});
+</script>
+</body>
+</html>

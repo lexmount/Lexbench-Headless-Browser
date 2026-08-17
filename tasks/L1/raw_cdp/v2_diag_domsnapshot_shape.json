@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. DOMSnapshot.captureSnapshot over a known fixture; assert the snapshot shape invariants: exactly one document, a non-empty strings table, and the document exposes parallel layout.nodeIndex and nodes arrays.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "DOMSnapshot.enable",
+        "optional": true
+      },
+      {
+        "method": "DOMSnapshot.captureSnapshot",
+        "params": {
+          "computedStyles": []
+        },
+        "save_result_as": "snap"
+      }
+    ]
+  },
+  "features": [
+    "cdp.domsnapshot.capture_snapshot"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 1,
+        "kind": "array_length",
+        "name": "snap",
+        "path": "documents"
+      },
+      {
+        "kind": "array_length",
+        "min": 10,
+        "name": "snap",
+        "path": "strings"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "snap",
+        "path": "documents.0.layout.nodeIndex"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "snap",
+        "path": "documents.0.nodes.nodeName"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/snapshot"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_domsnapshot_shape",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMSnapshot.captureSnapshot shape invariants"
+}

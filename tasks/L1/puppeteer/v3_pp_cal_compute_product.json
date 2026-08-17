@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calibration against v2_h_compute_product (same fixture, same expected result): real Puppeteer clicks #go through its true pointer path (on_framework_main_path) and reads #result, which the page computes from body data attributes (6*7+7 = 49). Raw-CDP replay clicked via Runtime.evaluate; divergence isolates the coordinate click channel on a single-action page.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "49",
+        "kind": "saved_equals",
+        "label": "result_equals_49",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#go"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#result"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.click",
+    "fw.puppeteer.page.$eval",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.dom.get_content_quads",
+    "cdp.dom.scroll_into_view_if_needed",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/compute"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.calibration",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_cal_compute_product",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer click -> data-attribute product"
+}

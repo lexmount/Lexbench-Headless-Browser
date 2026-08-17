@@ -1,0 +1,92 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. DOM.getBoxModel on a fixed 240x120 absolutely-positioned element (no border/padding, so content box == border box). Assert model width/height and the content quad coordinates (origin 50,60; far corner 290,180).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#box"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "DOM.getBoxModel",
+        "params": {
+          "nodeId": "{saved:q.nodeId}"
+        },
+        "save_result_as": "box"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.get_box_model"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 240,
+        "kind": "saved_path_equals",
+        "name": "box",
+        "path": "model.width"
+      },
+      {
+        "expected": 120,
+        "kind": "saved_path_equals",
+        "name": "box",
+        "path": "model.height"
+      },
+      {
+        "expected": 8,
+        "kind": "array_length",
+        "name": "box",
+        "path": "model.content"
+      },
+      {
+        "expected": 50,
+        "kind": "saved_path_equals",
+        "name": "box",
+        "path": "model.content.0"
+      },
+      {
+        "expected": 290,
+        "kind": "saved_path_equals",
+        "name": "box",
+        "path": "model.content.2"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/geom"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_getboxmodel_dims",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.getBoxModel geometry on fixed element"
+}

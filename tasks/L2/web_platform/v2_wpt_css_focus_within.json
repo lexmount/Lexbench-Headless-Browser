@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web platform semantics probe for :focus-within matching a container after its descendant input is programmatically focused. The scripted CDP driver observes page output from the self-hosted fixture `/v2/wpt_b/css_focus_within`, and the server-side grader compares it with the Chrome-baked expected answer.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "nonempty",
+        "settle_timeout_ms": 3000,
+        "wait_ms": 200
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.css.selectors.focus_within"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "css_focus_within",
+    "kind": "self_hosted_fixture",
+    "url": "/v2/wpt_b/css_focus_within"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "family.web_platform_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_wpt_css_focus_within",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": ":focus-within matches ancestor of focused element"
+}

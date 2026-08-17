@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "WPT-derived L2 mechanism probe (url): URL lowercases host and scheme. The self-hosted fixture computes the WHATWG/Web-platform result in-page and writes it to `#out`; the scripted CDP driver reads it and the server-side grader compares against the Chrome-oracle answer. Rewritten from WPT testharness assertions (not run verbatim).",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "nonempty",
+        "settle_timeout_ms": 5000,
+        "wait_ms": 250
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.url.parse"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "v2_wpt_url_lowercase_host",
+    "kind": "self_hosted_fixture",
+    "url": "/v2/wpt_a/url?case=lowercase_host"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "family.web_platform_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_wpt_url_lowercase_host",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "URL lowercases host and scheme"
+}

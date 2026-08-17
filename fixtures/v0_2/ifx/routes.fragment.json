@@ -1,0 +1,8 @@
+{
+  "/v0_2/ifx/app": "v0_2/ifx/app.html",
+  "/v0_2/ifx/api-answer": "v0_2/ifx/api_decoy.json",
+  "/v0_2/ifx/api-truth": "v0_2/ifx/api_truth.json",
+  "/v0_2/ifx/api-second": "v0_2/ifx/api_second.json",
+  "/v0_2/ifx/api-primary": "v0_2/ifx/api_decoy.json",
+  "/v0_2/ifx/doc": "v0_2/ifx/doc.txt"
+}

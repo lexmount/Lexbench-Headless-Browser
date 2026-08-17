@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/loc_iframe_same_origin_read.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Waits for a srcdoc iframe's document and reads a value computed inside it via contentDocument traversal.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "frame_read_ok",
+        "step": 3
+      },
+      {
+        "expected": "frame-msg-55",
+        "kind": "saved_equals",
+        "label": "frame_content",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_stagehand",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "(function(){var f=document.getElementById('child-frame');return !!(f && f.contentDocument && f.contentDocument.getElementById('frame-msg') && f.contentDocument.getElementById('frame-msg').textContent)})()",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.getElementById('child-frame').contentDocument.getElementById('frame-msg').textContent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.stagehand.op.new_page",
+    "fw.stagehand.op.goto",
+    "fw.stagehand.op.wait_for_function",
+    "fw.stagehand.op.evaluate",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.stagehand",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_iframe_same_origin_read__sh",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Read content inside a same-origin iframe (stagehand)"
+}

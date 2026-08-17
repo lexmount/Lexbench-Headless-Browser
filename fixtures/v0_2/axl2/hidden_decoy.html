@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AXL2 Fixture: aria-hidden decoy vs real answer</title>
+</head>
+<body>
+<h1>Access Panel</h1>
+<!-- Decoy is aria-hidden: it must be ignored in the AX tree. -->
+<div aria-hidden="true">
+  <button aria-label="DECOY-0000">Enter</button>
+</div>
+<!-- Real answer: only exposed control in the AX tree. -->
+<button aria-label="GRANT-6650">Enter</button>
+</body>
+</html>

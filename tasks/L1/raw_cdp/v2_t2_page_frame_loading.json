@@ -1,0 +1,80 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Navigating the frame drives Page.frameStartedLoading and, once the load settles, Page.frameStoppedLoading. Asserts both loading-lifecycle events arrive and started carries a frameId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/child'",
+          "returnByValue": true
+        },
+        "save_result_as": "child"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:child.result.value}"
+        }
+      },
+      {
+        "save_result_as": "fstart",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.frameStartedLoading"
+      },
+      {
+        "save_result_as": "fstop",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.frameStoppedLoading"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.frame_started_loading",
+    "cdp.page.frame_stopped_loading"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.frameStartedLoading",
+        "name": "fstart"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "fstart",
+        "path": "frameId"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Page.frameStoppedLoading",
+        "name": "fstop"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_frame_loading",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.frameStartedLoading + frameStoppedLoading"
+}

@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>diag layout trio</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  /* Fixed-pixel element: gBCR / offsetWidth must report exactly 300x150 at 0,0. */
+  #fixed{position:absolute;left:0;top:0;width:300px;height:150px;background:#3a7;}
+  /* Overflowing scroller: scrollHeight/scrollWidth are content extents (400x400)
+     regardless of the 100x50 viewport (Defect C: kernels miscompute layout). */
+  #scroller{position:absolute;left:0;top:200px;width:100px;height:50px;overflow:scroll;}
+  #inner{width:400px;height:400px;background:#a37;}
+</style></head><body>
+<div id="fixed"></div>
+<div id="scroller"><div id="inner"></div></div>
+</body></html>

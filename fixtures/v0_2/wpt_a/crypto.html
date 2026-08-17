@@ -1,0 +1,80 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt_a webcrypto</title></head>
+<body>
+<div id="out"></div>
+<script>
+// WPT WebCryptoAPI/ semantics rewritten as a self-hosted mechanism probe.
+// Digest/HMAC/AES-GCM/getRandomValues are computed at runtime via SubtleCrypto
+// (127.0.0.1 is a secure context); expected output is server-side only.
+function hex(buf) {
+  return Array.from(new Uint8Array(buf))
+    .map(function (b) { return b.toString(16).padStart(2, "0"); })
+    .join("");
+}
+var enc = new TextEncoder();
+async function compute(name) {
+  var subtle = crypto.subtle;
+  switch (name) {
+    case "sha256_empty":
+      return hex(await subtle.digest("SHA-256", new Uint8Array([])));
+    case "sha256_abc":
+      return hex(await subtle.digest("SHA-256", enc.encode("abc")));
+    case "sha1_abc":
+      return hex(await subtle.digest("SHA-1", enc.encode("abc")));
+    case "sha384_abc":
+      return hex(await subtle.digest("SHA-384", enc.encode("abc")));
+    case "sha512_abc":
+      return hex(await subtle.digest("SHA-512", enc.encode("abc")));
+    case "digest_bytelength": {
+      var d = await subtle.digest("SHA-256", enc.encode("abc"));
+      return String(d.byteLength);
+    }
+    case "hmac_roundtrip": {
+      var key = await subtle.importKey(
+        "raw", enc.encode("0123456789abcdef"),
+        { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+      var msg = enc.encode("wpt message");
+      var mac = await subtle.sign("HMAC", key, msg);
+      var ok = await subtle.verify("HMAC", key, mac, msg);
+      return "VERIFY:" + ok + ":" + new Uint8Array(mac).length;
+    }
+    case "hmac_tamper": {
+      var k2 = await subtle.importKey(
+        "raw", enc.encode("0123456789abcdef"),
+        { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+      var m2 = enc.encode("wpt message");
+      var mac2 = new Uint8Array(await subtle.sign("HMAC", k2, m2));
+      mac2[0] = mac2[0] ^ 0xff;
+      var ok2 = await subtle.verify("HMAC", k2, mac2, m2);
+      return "VERIFY:" + ok2;
+    }
+    case "aesgcm_roundtrip": {
+      var akey = await subtle.generateKey(
+        { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      var pt = enc.encode("roundtrip plaintext");
+      var ct = await subtle.encrypt({ name: "AES-GCM", iv: iv }, akey, pt);
+      var back = await subtle.decrypt({ name: "AES-GCM", iv: iv }, akey, ct);
+      var recovered = new TextDecoder().decode(back);
+      return "ROUNDTRIP:" + (recovered === "roundtrip plaintext" ? "OK" : "MISMATCH");
+    }
+    case "getrandomvalues_shape": {
+      var arr = new Uint8Array(16);
+      var ret = crypto.getRandomValues(arr);
+      var inRange = Array.prototype.every.call(arr, function (x) { return x >= 0 && x <= 255; });
+      return (ret === arr) + ":" + (arr instanceof Uint8Array) + ":" + arr.length + ":" + inRange;
+    }
+    default:
+      return "UNKNOWN_CASE:" + name;
+  }
+}
+(async function () {
+  try {
+    var c = new URLSearchParams(location.search).get("case");
+    var r = await compute(c);
+    document.getElementById("out").textContent = String(r);
+  } catch (e) {
+    document.getElementById("out").textContent = "ERR:" + (e && e.message ? e.message : e);
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c5 ce</title></head>
+<body>
+<x-card id="card"></x-card>
+<script>
+try{
+ customElements.define('x-card', class extends HTMLElement{
+   connectedCallback(){ this.textContent='CUSTOM_EL_C5'; }
+ });
+}catch(e){document.getElementById('card').setAttribute('data-err',e.message);}
+</script></body></html>

@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/fr_child_self_navigation.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Sets a marker on the parent, navigates the first child frame to a new URL, and answers with the child's new message plus proof the parent was not reloaded.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "child_navigated",
+        "step": 3
+      },
+      {
+        "expected": "child-nav2-42:top-alive",
+        "kind": "saved_equals",
+        "label": "parent_survived",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_rod",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__top_alive = 9; frames[0].location.href = '/v0_4/frames/child?tag=nav2'; 'navigating'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "!!frames[0].document.getElementById('msg') && frames[0].document.getElementById('msg').textContent.indexOf('nav2') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "frames[0].document.getElementById('msg').textContent + ':' + (window.__top_alive === 9 ? 'top-alive' : 'top-reloaded')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.rod.op.new_page",
+    "fw.rod.op.goto",
+    "fw.rod.op.evaluate",
+    "fw.rod.op.wait_for_function",
+    "cdp.page.frame_navigated",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.rod",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_child_self_navigation__rod",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A child frame navigates itself while the parent document survives (rod)"
+}

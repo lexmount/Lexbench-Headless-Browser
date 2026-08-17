@@ -1,0 +1,105 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Pauses in a nested function, steps out into its caller, requires Debugger.paused(reason=step) at outerTimer, then resumes and verifies the caller computes window.__v4done === 42 from the nested return value.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__v4done=0; setTimeout(function outerTimer(){function inner(){debugger; return 40;} window.__v4done = inner() + 2;},30)"
+        }
+      },
+      {
+        "save_result_as": "initial_pause",
+        "timeout_ms": 4000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.stepOut"
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "Debugger.resumed"
+      },
+      {
+        "save_result_as": "step_pause",
+        "timeout_ms": 3000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.resume"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__v4done",
+          "returnByValue": true
+        },
+        "save_as": "done"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.step_out"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "inner",
+        "kind": "saved_path_equals",
+        "label": "initial_pause_is_nested",
+        "name": "initial_pause",
+        "path": "callFrames.0.functionName"
+      },
+      {
+        "expected": "step",
+        "kind": "saved_path_equals",
+        "label": "step_pause_reason",
+        "name": "step_pause",
+        "path": "reason"
+      },
+      {
+        "expected": "outerTimer",
+        "kind": "saved_path_equals",
+        "label": "stepped_into_caller",
+        "name": "step_pause",
+        "path": "callFrames.0.functionName"
+      },
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "label": "caller_completed_after_resume",
+        "name": "done"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_stepout",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.stepOut from a pause"
+}

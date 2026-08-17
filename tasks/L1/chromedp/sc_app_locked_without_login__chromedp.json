@@ -1,0 +1,82 @@
+{
+  "_generated_from": "tasks/scenarios/app_locked_without_login.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Clears any leftover session cookie, reloads, and confirms the server refuses the item list.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "locked_state",
+        "step": 4
+      },
+      {
+        "expected": "locked",
+        "kind": "saved_equals",
+        "label": "server_refused",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chromedp",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.cookie = 'abb_app_sid=; Max-Age=0; path=/'; 'cleared'",
+        "op": "evaluate"
+      },
+      {
+        "op": "reload"
+      },
+      {
+        "expression": "document.getElementById('filter-count').textContent === 'locked'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#filter-count"
+      }
+    ]
+  },
+  "features": [
+    "fw.chromedp.op.new_page",
+    "fw.chromedp.op.goto",
+    "fw.chromedp.op.evaluate",
+    "fw.chromedp.op.reload",
+    "fw.chromedp.op.wait_for_function",
+    "fw.chromedp.op.text_content",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.chromedp",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_locked_without_login__chromedp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The item list is locked without a session (chromedp)"
+}

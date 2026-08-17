@@ -1,0 +1,60 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright evaluates a self-invoking function that maps and reduces an array ((3+5+7+9)*2 = 48). Passes when the returned value is 48, proving Runtime.evaluate with returnByValue handles non-trivial expressions.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "evaluate_ok",
+        "step": 2
+      },
+      {
+        "expected": "48",
+        "kind": "saved_equals",
+        "label": "sum_equals_48",
+        "name": "sum"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "(()=>{const xs=[3,5,7,9]; return xs.map(x=>x*2).reduce((a,b)=>a+b,0);})()",
+        "op": "evaluate",
+        "save_as": "sum"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.evaluate",
+    "cdp.runtime.evaluate",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_evaluate",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_eval_arithmetic",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "evaluate an IIFE with array/closure arithmetic"
+}

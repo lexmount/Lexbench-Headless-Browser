@@ -1,0 +1,88 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enable the Accessibility domain and pull a full tree, then disable and re-enable and pull again. Both trees are well-formed and the second still exposes the button, verifying the enable/disable lifecycle is idempotent with no residual state.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable"
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax1"
+      },
+      {
+        "method": "Accessibility.disable"
+      },
+      {
+        "method": "Accessibility.enable"
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax2"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.enable",
+    "cdp.accessibility.disable",
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 5,
+        "name": "ax1",
+        "path": "nodes"
+      },
+      {
+        "kind": "array_length",
+        "min": 5,
+        "name": "ax2",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Create account"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax2",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/form"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_enable_disable_idempotent",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Accessibility enable -> disable -> enable is idempotent"
+}

@@ -1,0 +1,92 @@
+{
+  "scenario_id": "app_filter_narrows",
+  "family": "multi_step_flow",
+  "title": "Typing a filter narrows the item list to matching entries",
+  "description": "Logs in, types a filter prefix, and answers with the live match counter.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.querySelectorAll('#items li').length === 5"
+    },
+    {
+      "op": "fill",
+      "selector": "#filter-in",
+      "value": "wid"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('filter-in').dispatchEvent(new Event('input', {bubbles: true})); 'fired'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('filter-count').textContent === 'wid:3'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#filter-count",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "filter_applied",
+      "step": 8
+    },
+    {
+      "kind": "saved_equals",
+      "label": "narrowed",
+      "name": "answer",
+      "expected": "wid:3"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "wid:3"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

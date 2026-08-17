@@ -1,0 +1,57 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Playwright-only surface: the user_agent op internally opens a browser-level CDP session via browser.newBrowserCDPSession() and sends Browser.getVersion on it. Passes when the returned userAgent is a non-empty browser UA string, proving the engine accepts an explicit attach to the browser target.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "browser_cdp_session_ok",
+        "step": 0
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "ua_nonempty",
+        "name": "ua"
+      },
+      {
+        "expected": "Mozilla",
+        "kind": "saved_contains",
+        "label": "ua_looks_like_browser",
+        "name": "ua"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "user_agent",
+        "save_as": "ua"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.browser.new_browser_cdp_session",
+    "cdp.target.attach_to_browser_target",
+    "cdp.browser.get_version"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_conn_browser_cdp_session",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "browser-level CDP session (newBrowserCDPSession) reads userAgent"
+}

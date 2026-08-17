@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>actl2 click xhr</title></head>
+<body>
+<h1>click xhr</h1>
+<button id="go">go</button>
+<div id="status">idle</div>
+<script>
+// The token is NOT in this document; it only arrives if the click handler's
+// XHR to the fixture server actually fires. Reading it back proves the full
+// click -> XHR -> DOM path executed.
+document.getElementById("go").addEventListener("click", function () {
+  fetch("/v2/actl2/token.txt")
+    .then(function (r) { return r.text(); })
+    .then(function (t) { document.getElementById("status").textContent = "GOT:" + t.trim(); })
+    .catch(function (e) { document.getElementById("status").textContent = "ERR:" + String(e); });
+});
+</script>
+</body>
+</html>

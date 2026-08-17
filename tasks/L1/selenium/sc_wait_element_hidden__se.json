@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/wait_element_hidden.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "An element visible at load is display:none'd after 300ms. Waits for the hidden state via a predicate and reports it; a driver that only waits for presence passes too early.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "went_hidden",
+        "step": 2
+      },
+      {
+        "expected": "hidden-ok",
+        "kind": "saved_equals",
+        "label": "hidden_confirmed",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.getComputedStyle(document.getElementById('vanish')).display === 'none'",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "window.getComputedStyle(document.getElementById('vanish')).display === 'none' ? 'hidden-ok' : 'still-visible'",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.wait_for_function",
+    "fw.selenium.op.evaluate",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_element_hidden__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a present element to become hidden (selenium)"
+}

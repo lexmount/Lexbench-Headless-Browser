@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. DOM.getContentQuads on a fixed 240x120 element. Assert exactly one quad of 8 coordinates, matching the element rectangle (50,60)-(290,180).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#box"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "DOM.getContentQuads",
+        "params": {
+          "nodeId": "{saved:q.nodeId}"
+        },
+        "save_result_as": "quads"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.get_content_quads"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 1,
+        "kind": "array_length",
+        "name": "quads",
+        "path": "quads"
+      },
+      {
+        "expected": 8,
+        "kind": "array_length",
+        "name": "quads",
+        "path": "quads.0"
+      },
+      {
+        "expected": 50,
+        "kind": "saved_path_equals",
+        "name": "quads",
+        "path": "quads.0.0"
+      },
+      {
+        "expected": 290,
+        "kind": "saved_path_equals",
+        "name": "quads",
+        "path": "quads.0.2"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/geom"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_getcontentquads_shape",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.getContentQuads shape on fixed element"
+}

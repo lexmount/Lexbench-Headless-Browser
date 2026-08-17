@@ -1,0 +1,64 @@
+{
+  "scenario_id": "cs_eval_context_persists",
+  "family": "connect_session",
+  "title": "The JS world persists between separate driver evaluate calls",
+  "description": "Sets a window global in one evaluate call and derives a value from it in a second call. A driver that evaluates each expression in a throwaway context (or a fresh isolated world) fails here.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__abb_x = 41, 'set'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "String(window.__abb_x + 1)",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_eval_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "context_persisted",
+      "name": "answer",
+      "expected": "42"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

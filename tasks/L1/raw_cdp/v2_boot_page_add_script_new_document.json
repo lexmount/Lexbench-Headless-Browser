@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Registers an evaluate-on-new-document script that stamps a window var, asserts an identifier is returned, then navigates and reads the var back to confirm the script actually executed in the new document. Real probe of add-script semantics.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "session": "page"
+      },
+      {
+        "method": "Page.addScriptToEvaluateOnNewDocument",
+        "params": {
+          "source": "window.__abbBootStamp = 'stamped-42';"
+        },
+        "save_result_as": "script",
+        "session": "page"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "session": "page"
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbBootStamp",
+          "returnByValue": true
+        },
+        "save_as": "stamp",
+        "session": "page"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.add_script_to_evaluate_on_new_document"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "script",
+        "path": "identifier"
+      },
+      {
+        "expected": "stamped-42",
+        "kind": "value_equals",
+        "name": "stamp"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_page_add_script_new_document",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.addScriptToEvaluateOnNewDocument runs on next nav"
+}

@@ -1,0 +1,79 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: network route through the agent-browser tool API. It passes when `agent-browser network route **/app.js --abort` succeeds; the saved value `blocked` equals `true`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 0
+        },
+        {
+          "expected": "true",
+          "kind": "saved_equals",
+          "name": "blocked"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "network",
+            "route",
+            "**/app.js",
+            "--abort"
+          ]
+        },
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "wait",
+            "200"
+          ]
+        },
+        {
+          "eval": "window.__scriptLoaded === undefined || window.__scriptLoaded === null",
+          "save_as": "blocked"
+        },
+        {
+          "ab": [
+            "network",
+            "unroute"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.network.route"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_network_route",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: network route"
+}

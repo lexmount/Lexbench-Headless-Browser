@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Connection surface probe: real Puppeteer creates a fresh page (Target.createTarget + auto-attach drill-down + Runtime.runIfWaitingForDebugger) and evaluates 6*7 in the about:blank main world without navigating; the arithmetic result must round-trip as 42.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "new_page_ok",
+        "step": 0
+      },
+      {
+        "expected": "42",
+        "kind": "saved_equals",
+        "label": "evaluate_returns_42",
+        "name": "product42"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "expression": "6*7",
+        "op": "evaluate",
+        "save_as": "product42"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.browser.new_page",
+    "fw.puppeteer.page.evaluate",
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_conn_new_page_eval",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer newPage + evaluate on about:blank"
+}

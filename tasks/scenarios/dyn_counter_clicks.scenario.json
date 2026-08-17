@@ -1,0 +1,23 @@
+{
+  "scenario_id": "dyn_counter_clicks",
+  "family": "waiting_dynamic",
+  "title": "Click a counter button repeatedly and read the tally",
+  "description": "Clicks #counter-btn three times on the probe controls page; each click increments the #press-count output via a JS handler. Reads the final tally. Exercises repeated pointer dispatch and observation of client-side state accumulation.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v0_3/probe/controls"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "click", "selector": "#counter-btn"},
+    {"op": "click", "selector": "#counter-btn"},
+    {"op": "click", "selector": "#counter-btn"},
+    {"op": "text_content", "selector": "#press-count", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "third_click_ok", "step": 4},
+    {"kind": "saved_equals", "label": "count_is_three", "name": "answer", "expected": "3"}
+  ],
+  "cdp_anchors": ["cdp.input.dispatch_mouse_event"],
+  "expected_answer": {"mode": "equals", "expected": "3"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

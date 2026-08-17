@@ -1,0 +1,98 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "v0.2 demo: full Fetch interception flow — Fetch.enable with a URL pattern, a page fetch() triggers Fetch.requestPaused, the driver captures the requestId and Fetch.fulfillRequest injects a synthetic body, then the page reads back the intercepted text. Demonstrates event-driven request interception (T1_intercept).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "urlPattern": "*__abb_intercept__*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/__abb_intercept__/x').then(function(r){return r.text();}).then(function(t){window.__abbFetch = t;}).catch(function(e){window.__abbFetch = 'ERR:' + String(e);})"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 5000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "aW50ZXJjZXB0ZWQtYm9keS00Mg==",
+          "requestId": "{saved:paused.requestId}",
+          "responseCode": 200,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain"
+            }
+          ]
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbFetch",
+          "returnByValue": true
+        },
+        "save_as": "fetched"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.request_paused",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "paused",
+        "path": "requestId"
+      },
+      {
+        "expected": "intercepted-body",
+        "kind": "value_contains",
+        "name": "fetched"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "purpose.demo"
+  ],
+  "task_id": "v2demo_fetch_intercept_fulfill",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch interception fulfillRequest"
+}

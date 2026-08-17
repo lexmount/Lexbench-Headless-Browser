@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb getAll getAllKeys count</title></head><body><div id="out">PENDING</div><script>
+// getAll() returns values, getAllKeys() returns primary keys, count() returns
+// the record tally. The three semantics are distinct and combined in one probe.
+var DB='v2idb_getall_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    [{id:10,n:'A'},{id:20,n:'B'},{id:30,n:'C'},{id:40,n:'D'},{id:50,n:'E'}].forEach(function(x){st.put(x);});
+    tx.oncomplete=function(){
+      var rt=db.transaction('s').objectStore('s');
+      var gv=rt.getAll();var gk=rt.getAllKeys();var gc=rt.count();
+      var rtx=rt.transaction;
+      rtx.oncomplete=function(){
+        var names=gv.result.map(function(x){return x.n;});
+        set('COUNT='+gc.result+'_KEYS='+gk.result.join(',')+'_NAMES='+names.join(','));
+      };
+      rtx.onerror=function(){fail(rtx.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

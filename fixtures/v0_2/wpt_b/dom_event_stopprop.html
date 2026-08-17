@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b stopPropagation semantics</title></head>
+<body>
+<div id="a"><div id="b">x</div></div>
+<div id="out"></div>
+<script>
+try{
+  var a=document.getElementById('a');
+  var b=document.getElementById('b');
+  var log=[];
+  b.addEventListener('ping',function(e){log.push('B1'); e.stopPropagation();},false);
+  b.addEventListener('ping',function(){log.push('B2');},false);
+  a.addEventListener('ping',function(){log.push('A');},false);
+  b.dispatchEvent(new CustomEvent('ping',{bubbles:true}));
+  document.getElementById('out').textContent='STOP:'+log.join(',');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

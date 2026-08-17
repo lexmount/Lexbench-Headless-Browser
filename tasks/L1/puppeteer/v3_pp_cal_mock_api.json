@@ -1,0 +1,69 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calibration against v2_ifx_mock_api_rewrite (same app fixture, same mock-supersedes-origin semantics): real Puppeteer registers a route on **/v0_2/ifx/api-primary that fulfills with an injected JSON body, then triggers the page helper __abbApiField() which fetches that route and renders the parsed 'answer' field. The asserted value 'V3-MOCK-PP-K3F9' exists only in this task's injected body, never on the origin route (which serves a decoy), so a pass proves the framework's interception path (Fetch enable/fulfillRequest) actually rewired the response. Raw-CDP replay did the same via manual Fetch.requestPaused handling.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "V3-MOCK-PP-K3F9",
+        "kind": "saved_equals",
+        "label": "mocked_answer_observed",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "body": "{\"answer\":\"V3-MOCK-PP-K3F9\"}",
+        "content_type": "application/json",
+        "op": "route_fulfill",
+        "pattern": "**/v0_2/ifx/api-primary",
+        "status": 200
+      },
+      {
+        "expression": "window.__abbApiField('/v0_2/ifx/api-primary')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.set_request_interception",
+    "fw.puppeteer.page.evaluate",
+    "cdp.fetch.enable",
+    "cdp.fetch.fulfill_request",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.calibration",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_cal_mock_api",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer route fulfill supersedes the origin API"
+}

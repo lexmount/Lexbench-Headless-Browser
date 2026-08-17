@@ -1,0 +1,64 @@
+{
+  "scenario_id": "st_local_roundtrip",
+  "family": "state",
+  "title": "localStorage set/get round-trip in one page",
+  "description": "Writes a localStorage key and reads it back through a second evaluate call. The value is computed at write time, never present in the page.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.setItem('abb_k', 'v-' + (37 + 0)), 'set'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.getItem('abb_k') || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "get_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "value_roundtrips",
+      "name": "answer",
+      "expected": "v-37"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "v-37"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

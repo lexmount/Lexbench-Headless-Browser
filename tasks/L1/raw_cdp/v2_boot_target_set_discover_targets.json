@@ -1,0 +1,81 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Turns on target discovery on the browser session, creates a page target, and waits for the Target.targetCreated event for that exact target id, asserting it describes a 'page'. Real probe that setDiscoverTargets actually opens the discovery event stream.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setDiscoverTargets",
+        "params": {
+          "discover": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "about:blank"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "discovered",
+        "session": "browser",
+        "timeout_ms": 5000,
+        "wait_for_event": "Target.targetCreated"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.set_discover_targets",
+    "cdp.target.target_created"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Target.targetCreated",
+        "name": "discovered"
+      },
+      {
+        "expected": "page",
+        "kind": "saved_path_equals",
+        "name": "discovered",
+        "path": "targetInfo.type"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_set_discover_targets",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.setDiscoverTargets emits targetCreated"
+}

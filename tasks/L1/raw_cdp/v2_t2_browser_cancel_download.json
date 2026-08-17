@@ -1,0 +1,106 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Arms download events, triggers a download, captures the guid from Browser.downloadWillBegin, calls Browser.cancelDownload on it, and waits for the matching canceled-or-completed terminal progress event. Asserts both the begin and terminal events; the cancel call is exercised as the coverage probe for cancelDownload. It passes when the `Browser.downloadWillBegin` event is observed; `dwb.guid` is present; the `Browser.downloadProgress` event is observed; `dterminal.state` is one of `[\"canceled\", \"completed\"]`.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.setDownloadBehavior",
+        "params": {
+          "behavior": "allowAndName",
+          "downloadPath": "{artifact_dir}",
+          "eventsEnabled": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('dl').click()"
+        }
+      },
+      {
+        "save_result_as": "dwb",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Browser.downloadWillBegin"
+      },
+      {
+        "method": "Browser.cancelDownload",
+        "optional": true,
+        "params": {
+          "guid": "{saved:dwb.guid}"
+        },
+        "session": "browser"
+      },
+      {
+        "match": {
+          "guid": "{saved:dwb.guid}",
+          "state": {
+            "$one_of": [
+              "canceled",
+              "completed"
+            ]
+          }
+        },
+        "save_result_as": "dterminal",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Browser.downloadProgress"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.cancel_download",
+    "cdp.browser.set_download_behavior",
+    "cdp.browser.download_will_begin",
+    "cdp.browser.download_progress"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Browser.downloadWillBegin",
+        "name": "dwb"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "dwb",
+        "path": "guid"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Browser.downloadProgress",
+        "name": "dterminal"
+      },
+      {
+        "expected": [
+          "canceled",
+          "completed"
+        ],
+        "kind": "saved_path_one_of",
+        "name": "dterminal",
+        "path": "state"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/download_page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_browser_cancel_download",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Browser.cancelDownload after downloadWillBegin"
+}

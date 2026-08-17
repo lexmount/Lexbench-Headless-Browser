@@ -1,0 +1,78 @@
+{
+  "_generated_from": "tasks/scenarios/cs_fresh_page_no_stale_globals.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Sets a window global on the first page, then creates a new page on the same URL and confirms the global is absent. Exercises that new targets get fresh execution contexts rather than reusing the old page's world.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "recreate_ok",
+        "step": 3
+      },
+      {
+        "expected": "fresh",
+        "kind": "saved_equals",
+        "label": "world_is_fresh",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_ferrum",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__abb_marker = 41, 'marked'",
+        "op": "evaluate"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "typeof window.__abb_marker === 'undefined' ? 'fresh' : 'stale'",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.ferrum.op.new_page",
+    "fw.ferrum.op.goto",
+    "fw.ferrum.op.evaluate",
+    "cdp.target.create_target",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.ferrum",
+  "tags": [
+    "family.connect_session",
+    "version.v0_4"
+  ],
+  "task_id": "sc_cs_fresh_page_no_stale_globals__fr",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A newly created page starts with a fresh JS world (ferrum)"
+}

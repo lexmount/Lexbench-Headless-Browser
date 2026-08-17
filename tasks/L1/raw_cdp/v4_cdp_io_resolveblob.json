@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Creates a Blob in the page, resolves its backing handle via IO.resolveBlob, and checks the returned uuid.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "new Blob(['hello world'],{type:'text/plain'})",
+          "returnByValue": false
+        },
+        "save_result_as": "b"
+      },
+      {
+        "method": "IO.resolveBlob",
+        "params": {
+          "objectId": "{saved:b.result.objectId}"
+        },
+        "save_result_as": "r"
+      }
+    ]
+  },
+  "features": [
+    "cdp.io.resolve_blob"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "label": "blob_uuid_present",
+        "name": "r",
+        "path": "uuid"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_io_resolveblob",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "IO.resolveBlob returns a blob uuid"
+}

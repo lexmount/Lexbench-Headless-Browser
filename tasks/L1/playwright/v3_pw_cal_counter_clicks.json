@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calibration against v2_h_counter_clicks (same fixture, same expected total): real Playwright connects over CDP, clicks #add3 three times and #add5 twice through its true pointer path (on_framework_main_path: scrollIntoView + getContentQuads + Input.dispatchMouseEvent), and reads back the running total. Raw-CDP replay drove the same fixture via Runtime.evaluate clicks; divergence here isolates the coordinate action channel.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "19",
+        "kind": "saved_equals",
+        "label": "total_equals_19",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#add3",
+        "times": 3
+      },
+      {
+        "op": "click",
+        "selector": "#add5",
+        "times": 2
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#total"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.click",
+    "fw.playwright.page.text_content",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.dom.get_content_quads",
+    "cdp.dom.scroll_into_view_if_needed",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/counter"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.calibration",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_cal_counter_clicks",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Playwright click chain on the v0.2 counter fixture"
+}

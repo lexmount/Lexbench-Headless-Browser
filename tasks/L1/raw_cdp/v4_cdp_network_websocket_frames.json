@@ -1,0 +1,78 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Opens a WebSocket to the fixture echo peer (/__ws__/echo), which completes the RFC6455 handshake and echoes the frame the page sends. Asserts the three CDP events that require a live WS peer: Network.webSocketHandshakeResponseReceived (the 101 response), Network.webSocketFrameSent (the page's outbound frame), and Network.webSocketFrameReceived (the peer's echo).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__ws=new WebSocket(location.origin.replace('http','ws')+'/__ws__/echo'); window.__ws.onopen=function(){window.__ws.send('hello-wsd');}; window.__ws.onerror=function(){}; 'ok'"
+        }
+      },
+      {
+        "save_result_as": "hs",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.webSocketHandshakeResponseReceived"
+      },
+      {
+        "save_result_as": "sent",
+        "timeout_ms": 4000,
+        "wait_for_event": "Network.webSocketFrameSent"
+      },
+      {
+        "save_result_as": "recv",
+        "timeout_ms": 4000,
+        "wait_for_event": "Network.webSocketFrameReceived"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.web_socket_handshake_response_received",
+    "cdp.network.web_socket_frame_sent",
+    "cdp.network.web_socket_frame_received"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketHandshakeResponseReceived",
+        "name": "hs"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketFrameSent",
+        "name": "sent"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketFrameReceived",
+        "name": "recv"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_network_websocket_frames",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "WebSocket handshake response + frame sent/received via echo peer"
+}

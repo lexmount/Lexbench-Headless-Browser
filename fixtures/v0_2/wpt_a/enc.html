@@ -1,0 +1,63 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt_a encoding</title></head>
+<body>
+<div id="out"></div>
+<script>
+// WPT encoding/ semantics rewritten as a self-hosted mechanism probe.
+// TextEncoder/TextDecoder behavior is computed at runtime; expected output is
+// server-side only (Chrome oracle).
+function bytes(u) { return Array.from(u).join(","); }
+function compute(name) {
+  switch (name) {
+    case "utf8_astral": {
+      var b = new TextEncoder().encode("A\u{1F600}B");
+      return b.length + ":" + bytes(b);
+    }
+    case "encoding_prop":
+      return new TextEncoder().encoding;
+    case "fatal_throws": {
+      try {
+        new TextDecoder("utf-8", { fatal: true }).decode(new Uint8Array([0xff]));
+        return "NO_THROW";
+      } catch (e) {
+        return "THREW:" + e.name;
+      }
+    }
+    case "nonfatal_replacement": {
+      var s = new TextDecoder().decode(new Uint8Array([0xff]));
+      return s.length + ":" + s.charCodeAt(0);
+    }
+    case "labels": {
+      var labels = ["utf8", "iso-8859-1", "latin1", "gbk", "shift_jis", "ascii"];
+      return labels.map(function (l) { return new TextDecoder(l).encoding; }).join(",");
+    }
+    case "stream_split": {
+      var d = new TextDecoder();
+      var a = d.decode(new Uint8Array([0xc3]), { stream: true });
+      var b = d.decode(new Uint8Array([0xa9]), { stream: true });
+      return a.length + ":" + b.length + ":" + b;
+    }
+    case "encode_into": {
+      var u = new Uint8Array(16);
+      var r = new TextEncoder().encodeInto("héllo", u);
+      return r.read + ":" + r.written;
+    }
+    case "bom_strip": {
+      var s2 = new TextDecoder("utf-8").decode(new Uint8Array([0xef, 0xbb, 0xbf, 0x41]));
+      return s2.length + ":" + s2;
+    }
+    case "surrogate_replace": {
+      var b2 = new TextEncoder().encode("\ud800");
+      return b2.length + ":" + bytes(b2);
+    }
+    default:
+      return "UNKNOWN_CASE:" + name;
+  }
+}
+try {
+  var c = new URLSearchParams(location.search).get("case");
+  document.getElementById("out").textContent = String(compute(c));
+} catch (e) {
+  document.getElementById("out").textContent = "ERR:" + (e && e.message ? e.message : e);
+}
+</script>
+</body></html>

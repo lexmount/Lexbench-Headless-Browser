@@ -1,0 +1,67 @@
+{
+  "scenario_id": "st_local_survives_reload",
+  "family": "state",
+  "title": "localStorage survives a reload",
+  "description": "Writes a localStorage key, reloads the page, and reads the key back. Exercises storage persistence across the driver's reload path.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.setItem('abb_keep', 'keep-' + (13 * 4)), 'set'"
+    },
+    {
+      "op": "reload"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.getItem('abb_keep') || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "reload_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "survives",
+      "name": "answer",
+      "expected": "keep-52"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.reload"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "keep-52"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "Fetch.fulfillRequest injects a synthetic response: status 201, a custom x-abb-tag header, and a text body. The page reads back the status code, the custom header value, and the body, proving all three fulfillRequest response fields take effect.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "RlVMRklMTEVELUJPRFktdG9rZW4tZWNobw==",
+          "requestId": "{saved:paused.requestId}",
+          "responseCode": 201,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain"
+            },
+            {
+              "name": "x-abb-tag",
+              "value": "hdr-echo-77"
+            }
+          ]
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbStatus+'|'+window.__abbXTag+'|'+window.__abbBody",
+          "returnByValue": true
+        },
+        "save_as": "combo"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "201",
+        "kind": "value_contains",
+        "name": "combo"
+      },
+      {
+        "expected": "hdr-echo-77",
+        "kind": "value_contains",
+        "name": "combo"
+      },
+      {
+        "expected": "FULFILLED-BODY-token-echo",
+        "kind": "value_contains",
+        "name": "combo"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_fulfill_custom_response",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.fulfillRequest with custom code, headers and body"
+}

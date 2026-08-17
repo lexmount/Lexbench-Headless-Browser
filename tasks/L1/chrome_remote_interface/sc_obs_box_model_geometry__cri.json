@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/obs_box_model_geometry.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Reads the bounding box of a 120x48 element and answers with its rounded dimensions — the box-model observation surface.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "geometry_read",
+        "step": 3
+      },
+      {
+        "expected": "w120:h48",
+        "kind": "saved_equals",
+        "label": "box_dimensions",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "!!document.getElementById('box')",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "(function () { var r = document.getElementById('box').getBoundingClientRect(); return 'w' + Math.round(r.width) + ':h' + Math.round(r.height); })()",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.wait_for_function",
+    "fw.chrome_remote_interface.op.evaluate",
+    "cdp.dom.get_box_model"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_box_model_geometry__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Layout geometry of a fixed-size element is observable (chrome_remote_interface)"
+}

@@ -1,0 +1,85 @@
+{
+  "_generated_from": "tasks/scenarios/net_route_rewrite_status.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fulfills the data endpoint with a 503; the page must observe exactly that status.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "status_read",
+        "step": 4
+      },
+      {
+        "expected": "status:503",
+        "kind": "saved_equals",
+        "label": "rewritten_status",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "body": "unavailable",
+        "content_type": "text/plain",
+        "op": "route_fulfill",
+        "pattern": "**/v0_4/net/data",
+        "status": 503
+      },
+      {
+        "op": "click",
+        "selector": "#btn-status"
+      },
+      {
+        "expression": "document.getElementById('net-out').textContent.indexOf('status:') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#net-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.route_fulfill",
+    "fw.puppeteer.op.click",
+    "fw.puppeteer.op.wait_for_function",
+    "fw.puppeteer.op.text_content",
+    "cdp.fetch.fulfill_request",
+    "cdp.network.response_received"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.network_interception",
+    "version.v0_4"
+  ],
+  "task_id": "sc_net_route_rewrite_status__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A routed response can rewrite the HTTP status (puppeteer)"
+}

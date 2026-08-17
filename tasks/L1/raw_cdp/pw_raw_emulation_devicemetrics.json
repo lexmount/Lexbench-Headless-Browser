@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.emulation.deviceMetrics by issuing raw CDP command(s) Emulation.setDeviceMetricsOverride, Runtime.enable, Runtime.evaluate against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Emulation.setDeviceMetricsOverride",
+        "optional": false,
+        "params": {
+          "deviceScaleFactor": 2,
+          "height": 640,
+          "mobile": true,
+          "width": 360
+        }
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "expression": "({w: innerWidth, h: innerHeight, dpr: devicePixelRatio})",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.emulation.set_device_metrics_override",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_emulation_devicemetrics",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.emulation.deviceMetrics"
+}

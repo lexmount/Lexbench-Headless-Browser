@@ -1,0 +1,83 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: dialog accept through the agent-browser tool API. It passes when `agent-browser dialog accept` succeeds; the saved value `r` equals `true`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 3
+        },
+        {
+          "expected": "true",
+          "kind": "saved_equals",
+          "name": "r"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "eval",
+            "window.__r = undefined"
+          ]
+        },
+        {
+          "ab": [
+            "click",
+            "#cfm"
+          ]
+        },
+        {
+          "ab": [
+            "dialog",
+            "accept"
+          ]
+        },
+        {
+          "ab": [
+            "wait",
+            "100"
+          ]
+        },
+        {
+          "eval": "window.__r",
+          "save_as": "r"
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.dialog.accept"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_dialog_accept",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: dialog accept"
+}

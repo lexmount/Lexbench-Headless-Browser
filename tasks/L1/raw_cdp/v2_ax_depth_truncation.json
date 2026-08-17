@@ -1,0 +1,89 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The full getFullAXTree reaches the deeply nested button; requesting depth=1 truncates the traversal to the top of the tree (<=6 nodes) and omits the deep button. Verifies the depth parameter's truncation behavior.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "axfull"
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "axd1"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.depth"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "Deeply Nested Button"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "axfull",
+        "path": "nodes"
+      },
+      {
+        "kind": "array_length",
+        "min": 10,
+        "name": "axfull",
+        "path": "nodes"
+      },
+      {
+        "kind": "array_length",
+        "max": 6,
+        "name": "axd1",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/depth"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_depth_truncation",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "getFullAXTree depth parameter truncates the returned subtree"
+}

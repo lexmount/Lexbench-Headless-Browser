@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb blob and arraybuffer value</title></head><body><div id="out">PENDING</div><script>
+// Structured-clone storage of Blob and ArrayBuffer values through IndexedDB.
+// Read back: Blob.text() must round-trip the payload, and the ArrayBuffer view
+// must preserve byteLength and byte content.
+var DB='v2idb_blob_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    st.put({id:1,blob:new Blob(['HELLO_IDB'],{type:'text/plain'}),buf:new Uint8Array([1,2,3,4,5]).buffer});
+    tx.oncomplete=function(){
+      var g=db.transaction('s').objectStore('s').get(1);
+      g.onsuccess=function(){
+        var row=g.result;var view=new Uint8Array(row.buf);
+        row.blob.text().then(function(txt){set('BLOB='+txt+'_BUFLEN='+view.byteLength+'_B0='+view[0]);}).catch(fail);
+      };
+      g.onerror=function(){fail(g.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

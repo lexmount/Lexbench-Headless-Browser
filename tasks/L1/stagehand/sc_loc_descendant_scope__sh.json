@@ -1,0 +1,66 @@
+{
+  "_generated_from": "tasks/scenarios/loc_descendant_scope.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Reads #zone .value where an identical .value also exists outside #zone; the scoped match must win.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "read_ok",
+        "step": 2
+      },
+      {
+        "expected": "zone-val-21",
+        "kind": "saved_equals",
+        "label": "scoped_match",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_stagehand",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#zone .value"
+      }
+    ]
+  },
+  "features": [
+    "fw.stagehand.op.new_page",
+    "fw.stagehand.op.goto",
+    "fw.stagehand.op.text_content",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.stagehand",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_descendant_scope__sh",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A descendant selector stays inside its ancestor (stagehand)"
+}

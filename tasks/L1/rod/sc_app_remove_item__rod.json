@@ -1,0 +1,112 @@
+{
+  "_generated_from": "tasks/scenarios/app_remove_item.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Logs in, adds two items, removes one, and answers with the corrected total.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "line_removed",
+        "step": 11
+      },
+      {
+        "expected": "total-7",
+        "kind": "saved_equals",
+        "label": "corrected_total",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_rod",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user-in",
+        "value": "eve-7"
+      },
+      {
+        "op": "click",
+        "selector": "#login-btn"
+      },
+      {
+        "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "!!document.getElementById('add-widget-a')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-widget-a"
+      },
+      {
+        "expression": "!!document.getElementById('cart-widget-a')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-widget-c"
+      },
+      {
+        "expression": "!!document.getElementById('cart-widget-c')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#rm-widget-a"
+      },
+      {
+        "expression": "document.getElementById('cart-total').textContent === 'total-7'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#cart-total"
+      }
+    ]
+  },
+  "features": [
+    "fw.rod.op.new_page",
+    "fw.rod.op.goto",
+    "fw.rod.op.fill",
+    "fw.rod.op.click",
+    "fw.rod.op.wait_for_function",
+    "fw.rod.op.text_content",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.rod",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_remove_item__rod",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Removing a cart line updates the server-side total (rod)"
+}

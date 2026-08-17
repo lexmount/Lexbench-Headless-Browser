@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b adoptNode/importNode cross-document</title></head>
+<body>
+<div id="out"></div>
+<script>
+try{
+  var other=document.implementation.createHTMLDocument('other');
+  var node=other.createElement('div'); node.textContent='ADOPTED'; other.body.appendChild(node);
+  var ownedByOther=(node.ownerDocument===other);
+  var adopted=document.adoptNode(node);
+  var ownedByThis=(adopted.ownerDocument===document);
+  var removedFromSrc=(node.parentNode===null);
+  var n2=other.createElement('span'); n2.textContent='IMPORTED'; other.body.appendChild(n2);
+  var imported=document.importNode(n2,true);
+  var importOk=(imported.ownerDocument===document)&&(n2.parentNode===other.body);
+  document.getElementById('out').textContent='ADOPT:before='+ownedByOther+';owner='+ownedByThis+';removedFromSrc='+removedFromSrc+';import='+importOk;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

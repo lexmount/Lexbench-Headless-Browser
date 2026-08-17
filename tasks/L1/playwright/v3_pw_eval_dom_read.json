@@ -1,0 +1,80 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright reads the core fixture DOM three ways: textContent of #title, the placeholder attribute of #field, and the count of .para paragraphs. Passes when all three match the fixture's known values, proving the callFunctionOn-based DOM read surface works.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "CDP Core Fixture",
+        "kind": "saved_equals",
+        "label": "title_text",
+        "name": "title_text"
+      },
+      {
+        "expected": "type here",
+        "kind": "saved_equals",
+        "label": "placeholder_attr",
+        "name": "placeholder"
+      },
+      {
+        "expected": "2",
+        "kind": "saved_equals",
+        "label": "para_count_2",
+        "name": "para_count"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "text_content",
+        "save_as": "title_text",
+        "selector": "#title"
+      },
+      {
+        "name": "placeholder",
+        "op": "get_attribute",
+        "save_as": "placeholder",
+        "selector": "#field"
+      },
+      {
+        "op": "count",
+        "save_as": "para_count",
+        "selector": ".para"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.text_content",
+    "fw.playwright.page.get_attribute",
+    "fw.playwright.locator.count",
+    "cdp.runtime.call_function_on",
+    "cdp.dom.describe_node"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_evaluate",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_eval_dom_read",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "textContent + getAttribute + locator count DOM reads"
+}

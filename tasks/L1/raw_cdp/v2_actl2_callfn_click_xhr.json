@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate action chain: Runtime.evaluate resolves the button objectId, Runtime.callFunctionOn invokes this.click() on it, the page's click handler fires an XHR to the fixture server, and the returned token is written into the DOM. The driver reads the status text back — the token proves the click handler really made the request (server-side mechanism trace via response). Family actl2 lives in the L1 raw_cdp subset because the L2 web_platform subset is pinned to the node_cdp_probe shared probe, which cannot drive callFunctionOn/insertText (see skipped_act.md).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('go')"
+        },
+        "save_result_as": "go"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:go.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "sleep_ms": 700
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('status').textContent",
+          "returnByValue": true
+        },
+        "save_as": "status"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "TKN-ACTL2-8842",
+        "kind": "value_contains",
+        "name": "status"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/click_xhr"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_callfn_click_xhr",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "callFunctionOn click triggers XHR, read token back"
+}

@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>h counter</title></head>
+<body>
+<h1>interaction counter</h1>
+<button id="add3">plus three</button>
+<button id="add5">plus five</button>
+<output id="total">0</output>
+<script>
+var running = 0;
+function bump(n){ running += n; document.getElementById('total').textContent = String(running); }
+document.getElementById('add3').addEventListener('click', function(){ bump(3); });
+document.getElementById('add5').addEventListener('click', function(){ bump(5); });
+</script>
+</body>
+</html>

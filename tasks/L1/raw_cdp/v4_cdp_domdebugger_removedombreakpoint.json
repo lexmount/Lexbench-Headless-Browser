@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Removes a node-removed DOM breakpoint; exercises DOMDebugger.removeDOMBreakpoint.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOMDebugger.setDOMBreakpoint",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "type": "node-removed"
+        }
+      },
+      {
+        "method": "DOMDebugger.removeDOMBreakpoint",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "type": "node-removed"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_debugger.remove_dom_breakpoint"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_domdebugger_removedombreakpoint",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMDebugger.removeDOMBreakpoint clears a breakpoint"
+}

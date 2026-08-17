@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>flow: sign in</title></head>
+<body>
+<h1>Team portal sign in</h1>
+<form id="login-form" data-code="k9x2" aria-label="Sign in form">
+  <label for="user">Username</label>
+  <input id="user" type="text" autocomplete="off">
+  <label for="pass">Access code</label>
+  <input id="pass" type="password" autocomplete="off">
+  <button id="signin" type="submit">Sign in</button>
+</form>
+<p id="login-error" role="alert" hidden>wrong access code</p>
+<script>
+// The valid access code is the form's data-code reversed; it is never present
+// as a literal, so passing requires actually computing/typing it.
+(function () {
+  var form = document.getElementById('login-form');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var user = document.getElementById('user').value.trim();
+    var pass = document.getElementById('pass').value;
+    var want = form.getAttribute('data-code').split('').reverse().join('');
+    if (user && pass === want) {
+      window.location.href = '/v0_3/flow/list?u=' + encodeURIComponent(user);
+    } else {
+      document.getElementById('login-error').hidden = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

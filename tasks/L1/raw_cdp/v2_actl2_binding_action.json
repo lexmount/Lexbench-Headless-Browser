@@ -1,0 +1,82 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate action reported over a binding: the driver installs a binding via Runtime.addBinding, callFunctionOn clicks the compute button, the page's click handler computes an answer and pushes it back through the binding, and the driver waits for the Runtime.bindingCalled event and reads the answer off the event payload (not the DOM). Combines callFunctionOn action with the addBinding/bindingCalled page->driver channel.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.addBinding",
+        "params": {
+          "name": "__abbResult"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('compute')"
+        },
+        "save_result_as": "btn"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:btn.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "match": {
+          "name": "__abbResult"
+        },
+        "save_result_as": "binding",
+        "session": "page",
+        "timeout_ms": 4000,
+        "wait_for_event": "Runtime.bindingCalled"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on",
+    "cdp.runtime.add_binding",
+    "cdp.runtime.binding_called"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.bindingCalled",
+        "name": "binding"
+      },
+      {
+        "expected": "ANSWER:42",
+        "kind": "saved_path_contains",
+        "name": "binding",
+        "path": "payload"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/binding"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_binding_action",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "callFunctionOn click reports answer via bindingCalled"
+}

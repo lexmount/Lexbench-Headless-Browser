@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.addBinding -> page JS call -> Runtime.bindingCalled roundtrip with payload semantics: the driver installs a named binding, the page invokes it with a JSON string argument, and the driver waits for the bindingCalled event and asserts the payload carries the page-supplied data verbatim. Anchors the addBinding/bindingCalled bridge agents use for page->driver messaging.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.addBinding",
+        "params": {
+          "name": "__abbReport"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbReport(JSON.stringify({order: 'A42', qty: 7}))"
+        }
+      },
+      {
+        "match": {
+          "name": "__abbReport"
+        },
+        "save_result_as": "binding",
+        "session": "page",
+        "timeout_ms": 4000,
+        "wait_for_event": "Runtime.bindingCalled"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.add_binding",
+    "cdp.runtime.binding_called"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.bindingCalled",
+        "name": "binding"
+      },
+      {
+        "expected": "__abbReport",
+        "kind": "saved_path_equals",
+        "name": "binding",
+        "path": "name"
+      },
+      {
+        "expected": "A42",
+        "kind": "saved_path_contains",
+        "name": "binding",
+        "path": "payload"
+      },
+      {
+        "expected": "qty",
+        "kind": "saved_path_contains",
+        "name": "binding",
+        "path": "payload"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_binding_roundtrip",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "addBinding / bindingCalled payload roundtrip"
+}

@@ -1,0 +1,121 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "Fetch.enable at requestStage Response pauses after the response is available (requestPaused carries responseStatusCode 200). Fetch.takeResponseBodyAsStream returns an IO stream handle; IO.read pulls the body text, a second IO.read reaches eof, and IO.close releases the handle. Covers the streaming response-body read path.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Response",
+              "urlPattern": "*abbfetch-big*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-big?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.takeResponseBodyAsStream",
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        },
+        "save_result_as": "stream"
+      },
+      {
+        "method": "IO.read",
+        "params": {
+          "handle": "{saved:stream.stream}",
+          "size": 4096
+        },
+        "save_result_as": "read1"
+      },
+      {
+        "method": "IO.read",
+        "params": {
+          "handle": "{saved:stream.stream}",
+          "size": 4096
+        },
+        "save_result_as": "read2"
+      },
+      {
+        "method": "IO.close",
+        "params": {
+          "handle": "{saved:stream.stream}"
+        }
+      },
+      {
+        "method": "Fetch.failRequest",
+        "optional": true,
+        "params": {
+          "errorReason": "Aborted",
+          "requestId": "{saved:paused.requestId}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.take_response_body_as_stream",
+    "cdp.io.read",
+    "cdp.io.close"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 200,
+        "kind": "saved_path_equals",
+        "name": "paused",
+        "path": "responseStatusCode"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "stream",
+        "path": "stream"
+      },
+      {
+        "expected": "STREAM-CHUNK",
+        "kind": "saved_path_contains",
+        "name": "read1",
+        "path": "data"
+      },
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "name": "read2",
+        "path": "eof"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_response_stage_take_stream",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Response-stage takeResponseBodyAsStream + IO.read/close"
+}

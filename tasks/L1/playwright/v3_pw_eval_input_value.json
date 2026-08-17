@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright fills #textbox on the controls fixture and reads the value back via page.inputValue(). Passes when the read-back equals the exact filled string, proving the value-read path (Runtime.callFunctionOn on the element) reflects the fill.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "fill_ok",
+        "step": 2
+      },
+      {
+        "expected": "probe-value-17",
+        "kind": "saved_equals",
+        "label": "input_value_matches",
+        "name": "readback"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#textbox",
+        "value": "probe-value-17"
+      },
+      {
+        "op": "input_value",
+        "save_as": "readback",
+        "selector": "#textbox"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.fill",
+    "fw.playwright.page.input_value",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_evaluate",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_eval_input_value",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "inputValue reads back a filled control"
+}

@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative: Runtime.evaluateExpression is not a real command (the actual command is Runtime.evaluate). A plausible-but-wrong method name must be cleanly rejected as unknown, not silently accepted; a hang or crash fails.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Runtime.evaluateExpression",
+        "params": {
+          "expression": "1"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.protocol.unknown_method"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Runtime.evaluateExpression"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_runtime_evaluateexpression",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "runtime_evaluateexpression"
+}

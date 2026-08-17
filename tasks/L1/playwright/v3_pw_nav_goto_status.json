@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright navigates a fresh page to the fixture and captures the navigation response status plus the resulting page URL. Passes when the status is 200 and the URL contains the fixture path, proving Page.navigate plus lifecycle settlement work end to end.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "200",
+        "kind": "saved_equals",
+        "label": "status_200",
+        "name": "status"
+      },
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "url_on_fixture",
+        "name": "final_url"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "save_as": "status",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "url",
+        "save_as": "final_url"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.goto",
+    "fw.playwright.page.url",
+    "cdp.page.navigate",
+    "cdp.page.lifecycle_event"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_nav_goto_status",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "goto returns HTTP 200 and lands on the fixture URL"
+}

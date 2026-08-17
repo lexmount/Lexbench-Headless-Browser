@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/obs_visibility_matrix.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Computes a visibility matrix over a visible and a hidden element from live layout state.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "matrix_read",
+        "step": 3
+      },
+      {
+        "expected": "vis:1|hid:0",
+        "kind": "saved_equals",
+        "label": "visibility_split",
+        "name": "answer"
+      }
+    ],
+    "kind": "mcp_chrome_devtools",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "!!document.getElementById('visible-one') && !!document.getElementById('hidden-one')",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "(function () { var v = document.getElementById('visible-one').getClientRects().length > 0; var h = document.getElementById('hidden-one').getClientRects().length > 0; return 'vis:' + (v ? 1 : 0) + '|hid:' + (h ? 1 : 0); })()",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_devtools_mcp.op.new_page",
+    "fw.chrome_devtools_mcp.op.goto",
+    "fw.chrome_devtools_mcp.op.wait_for_function",
+    "fw.chrome_devtools_mcp.op.evaluate",
+    "cdp.dom.get_box_model",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.chrome_devtools_mcp",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_visibility_matrix__mcp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Visible and display:none elements are distinguishable (chrome_devtools_mcp)"
+}

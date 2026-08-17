@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>t2b csp violation</title></head>
+<body>
+<h1 id="csp-title">csp violation fixture</h1>
+<p id="marker">page body</p>
+<script>
+// This inline script has no CSP nonce and is blocked by the response
+// Content-Security-Policy header (script-src 'nonce-abbt2b'), which makes
+// Chrome surface an Audits ContentSecurityPolicy issue (Audits.issueAdded).
+window.__t2bCspRan = true;
+</script>
+</body>
+</html>

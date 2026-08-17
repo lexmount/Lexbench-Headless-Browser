@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb IDBKeyRange.bound</title></head><body><div id="out">PENDING</div><script>
+// IDBKeyRange.bound(lower,upper) inclusive vs bound(lower,upper,true,true)
+// exclusive. getAllKeys over each range proves boundary inclusion semantics.
+var DB='v2idb_krbound_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    for(var i=1;i<=10;i++)st.put({id:i});
+    tx.oncomplete=function(){
+      var rt=db.transaction('s').objectStore('s');
+      var incl=rt.getAllKeys(IDBKeyRange.bound(3,7));
+      var excl=rt.getAllKeys(IDBKeyRange.bound(3,7,true,true));
+      var rtx=rt.transaction;
+      rtx.oncomplete=function(){set('INCL='+incl.result.join(',')+'_EXCL='+excl.result.join(','));};
+      rtx.onerror=function(){fail(rtx.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

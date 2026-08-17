@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/nav_reload_resets_dom.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fills an input, reloads the page, and confirms the fresh document no longer carries the typed value. Exercises Page.reload semantics: a real reload must produce a new document, not restore transient DOM state.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "reload_ok",
+        "step": 3
+      },
+      {
+        "expected": "reset-after-reload",
+        "kind": "saved_equals",
+        "label": "dom_state_reset",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#field",
+        "value": "transient-77"
+      },
+      {
+        "op": "reload"
+      },
+      {
+        "expression": "document.getElementById('field').value === '' ? 'reset-after-reload' : 'kept:' + document.getElementById('field').value",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.fill",
+    "fw.pydoll.op.reload",
+    "fw.pydoll.op.evaluate",
+    "cdp.page.reload"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.navigation_lifecycle",
+    "version.v0_4"
+  ],
+  "task_id": "sc_nav_reload_resets_dom__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Reload discards un-persisted DOM state (pydoll)"
+}

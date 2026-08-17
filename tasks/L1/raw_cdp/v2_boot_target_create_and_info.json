@@ -1,0 +1,81 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Creates a fresh page target on the browser session and reads its Target.getTargetInfo, asserting the returned targetInfo describes a 'page' target with a stable targetId and url. Real semantic probe of createTarget + getTargetInfo return structure.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "method": "Target.getTargetInfo",
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "save_result_as": "info",
+        "session": "browser"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.create_target",
+    "cdp.target.get_target_info"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "created",
+        "path": "targetId"
+      },
+      {
+        "expected": "page",
+        "kind": "saved_path_equals",
+        "name": "info",
+        "path": "targetInfo.type"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "info",
+        "path": "targetInfo.targetId"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "info",
+        "path": "targetInfo.url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_create_and_info",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.createTarget + getTargetInfo return shape"
+}

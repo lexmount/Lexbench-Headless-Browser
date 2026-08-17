@@ -1,0 +1,57 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Reads Browser.getVersion on the browser session and asserts the identity payload (product contains 'Chrome', non-empty protocolVersion and userAgent). Real probe of getVersion return structure (PW bootstrap step 1).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.getVersion",
+        "params": {},
+        "save_result_as": "ver",
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.get_version"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "Chrome",
+        "kind": "saved_path_contains",
+        "name": "ver",
+        "path": "product"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "ver",
+        "path": "protocolVersion"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "ver",
+        "path": "userAgent"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_browser_get_version",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Browser.getVersion identity fields"
+}

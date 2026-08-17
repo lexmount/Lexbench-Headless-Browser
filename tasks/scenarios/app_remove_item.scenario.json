@@ -1,0 +1,103 @@
+{
+  "scenario_id": "app_remove_item",
+  "family": "multi_step_flow",
+  "title": "Removing a cart line updates the server-side total",
+  "description": "Logs in, adds two items, removes one, and answers with the corrected total.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-a"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-c"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-c')"
+    },
+    {
+      "op": "click",
+      "selector": "#rm-widget-a"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('cart-total').textContent === 'total-7'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#cart-total",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "line_removed",
+      "step": 11
+    },
+    {
+      "kind": "saved_equals",
+      "label": "corrected_total",
+      "name": "answer",
+      "expected": "total-7"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "total-7"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

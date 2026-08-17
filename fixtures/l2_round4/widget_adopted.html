@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>仪表盘 · 设备监控组件</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #0f172a; color: #e2e8f0; }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+  h1 { font-weight: 700; }
+  gauge-widget { display: inline-block; margin-top: 12px; }
+  .answer {
+    margin: 28px auto 0; max-width: 420px; background: #1e293b;
+    border: 1px dashed #38bdf8; border-radius: 12px; padding: 16px 20px;
+  }
+  .empty { color: #f59e0b; }
+</style>
+</head>
+<body>
+<main>
+  <h1>设备监控</h1>
+  <gauge-widget reading="72" status-code="run"></gauge-widget>
+  <div class="answer" id="answer">（正在读取组件状态…）</div>
+</main>
+
+<script>
+(function () {
+  var answerEl = document.getElementById("answer");
+  var STATUS_MAP = { run: "运行中", idle: "空闲", fault: "故障" };
+
+  function degrade(msg) {
+    answerEl.innerHTML = '<span class="empty">' + msg + "</span>";
+  }
+
+  // 特性检测：adoptedStyleSheets + constructable CSSStyleSheet
+  var supportsAdopted = false;
+  try {
+    var probe = new CSSStyleSheet();
+    probe.replaceSync(":host{}");
+    supportsAdopted = ("adoptedStyleSheets" in Document.prototype) ||
+                      ("adoptedStyleSheets" in document);
+  } catch (e) {
+    supportsAdopted = false;
+  }
+
+  if (!supportsAdopted || typeof customElements === "undefined") {
+    degrade("（组件读数缺失：浏览器不支持 adoptedStyleSheets 构造样式表）");
+    return;
+  }
+
+  class GaugeWidget extends HTMLElement {
+    connectedCallback() {
+      var shadow = this.attachShadow({ mode: "open" });
+      var reading = this.getAttribute("reading") || "0";
+      var code = this.getAttribute("status-code") || "idle";
+
+      // 用 constructable 样式表把当前主题态编码进 CSS 自定义属性
+      var sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        ":host{--reading:'" + reading + "%';--status:'" + (STATUS_MAP[code] || "未知") + "'}" +
+        ".val::after{content:var(--reading)}" +
+        ".st::after{content:var(--status)}"
+      );
+      // 通过 adoptedStyleSheets 应用 —— 关键判别机制
+      shadow.adoptedStyleSheets = [sheet];
+
+      shadow.innerHTML =
+        '<div style="color:#38bdf8;font-size:40px;font-weight:800" class="val"></div>' +
+        '<div style="color:#94a3b8;margin-top:6px" class="st"></div>';
+
+      // 从已应用的构造样式表里读回当前主题态，拼出可见答案
+      try {
+        var host = shadow.host;
+        var cs = getComputedStyle(host);
+        var r = cs.getPropertyValue("--reading").trim().replace(/['"]/g, "");
+        var s = cs.getPropertyValue("--status").trim().replace(/['"]/g, "");
+        if (r && s) {
+          answerEl.innerHTML = "当前读数：<b>" + r + "</b> · 运行状态：<b>" + s + "</b>";
+        } else {
+          degrade("（组件读数缺失：构造样式表未生效）");
+        }
+      } catch (e) {
+        degrade("（组件读数缺失：" + e.message + "）");
+      }
+    }
+  }
+
+  try {
+    customElements.define("gauge-widget", GaugeWidget);
+  } catch (e) {
+    degrade("（组件注册失败：" + e.message + "）");
+  }
+})();
+</script>
+</body>
+</html>

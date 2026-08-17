@@ -1,0 +1,95 @@
+{
+  "scenario_id": "app_qty_accumulates",
+  "family": "multi_step_flow",
+  "title": "Adding the same item twice accumulates quantity server-side",
+  "description": "Logs in, adds one item twice, and answers with the cart line plus total.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-widget-b')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-b"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-b')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-b"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('cart-total').textContent === 'total-10'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('cart-widget-b').textContent.trim().replace(/ rm$/, '') + ':' + document.getElementById('cart-total').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_add",
+      "step": 8
+    },
+    {
+      "kind": "saved_equals",
+      "label": "qty_and_total",
+      "name": "answer",
+      "expected": "widget-b:2:total-10"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "widget-b:2:total-10"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

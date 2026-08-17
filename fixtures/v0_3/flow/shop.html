@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>flow: shop</title></head>
+<body>
+<h1>Paged shop</h1>
+<p><span id="page-label" role="status">page 1</span>
+  <button id="prev-page" aria-label="Previous page">prev</button>
+  <button id="next-page" aria-label="Next page">next</button></p>
+<ul id="catalog" aria-label="Catalog"></ul>
+<p>cart items: <output id="cart-count">0</output>
+   cart total: <output id="cart-total" role="status">0.00</output></p>
+<script>
+(function () {
+  // Prices are stored in cents and only ever shown per item; the cart total
+  // exists nowhere as a literal and emerges from add-to-cart interactions.
+  var pages = [
+    [{ name: 'gamma', cents: 450 }, { name: 'mug', cents: 725 }],
+    [{ name: 'keyboard', cents: 990 }, { name: 'poster', cents: 210 }],
+    [{ name: 'lamp', cents: 300 }, { name: 'cable', cents: 135 }]
+  ];
+  var page = 0;
+  var cartCents = 0;
+  var cartItems = 0;
+  function render() {
+    document.getElementById('page-label').textContent = 'page ' + (page + 1);
+    var list = document.getElementById('catalog');
+    list.innerHTML = '';
+    pages[page].forEach(function (item) {
+      var li = document.createElement('li');
+      var label = document.createElement('span');
+      label.textContent = item.name + ' $' + (item.cents / 100).toFixed(2) + ' ';
+      var btn = document.createElement('button');
+      btn.id = 'add-' + item.name;
+      btn.setAttribute('aria-label', 'Add ' + item.name + ' to cart');
+      btn.textContent = 'add';
+      btn.addEventListener('click', function () {
+        cartCents += item.cents;
+        cartItems += 1;
+        document.getElementById('cart-count').textContent = String(cartItems);
+        document.getElementById('cart-total').textContent = (cartCents / 100).toFixed(2);
+      });
+      li.appendChild(label);
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  }
+  document.getElementById('next-page').addEventListener('click', function () {
+    if (page < pages.length - 1) { page += 1; render(); }
+  });
+  document.getElementById('prev-page').addEventListener('click', function () {
+    if (page > 0) { page -= 1; render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

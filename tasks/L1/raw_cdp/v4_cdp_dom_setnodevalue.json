@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Creates a text node, resolves its frontend node id via DOM.requestNode, and edits it with DOM.setNodeValue.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var t=document.createTextNode('orig');document.body.appendChild(t);return t;})()",
+          "returnByValue": false
+        },
+        "save_result_as": "t"
+      },
+      {
+        "method": "DOM.requestNode",
+        "params": {
+          "objectId": "{saved:t.result.objectId}"
+        },
+        "save_result_as": "rn"
+      },
+      {
+        "method": "DOM.setNodeValue",
+        "params": {
+          "nodeId": "{saved:rn.nodeId}",
+          "value": "changed"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.set_node_value"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_setnodevalue",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.setNodeValue edits a text node"
+}

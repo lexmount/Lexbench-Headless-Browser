@@ -1,0 +1,72 @@
+{
+  "scenario_id": "nav_back_restores",
+  "family": "navigation_lifecycle",
+  "title": "history back returns to the first document",
+  "description": "Navigates core -> page2, then drives the browser's history back through the driver's own surface and confirms the first document's heading is restored.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/page2"
+    },
+    {
+      "op": "go_back"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('title') && document.getElementById('title').textContent.indexOf('CDP') === 0"
+    },
+    {
+      "op": "text_content",
+      "selector": "#title",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "back_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "first_doc_restored",
+      "name": "answer",
+      "expected": "CDP Core Fixture"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.get_navigation_history",
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "CDP Core Fixture"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

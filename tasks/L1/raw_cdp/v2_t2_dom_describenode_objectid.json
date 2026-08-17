@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Resolves the #dropdown element to a Runtime objectId, then DOM.describeNode is called by objectId (the puppeteer/agent-browser element-handle path, without a nodeId) with depth to describe the subtree, asserting the backendNodeId and SELECT nodeName plus child <option> nodes.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('dropdown')"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "DOM.describeNode",
+        "params": {
+          "depth": 1,
+          "objectId": "{saved:obj.result.objectId}"
+        },
+        "save_result_as": "desc"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.describe_node",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "desc",
+        "path": "node.backendNodeId"
+      },
+      {
+        "expected": "SELECT",
+        "kind": "saved_path_equals",
+        "name": "desc",
+        "path": "node.nodeName"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "desc",
+        "path": "node.children"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_describenode_objectid",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.describeNode via objectId + depth"
+}

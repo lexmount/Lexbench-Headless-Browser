@@ -1,0 +1,82 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.callFunctionOn returnByValue semantics: the same function returning an object literal is called twice — once with returnByValue:true (result carries a serialized value dict, no objectId) and once with returnByValue omitted (result carries an objectId RemoteObject and no value). Verifies both branches of the return contract.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "({})"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ return {ok: true, n: 42}; }",
+          "objectId": "{saved:obj.result.objectId}",
+          "returnByValue": true
+        },
+        "save_result_as": "byval"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ return {ok: true, n: 42}; }",
+          "objectId": "{saved:obj.result.objectId}"
+        },
+        "save_result_as": "byref"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 42,
+        "kind": "saved_path_equals",
+        "name": "byval",
+        "path": "result.value.n"
+      },
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "name": "byval",
+        "path": "result.value.ok"
+      },
+      {
+        "expected": "object",
+        "kind": "saved_path_equals",
+        "name": "byref",
+        "path": "result.type"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "byref",
+        "path": "result.objectId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_callfn_return_by_value",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "callFunctionOn returnByValue vs objectId return"
+}

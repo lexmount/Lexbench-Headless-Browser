@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/form_fill_readback.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fills the #field text input with a distinctive value and reads it back via input_value. Exercises the fill contract end to end: the driver must set the input's live value and observe it, proving keyboard/value semantics rather than just a DOM attribute.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "fill_ok",
+        "step": 2
+      },
+      {
+        "expected": "bench-fill-7q",
+        "kind": "saved_equals",
+        "label": "value_roundtrips",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#field",
+        "value": "bench-fill-7q"
+      },
+      {
+        "op": "input_value",
+        "save_as": "answer",
+        "selector": "#field"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.fill",
+    "fw.selenium.op.input_value",
+    "cdp.input.insert_text"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.forms",
+    "version.v0_4"
+  ],
+  "task_id": "sc_form_fill_readback__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Fill a text input and read the value back (selenium)"
+}

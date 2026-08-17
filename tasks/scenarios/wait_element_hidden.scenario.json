@@ -1,0 +1,64 @@
+{
+  "scenario_id": "wait_element_hidden",
+  "family": "waiting_dynamic",
+  "title": "Wait for a present element to become hidden",
+  "description": "An element visible at load is display:none'd after 300ms. Waits for the hidden state via a predicate and reports it; a driver that only waits for presence passes too early.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.getComputedStyle(document.getElementById('vanish')).display === 'none'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.getComputedStyle(document.getElementById('vanish')).display === 'none' ? 'hidden-ok' : 'still-visible'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "went_hidden",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "hidden_confirmed",
+      "name": "answer",
+      "expected": "hidden-ok"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "hidden-ok"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

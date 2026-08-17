@@ -1,0 +1,11 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>h frames child</title></head>
+<body>
+<span id="ctoken" data-src="xy9"></span>
+<script>
+var raw = document.getElementById('ctoken').getAttribute('data-src');
+document.getElementById('ctoken').textContent = raw.split('').reverse().join('');
+</script>
+</body>
+</html>

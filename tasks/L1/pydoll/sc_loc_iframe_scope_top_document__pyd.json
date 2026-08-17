@@ -1,0 +1,66 @@
+{
+  "_generated_from": "tasks/scenarios/loc_iframe_scope_top_document.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Both the top document and the iframe contain #dup. The driver's selector surface must return the TOP document's element.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "read_ok",
+        "step": 2
+      },
+      {
+        "expected": "main-dup",
+        "kind": "saved_equals",
+        "label": "top_document_wins",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#dup"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.text_content",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_iframe_scope_top_document__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Selectors resolve in the top document, not the iframe (pydoll)"
+}

@@ -1,0 +1,84 @@
+{
+  "scenario_id": "computed_style_breadth",
+  "family": "observation",
+  "title": "Computed style exposes a broad property set and critical interaction properties",
+  "description": "Calls CSS.getComputedStyleForNode through each raw-capable driver, requires at least 100 distinct properties, and verifies display, visibility, opacity, and pointer-events remain readable.",
+  "layer": "L1",
+  "diagnostic": true,
+  "extra_tags": [
+    "purpose.issue_106"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_selector",
+      "selector": "#computed-style-target",
+      "state": "visible"
+    },
+    {
+      "op": "computed_style_breadth",
+      "selector": "#computed-style-target",
+      "min_property_count": 100,
+      "required_properties": [
+        "display",
+        "visibility",
+        "opacity",
+        "pointer-events"
+      ],
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "computed_style_read",
+      "step": 3
+    },
+    {
+      "kind": "saved_contains",
+      "label": "property_set_is_broad",
+      "name": "answer",
+      "expected": "breadth-ok|count="
+    },
+    {
+      "kind": "saved_contains",
+      "label": "critical_properties_readable",
+      "name": "answer",
+      "expected": "display=block|visibility=visible|opacity=0.75|pointer-events=auto"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.css.get_computed_style_for_node"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "breadth-ok|count="
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum"
+  ],
+  "driver_skips": {
+    "chrome_devtools_mcp": "the pinned MCP tool list has no arbitrary raw-CDP command or CSS.getComputedStyleForNode tool",
+    "agent_browser": "the agent-browser CLI exposes selected computed observations but no raw CSS.getComputedStyleForNode property list",
+    "selenium": "the engine-native WebDriver route has no cross-engine raw CSS-domain command and deliberately avoids Chromium-only execute_cdp_cmd"
+  }
+}

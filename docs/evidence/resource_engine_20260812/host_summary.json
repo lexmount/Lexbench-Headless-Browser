@@ -1,0 +1,8 @@
+{
+  "ended_at": "2026-08-13T07:05:57+0000",
+  "flags": [],
+  "max_bench_descendant_process_count": 45,
+  "polluted": false,
+  "sample_count": 4504,
+  "started_at": "2026-08-13T04:26:37+0000"
+}

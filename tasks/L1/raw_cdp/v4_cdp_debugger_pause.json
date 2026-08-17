@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Forces a pause via Debugger.pause against a running timer and asserts Debugger.paused.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__spin=0;var __t=setInterval(function(){window.__spin++;},20);"
+        }
+      },
+      {
+        "method": "Debugger.pause"
+      },
+      {
+        "save_result_as": "pz",
+        "timeout_ms": 4000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.resume"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.pause"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "forced_pause_event",
+        "method": "Debugger.paused"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_pause",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.pause forces a pause on next statement"
+}

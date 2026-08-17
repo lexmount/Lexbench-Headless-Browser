@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb upgrade migrate</title></head><body><div id="out">PENDING</div><script>
+// onupgradeneeded version migration: v1 creates 'users'; v2 keeps 'users' and
+// adds 'orders'. Old data must survive the version bump. The answer only exists
+// after a real version migration executes; it is not present statically.
+var DB='v2idb_upgrade_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var r1=indexedDB.open(DB,1);
+  r1.onupgradeneeded=function(e){e.target.result.createObjectStore('users',{keyPath:'id'});};
+  r1.onerror=function(){fail(r1.error);};
+  r1.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('users','readwrite');var st=tx.objectStore('users');
+    st.put({id:1,name:'ANN'});st.put({id:2,name:'BOB'});st.put({id:3,name:'CAM'});
+    tx.oncomplete=function(){db.close();phase2();};
+    tx.onerror=function(){fail(tx.error);};
+  };
+  function phase2(){
+    var r2=indexedDB.open(DB,2);
+    r2.onupgradeneeded=function(e){
+      var db=e.target.result;
+      if(!db.objectStoreNames.contains('orders'))db.createObjectStore('orders',{keyPath:'oid'});
+      var otx=e.target.transaction;var os=otx.objectStore('orders');
+      os.put({oid:'O1',amt:10});os.put({oid:'O2',amt:20});
+    };
+    r2.onerror=function(){fail(r2.error);};
+    r2.onsuccess=function(e){
+      var db=e.target.result;
+      var tx=db.transaction(['users','orders'],'readonly');
+      var uc=tx.objectStore('users').count();
+      var oc=tx.objectStore('orders').count();
+      var u1=tx.objectStore('users').get(1);
+      tx.oncomplete=function(){set('USERS='+uc.result+'_ORDERS='+oc.result+'_OLDKEEP='+(u1.result&&u1.result.name));};
+      tx.onerror=function(){fail(tx.error);};
+    };
+  }
+}catch(e){fail(e);}
+</script></body></html>

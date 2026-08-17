@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Draws a highlight rectangle via DOM.highlightRect then hides it.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "Overlay.enable"
+      },
+      {
+        "method": "DOM.highlightRect",
+        "params": {
+          "color": {
+            "a": 0.2,
+            "b": 0,
+            "g": 0,
+            "r": 255
+          },
+          "height": 50,
+          "width": 50,
+          "x": 10,
+          "y": 10
+        }
+      },
+      {
+        "method": "DOM.hideHighlight"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.highlight_rect"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_highlightrect",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.highlightRect draws a rect overlay"
+}

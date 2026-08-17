@@ -1,0 +1,63 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With the Log domain enabled, dynamically injecting an <img> whose src 404s produces a network Log.entryAdded; the driver waits for it and asserts an entry with a source and level arrived.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Log.enable",
+        "params": {},
+        "session": "page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var i=document.createElement('img'); i.src='/v2/t2b/broken_'+Date.now()+'.png'; document.body.appendChild(i);})()"
+        }
+      },
+      {
+        "save_result_as": "log",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Log.entryAdded"
+      }
+    ]
+  },
+  "features": [
+    "cdp.log.entry_added"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Log.entryAdded",
+        "name": "log"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "log",
+        "path": "entry.source"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "launch_profile": "all_resources",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/log_404"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_log_entryadded",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Log.entryAdded on a failed subresource"
+}

@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Navigation probe: real Puppeteer page.goto() to the core fixture must resolve through the Page.navigate + Page.lifecycleEvent load pipeline, return an HTTP 200 response object, and page.url() must reflect the fixture path.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "200",
+        "kind": "saved_equals",
+        "label": "goto_status_200",
+        "name": "status"
+      },
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "url_is_fixture",
+        "name": "landed_url"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "save_as": "status",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "url",
+        "save_as": "landed_url"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.goto",
+    "fw.puppeteer.page.url",
+    "cdp.page.navigate",
+    "cdp.page.lifecycle_event"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_nav_goto_status",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer goto returns HTTP 200 and lands on the fixture URL"
+}

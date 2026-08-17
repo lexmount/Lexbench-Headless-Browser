@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/wait_list_progressive_fill.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Three list items are appended at 150/300/450ms. Waits until all three exist and derives the joined item text.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "list_complete",
+        "step": 2
+      },
+      {
+        "expected": "item-a,item-b,item-c",
+        "kind": "saved_equals",
+        "label": "items_joined",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.querySelectorAll('#list li').length === 3",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "Array.from(document.querySelectorAll('#list li')).map(function(li){return li.textContent}).join(',')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.wait_for_function",
+    "fw.pydoll.op.evaluate",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_list_progressive_fill__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a progressively filled list to complete (pydoll)"
+}

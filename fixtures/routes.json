@@ -1,0 +1,8 @@
+{
+  "/app.js": "l1/app.js",
+  "/page2": "l1/page2.html",
+  "/download.txt": "l1/download.txt",
+  "/pixel.png": "l1/pixel.png",
+  "/l1/core": "l1/core.html",
+  "/l1/probe": "l1/probe.html"
+}

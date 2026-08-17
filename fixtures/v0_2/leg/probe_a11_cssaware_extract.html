@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>a11 css-aware</title>
+<style>.row{} .hidden{display:none}</style></head>
+<body>
+<ul id="list">
+ <li class="row">PRICE_VISIBLE_A11_99</li>
+ <li class="row hidden">PRICE_DRAFT_HIDDEN_500</li>
+ <li class="row">PRICE_VISIBLE_A11_42</li>
+</ul><div id="out"></div>
+<script>try{
+ // CSS-aware extraction the correct way: use getComputedStyle to skip display:none
+ var rows=document.querySelectorAll('#list .row');
+ var shown=[];
+ for(var i=0;i<rows.length;i++){ if(getComputedStyle(rows[i]).display!=='none'){ shown.push(rows[i].textContent.trim()); } }
+ document.getElementById('out').textContent='CSSAWARE_A11:'+shown.join('|');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

@@ -1,0 +1,81 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Creates a page target then explicitly calls Target.attachToTarget with flatten:true, captures the returned sessionId, and runs Runtime.evaluate on that named session. Real probe of the attachToTarget command (distinct from auto-attach) returning a usable flat session.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "about:blank"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "method": "Target.attachToTarget",
+        "params": {
+          "flatten": true,
+          "targetId": "{saved:created.targetId}"
+        },
+        "save_result_as": "attach",
+        "save_session_as": "child",
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "21 + 21",
+          "returnByValue": true
+        },
+        "save_as": "answer",
+        "session": "child"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.attach_to_target",
+    "cdp.target.create_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "attach",
+        "path": "sessionId"
+      },
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "name": "answer"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_attach_to_target",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.attachToTarget explicit flat attach"
+}

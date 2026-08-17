@@ -1,0 +1,76 @@
+{
+  "scenario_id": "dlg_prompt_text",
+  "family": "dialog_download_upload",
+  "title": "A prompt dialog receives driver-supplied text",
+  "description": "Arms an accepting dialog handler carrying prompt text and confirms the page receives exactly that text instead of the default.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "on_dialog",
+      "action": "accept",
+      "text": "typed-19"
+    },
+    {
+      "op": "click",
+      "selector": "#btn-prompt"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('dlg-out').textContent.indexOf('prompt-') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#dlg-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "prompt_resolved",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "driver_text_used",
+      "name": "answer",
+      "expected": "prompt-typed-19"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_java_script_dialog"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "prompt-typed-19"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "cdp_use": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "pydoll": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "stagehand": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chrome_devtools_mcp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromedp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "rod": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromiumoxide": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "ferrum": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "agent_browser": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "selenium": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page"
+  }
+}

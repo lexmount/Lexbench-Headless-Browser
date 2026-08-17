@@ -1,0 +1,21 @@
+{
+  "scenario_id": "locator_textbox_len",
+  "family": "locator",
+  "title": "Type into a textbox and read the derived length output",
+  "description": "Fills #textbox with a five-character value on the probe controls page; the input handler writes the live length into #textbox-len. Reads it back. Exercises selector resolution plus input-event-derived DOM observation.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v0_3/probe/controls"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "fill", "selector": "#textbox", "value": "abcde"},
+    {"op": "text_content", "selector": "#textbox-len", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "fill_ok", "step": 2},
+    {"kind": "saved_equals", "label": "len_is_five", "name": "answer", "expected": "5"}
+  ],
+  "cdp_anchors": ["cdp.input.insert_text"],
+  "expected_answer": {"mode": "equals", "expected": "5"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

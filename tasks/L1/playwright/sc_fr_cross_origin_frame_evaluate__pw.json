@@ -1,0 +1,78 @@
+{
+  "_generated_from": "tasks/scenarios/fr_cross_origin_frame_evaluate.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Inserts a cross-origin child and reads its script-computed message via a frame-scoped evaluate, the only legal route into a cross-origin frame.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "frame_scoped_eval_ok",
+        "step": 4
+      },
+      {
+        "expected": "child-xo-42",
+        "kind": "saved_equals",
+        "label": "xo_child_text",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "var f = document.createElement('iframe'); f.src = 'http://localhost:' + location.port + '/v0_4/frames/child?tag=xo'; f.id = 'xo'; f.onload = function () { window.__xo_loaded = true; }; document.getElementById('slot').appendChild(f); 'inserted'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "window.__xo_loaded === true",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.getElementById('msg').textContent",
+        "op": "frame_evaluate",
+        "save_as": "answer",
+        "url_contains": "tag=xo"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.op.new_page",
+    "fw.playwright.op.goto",
+    "fw.playwright.op.evaluate",
+    "fw.playwright.op.wait_for_function",
+    "fw.playwright.op.frame_evaluate",
+    "cdp.target.attach_to_target",
+    "cdp.page.get_frame_tree"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_cross_origin_frame_evaluate__pw",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Frame-scoped evaluate reads a cross-origin child the top document cannot touch (playwright)"
+}

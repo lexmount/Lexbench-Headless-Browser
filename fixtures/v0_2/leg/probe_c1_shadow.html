@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c1 shadow</title></head>
+<body>
+<div id="host"></div>
+<div id="out"></div>
+<script>
+try {
+  var sr = document.getElementById('host').attachShadow({mode:'open'});
+  sr.innerHTML = '<p class="s">SHADOW_CONTENT_C1</p>';
+  var el = sr.querySelector('p.s');
+  var v = el ? el.textContent : 'NOSR';
+  document.getElementById('out').textContent = 'SHADOW_C1:' + v;
+} catch(e){ document.getElementById('out').textContent = 'ERR:'+e.message; }
+</script>
+</body></html>

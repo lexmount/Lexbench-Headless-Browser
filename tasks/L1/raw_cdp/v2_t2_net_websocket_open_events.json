@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Constructing a WebSocket drives Network.webSocketCreated and Network.webSocketWillSendHandshakeRequest. Asserts both are observed and webSocketCreated carries the target ws:// URL (handshake-initiation semantics; frame/response events require a real WS peer and are covered as skips).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__ws = new WebSocket(location.origin.replace('http','ws')+'/v2/t2a/wsX'); window.__ws.onerror=function(){}; 'ok'"
+        }
+      },
+      {
+        "save_result_as": "wsc",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.webSocketCreated"
+      },
+      {
+        "save_result_as": "wshr",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.webSocketWillSendHandshakeRequest"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.web_socket_created",
+    "cdp.network.web_socket_will_send_handshake_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketCreated",
+        "name": "wsc"
+      },
+      {
+        "expected": "wsX",
+        "kind": "saved_path_contains",
+        "name": "wsc",
+        "path": "url"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketWillSendHandshakeRequest",
+        "name": "wshr"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_websocket_open_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.webSocketCreated + willSendHandshakeRequest"
+}

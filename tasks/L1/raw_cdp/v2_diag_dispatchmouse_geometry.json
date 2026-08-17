@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. Input.dispatchMouseEvent press+release at CSS coordinate (150,110), the center of a 100x60 target at (100,80). A coordinate hit-test must fire the click handler, recording 'CLICKED@150,110'.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Input.dispatchMouseEvent",
+        "params": {
+          "button": "left",
+          "buttons": 1,
+          "clickCount": 1,
+          "type": "mousePressed",
+          "x": 150,
+          "y": 110
+        }
+      },
+      {
+        "method": "Input.dispatchMouseEvent",
+        "params": {
+          "button": "left",
+          "buttons": 1,
+          "clickCount": 1,
+          "type": "mouseReleased",
+          "x": 150,
+          "y": 110
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__clickInfo",
+          "returnByValue": true
+        },
+        "save_as": "click"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.dispatch_mouse_event",
+    "web.layout.hit_test"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "CLICKED@150,110",
+        "kind": "value_equals",
+        "name": "click"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/click"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_dispatchmouse_geometry",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Input.dispatchMouseEvent coordinate hit-test"
+}

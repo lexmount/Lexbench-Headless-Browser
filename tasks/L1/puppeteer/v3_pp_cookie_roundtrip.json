@@ -1,0 +1,79 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Cookie probe: page.setCookie plants pp_probe=crumb42 for the fixture URL; page.cookies() must list it AND document.cookie inside the page must expose the same pair — both the CDP read channel and the JS-visible channel must agree.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "pp_probe",
+        "kind": "saved_contains",
+        "label": "jar_has_name",
+        "name": "cookie_jar"
+      },
+      {
+        "expected": "crumb42",
+        "kind": "saved_contains",
+        "label": "jar_has_value",
+        "name": "cookie_jar"
+      },
+      {
+        "expected": "pp_probe=crumb42",
+        "kind": "saved_contains",
+        "label": "document_cookie_sees_pair",
+        "name": "document_cookie"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "name": "pp_probe",
+        "op": "set_cookie",
+        "url": "{fixture_url}",
+        "value": "crumb42"
+      },
+      {
+        "op": "get_cookies",
+        "save_as": "cookie_jar",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.cookie",
+        "op": "evaluate",
+        "save_as": "document_cookie"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.set_cookie",
+    "fw.puppeteer.page.cookies",
+    "cdp.network.set_cookie",
+    "cdp.network.get_cookies"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_cookies",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_cookie_roundtrip",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer cookie set/get round-trips through the page"
+}

@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Page.bringToFront focuses/activates the page; document.visibilityState is then read. Asserts the page reports 'visible' after being brought to front (foregrounding semantics).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Page.bringToFront"
+      },
+      {
+        "sleep_ms": 200
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.visibilityState",
+          "returnByValue": true
+        },
+        "save_as": "vis"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.bring_to_front"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "visible",
+        "kind": "value_equals",
+        "name": "vis"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_bring_to_front",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.bringToFront makes the page visible"
+}

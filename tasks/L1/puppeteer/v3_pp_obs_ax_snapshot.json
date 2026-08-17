@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Observability probe: page.accessibility.snapshot() (Accessibility.getFullAXTree) over the controls fixture must yield a tree whose JSON serialization contains button and textbox roles plus the aria-label 'Increment counter' (loose contains, per plan).",
+  "driver": {
+    "checks": [
+      {
+        "expected": "button",
+        "kind": "saved_contains",
+        "label": "ax_has_button_role",
+        "name": "ax_tree"
+      },
+      {
+        "expected": "textbox",
+        "kind": "saved_contains",
+        "label": "ax_has_textbox_role",
+        "name": "ax_tree"
+      },
+      {
+        "expected": "Increment counter",
+        "kind": "saved_contains",
+        "label": "ax_has_aria_label",
+        "name": "ax_tree"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "ax_snapshot",
+        "save_as": "ax_tree"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.accessibility.snapshot",
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_observation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_obs_ax_snapshot",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer accessibility snapshot exposes control semantics"
+}

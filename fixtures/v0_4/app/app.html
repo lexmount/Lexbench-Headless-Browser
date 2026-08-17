@@ -1,0 +1,138 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mini App Fixture</title>
+<script>
+  // 任务隔离守卫：多数 driver 列在共享的默认 browser context 里开新页，上个
+  // app 任务的登录 cookie 会残留到本任务 —— 首次 loadItems 就 200 渲染出按钮，
+  // 登录后的重渲染恰好砸在 click 派发窗口上（stale node 空击 flake），也会让
+  // locked_without_login 观察面失真。sessionStorage 只在同一 tab 存活：新 tab
+  // （新任务）同步清掉残留 cookie；同 tab reload 保住会话（cart 持久化语义）。
+  if (!sessionStorage.getItem("abb_app_tab")) {
+    sessionStorage.setItem("abb_app_tab", "1");
+    document.cookie = "abb_app_sid=; Max-Age=0; Path=/";
+  }
+</script>
+<h1 id="app-title">mini-app</h1>
+<div id="login-view">
+  <input id="user-in" placeholder="user">
+  <button id="login-btn">login</button>
+  <button id="logout-btn">logout</button>
+</div>
+<div id="greet">-</div>
+<div id="list-view">
+  <input id="filter-in" placeholder="filter">
+  <span id="filter-count">-</span>
+  <ul id="items"><li>booting</li></ul>
+</div>
+<div id="cart-view">
+  <span id="cart-badge">0</span>
+  <ul id="cart-items"></ul>
+  <div id="cart-total">-</div>
+  <button id="checkout-btn">checkout</button>
+</div>
+<div id="receipt">-</div>
+<script>
+  var catalog = [];
+
+  function post(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function (r) { return r.json(); });
+  }
+
+  function renderItems() {
+    var q = document.getElementById('filter-in').value.trim();
+    var shown = catalog.filter(function (it) { return !q || it.name.indexOf(q) !== -1; });
+    var ul = document.getElementById('items');
+    ul.innerHTML = '';
+    shown.forEach(function (it) {
+      var li = document.createElement('li');
+      li.textContent = it.name + ':' + it.price + ' ';
+      var b = document.createElement('button');
+      b.id = 'add-' + it.name;
+      b.textContent = 'add';
+      b.addEventListener('click', function () {
+        post('/v0_4/app/api/cart', { item: it.name, action: 'add' }).then(refreshCart);
+      });
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    document.getElementById('filter-count').textContent = (q || 'all') + ':' + shown.length;
+  }
+
+  // stale-response 守卫：页面加载时的未登录 loadItems() 得到的 401 可能晚于
+  // 登录后的 loadItems() 响应到达；不加代际检查它会把刚渲染的商品列表覆写成
+  // locked 标记，随后的 add 点击全部落空。只允许最新一代写 DOM。
+  var itemsGen = 0;
+  function loadItems() {
+    var gen = ++itemsGen;
+    return fetch('/v0_4/app/api/items').then(function (r) {
+      if (r.status !== 200) {
+        if (gen !== itemsGen) return null;
+        document.getElementById('items').innerHTML = '<li id="locked-marker">locked</li>';
+        document.getElementById('filter-count').textContent = 'locked';
+        return null;
+      }
+      return r.json().then(function (j) {
+        if (gen !== itemsGen) return null;
+        catalog = j.items;
+        renderItems();
+        return j;
+      });
+    });
+  }
+
+  function refreshCart() {
+    return fetch('/v0_4/app/api/cart').then(function (r) {
+      if (r.status !== 200) return null;
+      return r.json().then(function (j) {
+        document.getElementById('cart-badge').textContent = String(j.badge);
+        document.getElementById('cart-total').textContent = 'total-' + j.total;
+        var ul = document.getElementById('cart-items');
+        ul.innerHTML = '';
+        j.items.forEach(function (it) {
+          var li = document.createElement('li');
+          li.id = 'cart-' + it.name;
+          li.textContent = it.name + ':' + it.qty + ' ';
+          var b = document.createElement('button');
+          b.id = 'rm-' + it.name;
+          b.textContent = 'rm';
+          b.addEventListener('click', function () {
+            post('/v0_4/app/api/cart', { item: it.name, action: 'remove' }).then(refreshCart);
+          });
+          li.appendChild(b);
+          ul.appendChild(li);
+        });
+        return j;
+      });
+    });
+  }
+
+  document.getElementById('login-btn').addEventListener('click', function () {
+    var user = document.getElementById('user-in').value.trim();
+    post('/v0_4/app/api/login', { user: user }).then(function (j) {
+      document.getElementById('greet').textContent = 'hi-' + j.user;
+      return loadItems().then(refreshCart);
+    });
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function () {
+    post('/v0_4/app/api/logout').then(function (j) {
+      document.getElementById('greet').textContent = j.ok;
+      return loadItems();
+    });
+  });
+
+  document.getElementById('checkout-btn').addEventListener('click', function () {
+    post('/v0_4/app/api/checkout').then(function (j) {
+      document.getElementById('receipt').textContent = j.order;
+      return refreshCart();
+    });
+  });
+
+  document.getElementById('filter-in').addEventListener('input', renderItems);
+
+  loadItems().then(refreshCart);
+</script>

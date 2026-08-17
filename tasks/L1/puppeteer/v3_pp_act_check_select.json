@@ -1,0 +1,94 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Action probe (on_framework_main_path: Puppeteer's check path is a coordinate click on the checkbox): check #agree then page.select #dept to 'eng'; the fixture change listeners must report checked and picked:eng, and isChecked must read true.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "true",
+        "kind": "saved_equals",
+        "label": "checkbox_checked",
+        "name": "agree_checked"
+      },
+      {
+        "expected": "checked",
+        "kind": "saved_equals",
+        "label": "change_event_fired",
+        "name": "agree_out"
+      },
+      {
+        "expected": "eng",
+        "kind": "saved_contains",
+        "label": "select_returned_value",
+        "name": "selected"
+      },
+      {
+        "expected": "picked:eng",
+        "kind": "saved_equals",
+        "label": "select_change_fired",
+        "name": "dept_out"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "check",
+        "selector": "#agree"
+      },
+      {
+        "op": "is_checked",
+        "save_as": "agree_checked",
+        "selector": "#agree"
+      },
+      {
+        "op": "text_content",
+        "save_as": "agree_out",
+        "selector": "#agree-out"
+      },
+      {
+        "op": "select_option",
+        "save_as": "selected",
+        "selector": "#dept",
+        "value": "eng"
+      },
+      {
+        "op": "text_content",
+        "save_as": "dept_out",
+        "selector": "#dept-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.click",
+    "fw.puppeteer.page.select",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_act_check_select",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer checks a checkbox and selects a dropdown option"
+}

@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With lifecycle events enabled, a reload drives Page.domContentEventFired, Page.loadEventFired and a 'load' Page.lifecycleEvent. Asserts all three load-phase signals arrive and the named lifecycle milestone is 'load'.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.setLifecycleEventsEnabled",
+        "params": {
+          "enabled": true
+        }
+      },
+      {
+        "method": "Page.reload"
+      },
+      {
+        "save_result_as": "dce",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.domContentEventFired"
+      },
+      {
+        "save_result_as": "lef",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "match": {
+          "name": "load"
+        },
+        "save_result_as": "life",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.lifecycleEvent"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.lifecycle_event",
+    "cdp.page.dom_content_event_fired",
+    "cdp.page.load_event_fired"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.domContentEventFired",
+        "name": "dce"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Page.loadEventFired",
+        "name": "lef"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Page.lifecycleEvent",
+        "name": "life"
+      },
+      {
+        "expected": "load",
+        "kind": "saved_path_equals",
+        "name": "life",
+        "path": "name"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_lifecycle_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.lifecycleEvent + domContentEventFired + loadEventFired"
+}

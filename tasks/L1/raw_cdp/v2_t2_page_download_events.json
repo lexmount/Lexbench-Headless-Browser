@@ -1,0 +1,93 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With browser download behavior set to allowAndName + eventsEnabled, clicking an attachment link drives Page.downloadWillBegin and Page.downloadProgress. Asserts both download-lifecycle events arrive and downloadWillBegin names the source URL. It passes when the `Page.downloadWillBegin` event is observed; `dlb.url` contains `/v2/t2a/download`; the `Page.downloadProgress` event is observed; the declared `saved_path_equals` check passes.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Browser.setDownloadBehavior",
+        "optional": true,
+        "params": {
+          "behavior": "allowAndName",
+          "downloadPath": "{artifact_dir}",
+          "eventsEnabled": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "var a=document.createElement('a'); a.href='/v2/t2a/download'; a.download='t2a.bin'; document.body.appendChild(a); a.click(); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "dlb",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.downloadWillBegin"
+      },
+      {
+        "match": {
+          "guid": "{saved:dlb.guid}",
+          "state": "completed"
+        },
+        "save_result_as": "dlp",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.downloadProgress"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.download_will_begin",
+    "cdp.page.download_progress"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.downloadWillBegin",
+        "name": "dlb"
+      },
+      {
+        "expected": "/v2/t2a/download",
+        "kind": "saved_path_contains",
+        "name": "dlb",
+        "path": "url"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Page.downloadProgress",
+        "name": "dlp"
+      },
+      {
+        "expected": "completed",
+        "kind": "saved_path_equals",
+        "name": "dlp",
+        "path": "state"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_download_events",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.downloadWillBegin + downloadProgress"
+}

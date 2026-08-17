@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b :has() with forgiving :is()</title></head>
+<body>
+<div class="card"><span class="a">x</span><p>A_CARD</p></div>
+<div class="card"><span class="z">x</span><p>B_CARD</p></div>
+<div id="out"></div>
+<script>
+try{
+  var els=document.querySelectorAll('.card:has(> :is(.a, .b)) p');
+  var t=[].map.call(els,function(e){return e.textContent;}).join(',');
+  document.getElementById('out').textContent='HAS_FORGIVING:'+(t||'NOMATCH');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

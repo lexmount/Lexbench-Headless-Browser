@@ -1,0 +1,64 @@
+{
+  "scenario_id": "wait_spinner_replaced",
+  "family": "waiting_dynamic",
+  "title": "Wait for spinner content to be replaced",
+  "description": "A container holds a spinner that is replaced with content 500ms after load. Waits for the spinner to disappear and reads the replacement.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!document.querySelector('#replace .spinner')"
+    },
+    {
+      "op": "text_content",
+      "selector": "#replace",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "spinner_gone",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "content_text",
+      "name": "answer",
+      "expected": "content-77"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "content-77"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

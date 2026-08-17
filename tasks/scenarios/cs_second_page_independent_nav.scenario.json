@@ -1,0 +1,68 @@
+{
+  "scenario_id": "cs_second_page_independent_nav",
+  "family": "connect_session",
+  "title": "A second page navigates independently of the first",
+  "description": "Navigates the first page to the core fixture, creates a second page, navigates it to /page2 and reads its heading. The first page's location must not constrain the second target's navigation.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/page2"
+    },
+    {
+      "op": "text_content",
+      "selector": "#title",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_nav_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "second_page_heading",
+      "name": "answer",
+      "expected": "Page Two"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target",
+    "cdp.page.navigate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "Page Two"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

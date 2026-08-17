@@ -1,0 +1,12 @@
+[package]
+name = "chromiumoxide_adapter"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+description = "chromiumoxide scenario adapter for Agent Browser Bench (abb_scenario_adapter/1)"
+
+[dependencies]
+chromiumoxide = "=0.9.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "io-std", "io-util"] }
+futures = "0.3"
+serde_json = "1"

@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c12 treewalker</title></head>
+<body><div id="root"><span>x</span><b>TREEWALK_C12</b></div><div id="out"></div>
+<script>try{
+ var w=document.createTreeWalker(document.getElementById('root'),NodeFilter.SHOW_ELEMENT);
+ var names=[];while(w.nextNode()){names.push(w.currentNode.tagName);}
+ document.getElementById('out').textContent='TREEWALK_C12:'+names.join(',');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

@@ -1,0 +1,77 @@
+{
+  "_generated_from": "tasks/scenarios/st_local_shared_same_origin.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Writes localStorage in the first page, creates a second page on the same origin, and reads the key there. Same-origin pages must observe one storage area.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "second_page_read_ok",
+        "step": 5
+      },
+      {
+        "expected": "shared-63",
+        "kind": "saved_equals",
+        "label": "storage_shared",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_ferrum",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "localStorage.setItem('abb_shared', 'shared-' + (21 * 3)), 'set'",
+        "op": "evaluate"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "localStorage.getItem('abb_shared') || 'missing'",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.ferrum.op.new_page",
+    "fw.ferrum.op.goto",
+    "fw.ferrum.op.evaluate",
+    "cdp.target.create_target"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.ferrum",
+  "tags": [
+    "family.state",
+    "version.v0_4"
+  ],
+  "task_id": "sc_st_local_shared_same_origin__fr",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "localStorage is shared across pages of one origin (ferrum)"
+}

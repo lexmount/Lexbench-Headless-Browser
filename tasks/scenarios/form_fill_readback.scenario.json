@@ -1,0 +1,21 @@
+{
+  "scenario_id": "form_fill_readback",
+  "family": "forms",
+  "title": "Fill a text input and read the value back",
+  "description": "Fills the #field text input with a distinctive value and reads it back via input_value. Exercises the fill contract end to end: the driver must set the input's live value and observe it, proving keyboard/value semantics rather than just a DOM attribute.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/l1/core"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "fill", "selector": "#field", "value": "bench-fill-7q"},
+    {"op": "input_value", "selector": "#field", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "fill_ok", "step": 2},
+    {"kind": "saved_equals", "label": "value_roundtrips", "name": "answer", "expected": "bench-fill-7q"}
+  ],
+  "cdp_anchors": ["cdp.input.insert_text"],
+  "expected_answer": {"mode": "equals", "expected": "bench-fill-7q"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

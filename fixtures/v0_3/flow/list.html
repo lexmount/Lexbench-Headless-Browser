@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>flow: work items</title></head>
+<body>
+<h1>Work items</h1>
+<p id="who" aria-label="Signed in user"></p>
+<button id="premium-filter" aria-label="Show premium only">Show premium only</button>
+<ul id="items" aria-label="Item list">
+  <li data-points="12" data-tier="basic">alpha</li>
+  <li data-points="21" data-tier="premium">beta</li>
+  <li data-points="9" data-tier="premium">gamma</li>
+  <li data-points="30" data-tier="basic">delta</li>
+  <li data-points="27" data-tier="premium">epsilon</li>
+  <li data-points="5" data-tier="basic">zeta</li>
+</ul>
+<output id="summary" role="status">-</output>
+<script>
+(function () {
+  var user = new URLSearchParams(window.location.search).get('u') || '';
+  document.getElementById('who').textContent = 'signed in as ' + user;
+  document.getElementById('premium-filter').addEventListener('click', function () {
+    var total = 0;
+    var rows = document.querySelectorAll('#items li');
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getAttribute('data-tier') === 'premium') {
+        total += Number(rows[i].getAttribute('data-points'));
+      } else {
+        rows[i].style.display = 'none';
+      }
+    }
+    document.getElementById('summary').textContent = user.toUpperCase() + '-' + total;
+  });
+})();
+</script>
+</body>
+</html>

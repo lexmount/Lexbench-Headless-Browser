@@ -1,0 +1,9 @@
+{
+  "/v2/ax/form": "v0_2/ax/form.html",
+  "/v2/ax/hidden": "v0_2/ax/hidden.html",
+  "/v2/ax/namepriority": "v0_2/ax/namepriority.html",
+  "/v2/ax/iframe_parent": "v0_2/ax/iframe_parent.html",
+  "/v2/ax/iframe_child": "v0_2/ax/iframe_child.html",
+  "/v2/ax/depth": "v0_2/ax/depth.html",
+  "/v2/ax/checkbox": "v0_2/ax/checkbox.html"
+}

@@ -1,0 +1,75 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A page-global flag is set, Page.reload is issued, and the driver waits for Page.loadEventFired. Asserts the flag is gone after reload (proving a genuine fresh document, not a no-op) and that the load event fired.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__reloadFlag='before'; 'ok'"
+        }
+      },
+      {
+        "method": "Page.reload"
+      },
+      {
+        "save_result_as": "load",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "typeof window.__reloadFlag",
+          "returnByValue": true
+        },
+        "save_as": "flagtype"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.reload",
+    "cdp.page.load_event_fired"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.loadEventFired",
+        "name": "load"
+      },
+      {
+        "expected": "undefined",
+        "kind": "value_equals",
+        "name": "flagtype"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_reload",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.reload yields a fresh document"
+}

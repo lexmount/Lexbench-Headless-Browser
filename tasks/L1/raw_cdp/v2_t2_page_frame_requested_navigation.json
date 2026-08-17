@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A script-initiated location.assign drives Page.frameRequestedNavigation before the load commits. Asserts the event fires and names the requested destination URL.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.assign('/v2/t2a/child'); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "frn",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.frameRequestedNavigation"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.frame_requested_navigation"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.frameRequestedNavigation",
+        "name": "frn"
+      },
+      {
+        "expected": "/v2/t2a/child",
+        "kind": "saved_path_contains",
+        "name": "frn",
+        "path": "url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_frame_requested_navigation",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.frameRequestedNavigation on script-initiated nav"
+}

@@ -1,0 +1,24 @@
+{
+  "scenario_id": "dyn_paging_final",
+  "family": "waiting_dynamic",
+  "title": "Advance paging via XHR clicks and read the final datum",
+  "description": "On the paging fixture each #next click advances a counter and fetches that page's datum over XHR. The final datum P3-FINAL-73 exists only on page 3, reachable after two clicks, so it can only be read by waiting for each async update. Exercises polling/event-driven waiting across real network round-trips.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v2/actl2/paging"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "click", "selector": "#next"},
+    {"op": "wait_for_function", "expression": "document.getElementById('status').textContent.indexOf('page:2:')===0"},
+    {"op": "click", "selector": "#next"},
+    {"op": "wait_for_function", "expression": "document.getElementById('status').textContent.indexOf('P3-FINAL-73')>=0"},
+    {"op": "text_content", "selector": "#status", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "final_datum_settled", "step": 5},
+    {"kind": "saved_contains", "label": "status_has_final", "name": "answer", "expected": "P3-FINAL-73"}
+  ],
+  "cdp_anchors": ["cdp.network.request_will_be_sent"],
+  "expected_answer": {"mode": "contains", "expected": "P3-FINAL-73"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

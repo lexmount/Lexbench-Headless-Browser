@@ -1,0 +1,69 @@
+{
+  "scenario_id": "fr_nested_two_levels",
+  "family": "frames_oopif",
+  "title": "A grandchild frame two levels down is reachable through the frame tree",
+  "description": "Inserts a child that embeds its own child; the top document reads the grandchild's script-computed message through two levels of same-origin frame traversal.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "var f = document.createElement('iframe'); f.src = '/v0_4/frames/child?tag=mid&deep=1'; document.getElementById('slot').appendChild(f); 'inserted'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.frames.length === 3 && frames[2].frames.length === 1 && !!frames[2].frames[0].document.getElementById('msg') && frames[2].frames[0].document.getElementById('msg').textContent.indexOf('leaf') !== -1"
+    },
+    {
+      "op": "evaluate",
+      "expression": "frames[2].frames[0].document.getElementById('msg').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "grandchild_loaded",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "grandchild_text",
+      "name": "answer",
+      "expected": "child-leaf-42"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.frame_attached",
+    "cdp.page.get_frame_tree"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "child-leaf-42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

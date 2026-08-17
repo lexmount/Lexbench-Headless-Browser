@@ -1,0 +1,70 @@
+{
+  "scenario_id": "form_fill_overwrites",
+  "family": "forms",
+  "title": "A second fill replaces the first value",
+  "description": "Fills the same input twice; fill semantics require clear-then-set, so only the second value must remain.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#overwrite",
+      "value": "first-11"
+    },
+    {
+      "op": "fill",
+      "selector": "#overwrite",
+      "value": "second-77"
+    },
+    {
+      "op": "input_value",
+      "selector": "#overwrite",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_fill_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "second_value_only",
+      "name": "answer",
+      "expected": "second-77"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.insert_text"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "second-77"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

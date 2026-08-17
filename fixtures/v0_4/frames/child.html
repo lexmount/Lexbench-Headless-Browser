@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Frames Child</title>
+<div id="msg"></div>
+<div id="note">idle</div>
+<script>
+  var params = new URLSearchParams(location.search);
+  var tag = params.get('tag') || 'none';
+  document.getElementById('msg').textContent = 'child-' + tag + '-' + (6 * 7);
+  if (window.parent !== window) {
+    try { window.parent.postMessage('hello-' + tag, '*'); } catch (err) { /* cross-origin parent */ }
+  }
+  if (params.get('deep') === '1') {
+    var f = document.createElement('iframe');
+    f.src = '/v0_4/frames/child?tag=leaf';
+    document.body.appendChild(f);
+  }
+</script>

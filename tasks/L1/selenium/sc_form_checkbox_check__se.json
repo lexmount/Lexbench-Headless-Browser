@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/form_checkbox_check.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Checks the #checkbox input and reads its live .checked property via evaluate. Exercises the check contract: the driver must toggle the control to a checked state observable on the DOM property, not merely dispatch a click.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "check_ok",
+        "step": 2
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "checkbox_is_checked",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "check",
+        "selector": "#checkbox"
+      },
+      {
+        "expression": "document.getElementById('checkbox').checked",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.check",
+    "fw.selenium.op.evaluate",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.forms",
+    "version.v0_4"
+  ],
+  "task_id": "sc_form_checkbox_check__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Check a checkbox and observe the checked property (selenium)"
+}

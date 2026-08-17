@@ -1,0 +1,82 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Reads the frame id from Page.getFrameTree, creates an isolated world for it, asserts a non-empty executionContextId is returned, and runs Runtime.evaluate inside that contextId to confirm the world is usable. Real probe of createIsolatedWorld beyond a bare command ack.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "session": "page"
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true,
+        "session": "page"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "params": {},
+        "save_result_as": "tree",
+        "session": "page"
+      },
+      {
+        "method": "Page.createIsolatedWorld",
+        "params": {
+          "frameId": "{saved:tree.frameTree.frame.id}",
+          "grantUniveralAccess": true,
+          "worldName": "__abb_boot_world__"
+        },
+        "save_result_as": "world",
+        "session": "page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "contextId": "{saved:world.executionContextId}",
+          "expression": "40 + 2",
+          "returnByValue": true
+        },
+        "save_as": "answer",
+        "session": "page"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.create_isolated_world"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "world",
+        "path": "executionContextId"
+      },
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "name": "answer"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_page_create_isolated_world",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.createIsolatedWorld yields a usable context"
+}

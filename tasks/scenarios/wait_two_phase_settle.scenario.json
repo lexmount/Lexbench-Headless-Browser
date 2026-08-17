@@ -1,0 +1,64 @@
+{
+  "scenario_id": "wait_two_phase_settle",
+  "family": "waiting_dynamic",
+  "title": "Wait through an intermediate state to the settled one",
+  "description": "The status text changes twice (warming -> phase:1 -> phase:2:W7). Waits for the FINAL state; a driver that returns on the first mutation reads the intermediate value.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('two-phase').textContent.indexOf('phase:2') === 0"
+    },
+    {
+      "op": "text_content",
+      "selector": "#two-phase",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "settled",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "final_phase",
+      "name": "answer",
+      "expected": "phase:2:W7"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "phase:2:W7"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

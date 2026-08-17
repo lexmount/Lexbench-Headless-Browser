@@ -1,0 +1,64 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Page domain, navigates, and waits for the Page.loadEventFired event, asserting it carries a timestamp. Real probe that Page.enable opens the page event stream (not merely a command ack).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "session": "page"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "session": "page"
+      },
+      {
+        "save_result_as": "load",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.loadEventFired"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.enable",
+    "cdp.page.load_event_fired"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.loadEventFired",
+        "name": "load"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "load",
+        "path": "timestamp"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_page_enable_load_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.enable delivers loadEventFired"
+}

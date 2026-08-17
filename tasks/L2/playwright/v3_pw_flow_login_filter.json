@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "End-to-end multi-step flow with real Playwright: fill username 'eric' and the access code (the login form's data-code 'k9x2' reversed, never present as a literal), click sign-in (on_framework_main_path pointer click) which navigates to the list page, wait for the item list, click the premium filter, and read #summary. The expected token 'ERIC-57' is composed at runtime from the uppercased username and the sum of premium item points (21+9+27); it appears nowhere in the fixtures.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "kind": "step_ok",
+        "label": "list_page_ready",
+        "step": 5
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user",
+        "value": "eric"
+      },
+      {
+        "op": "fill",
+        "selector": "#pass",
+        "value": "2x9k"
+      },
+      {
+        "op": "click",
+        "selector": "#signin"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#items"
+      },
+      {
+        "op": "click",
+        "selector": "#premium-filter"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#summary"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.fill",
+    "fw.playwright.page.click",
+    "fw.playwright.page.wait_for_selector",
+    "fw.playwright.page.text_content",
+    "cdp.input.insert_text",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.page.lifecycle_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/flow/login"
+  },
+  "subset_id": "l2.playwright",
+  "tags": [
+    "family.flow",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_flow_login_filter",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Playwright login -> list -> premium filter"
+}

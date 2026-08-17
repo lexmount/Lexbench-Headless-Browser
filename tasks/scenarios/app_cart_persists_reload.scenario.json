@@ -1,0 +1,94 @@
+{
+  "scenario_id": "app_cart_persists_reload",
+  "family": "multi_step_flow",
+  "title": "The cart survives a page reload via the session cookie",
+  "description": "Logs in, adds an item, reloads the document, and answers with the total restored from server state.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-widget-c')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-c"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-c')"
+    },
+    {
+      "op": "reload"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('cart-total').textContent === 'total-7'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#cart-total",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "restored",
+      "step": 8
+    },
+    {
+      "kind": "saved_equals",
+      "label": "total_after_reload",
+      "name": "answer",
+      "expected": "total-7"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "total-7"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

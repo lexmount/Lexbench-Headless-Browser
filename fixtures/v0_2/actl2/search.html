@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>actl2 search</title></head>
+<body>
+<h1>search</h1>
+<input id="q" type="text" value="">
+<div id="status">idle</div>
+<script>
+// Pressing Enter in the box submits: it reads the typed query and combines it
+// with a server token. Requires insertText (to fill) + dispatchKeyEvent Enter
+// (to submit) + XHR (the token).
+document.getElementById("q").addEventListener("keydown", function (e) {
+  if (e.key !== "Enter") return;
+  var v = this.value;
+  fetch("/v2/actl2/token.txt")
+    .then(function (r) { return r.text(); })
+    .then(function (t) { document.getElementById("status").textContent = "RESULT:" + v + ":" + t.trim(); })
+    .catch(function (err) { document.getElementById("status").textContent = "ERR:" + String(err); });
+});
+</script>
+</body>
+</html>

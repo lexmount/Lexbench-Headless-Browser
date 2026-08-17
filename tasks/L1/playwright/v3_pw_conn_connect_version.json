@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright connects to the engine over CDP (connectOverCDP) and reads the browser version and user agent without opening any page. Passes when both identity strings are non-empty, proving the bootstrap handshake (Target.setAutoAttach + Browser.getVersion) completed against the engine under test.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "version_op_ok",
+        "step": 0
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "version_nonempty",
+        "name": "ver"
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "user_agent_nonempty",
+        "name": "ua"
+      },
+      {
+        "expected": "Mozilla",
+        "kind": "saved_contains",
+        "label": "ua_looks_like_browser",
+        "name": "ua"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "version",
+        "save_as": "ver"
+      },
+      {
+        "op": "user_agent",
+        "save_as": "ua"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.browser.version",
+    "fw.playwright.browser.new_browser_cdp_session",
+    "cdp.target.set_auto_attach",
+    "cdp.browser.get_version"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_conn_connect_version",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "connectOverCDP handshake + browser version/user-agent identity"
+}

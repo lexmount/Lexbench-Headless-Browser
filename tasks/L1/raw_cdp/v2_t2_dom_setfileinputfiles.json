@@ -1,0 +1,78 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "DOM.setFileInputFiles assigns a real local file to an <input type=file> by nodeId, then Runtime.evaluate reads back files.length and files[0].name to confirm the FileList was populated. It passes when the saved value `files` equals `1/upload_sample.txt`.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#f"
+        },
+        "save_result_as": "found"
+      },
+      {
+        "method": "DOM.setFileInputFiles",
+        "params": {
+          "files": [
+            "{fixture_path}/v0_2/t2b/upload_sample.txt"
+          ],
+          "nodeId": "{saved:found.nodeId}"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var f=document.getElementById('f').files; return f.length + '/' + (f[0] ? f[0].name : '');})()",
+          "returnByValue": true
+        },
+        "save_as": "files"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.set_file_input_files",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "1/upload_sample.txt",
+        "kind": "value_equals",
+        "name": "files"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/file_input"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_setfileinputfiles",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.setFileInputFiles programmatic upload"
+}

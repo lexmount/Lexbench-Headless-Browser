@@ -1,0 +1,70 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Storage.setCookies writes a cookie for the fixture URL, Storage.getCookies reads it back (asserted via array_contains), then Storage.clearCookies wipes it. Distinct from the Network.* cookie surface -- this is the Storage-domain path.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Storage.setCookies",
+        "params": {
+          "cookies": [
+            {
+              "name": "t2bcookie",
+              "url": "{fixture_url}",
+              "value": "t2bval"
+            }
+          ]
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Storage.getCookies",
+        "save_result_as": "gc",
+        "session": "browser"
+      },
+      {
+        "method": "Storage.clearCookies",
+        "optional": true,
+        "params": {},
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.storage.set_cookies",
+    "cdp.storage.get_cookies",
+    "cdp.storage.clear_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "t2bcookie",
+          "value": "t2bval"
+        },
+        "kind": "array_contains",
+        "name": "gc",
+        "path": "cookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_storage_cookies",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Storage.setCookies / getCookies / clearCookies"
+}

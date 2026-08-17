@@ -1,0 +1,77 @@
+{
+  "_generated_from": "tasks/scenarios/st_session_isolated_new_page.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Writes sessionStorage in the first page, creates a fresh page on the same origin, and confirms the key is absent there - sessionStorage is per top-level browsing context.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "second_page_ok",
+        "step": 5
+      },
+      {
+        "expected": "isolated",
+        "kind": "saved_equals",
+        "label": "session_isolated",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "sessionStorage.setItem('abb_iso', 'leak-' + 9), 'set'",
+        "op": "evaluate"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "sessionStorage.getItem('abb_iso') === null ? 'isolated' : 'leaked'",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.evaluate",
+    "cdp.target.create_target"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.state",
+    "version.v0_4"
+  ],
+  "task_id": "sc_st_session_isolated_new_page__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "sessionStorage does not leak into a new page (chrome_remote_interface)"
+}

@@ -1,0 +1,49 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] scrollHeight/scrollWidth over Runtime.evaluate on a 100x50 scroller whose 400x400 inner content sets the scrollable extent (Defect C root). Expect exactly '400x400'.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var e=document.getElementById('scroller');return e.scrollHeight+'x'+e.scrollWidth;})()",
+          "returnByValue": true
+        },
+        "save_as": "v"
+      }
+    ]
+  },
+  "features": [
+    "web.layout.scroll_dimensions"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "400x400",
+        "kind": "value_equals",
+        "name": "v"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/trio"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_scrollsize_fixed",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "scrollHeight/scrollWidth on overflow container"
+}

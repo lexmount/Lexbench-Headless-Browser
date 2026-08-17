@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Creates a fresh browser context, then asserts Target.getBrowserContexts returns a browserContextIds array containing at least the newly created context id. Real semantic probe of getBrowserContexts return structure.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.createBrowserContext",
+        "params": {},
+        "save_result_as": "newctx",
+        "session": "browser"
+      },
+      {
+        "method": "Target.getBrowserContexts",
+        "params": {},
+        "save_result_as": "ctx",
+        "session": "browser"
+      },
+      {
+        "method": "Target.disposeBrowserContext",
+        "optional": true,
+        "params": {
+          "browserContextId": "{saved:newctx.browserContextId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.get_browser_contexts"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "newctx",
+        "path": "browserContextId"
+      },
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "ctx",
+        "path": "browserContextIds"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_get_browser_contexts",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.getBrowserContexts lists a created context"
+}

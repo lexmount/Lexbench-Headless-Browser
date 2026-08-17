@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Searches the parsed script content for a token and asserts at least one match line.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "//# sourceURL=v4probe.js\nfunction v4f(a){var b=a+1;return b;}\nwindow.v4f=v4f;\nvar v4K=12345;\n"
+        }
+      },
+      {
+        "match": {
+          "url": "v4probe.js"
+        },
+        "save_result_as": "sp",
+        "timeout_ms": 3000,
+        "wait_for_event": "Debugger.scriptParsed"
+      },
+      {
+        "method": "Debugger.searchInContent",
+        "params": {
+          "query": "12345",
+          "scriptId": "{saved:sp.scriptId}"
+        },
+        "save_result_as": "sr"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.search_in_content"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "label": "search_matches",
+        "min": 1,
+        "name": "sr",
+        "path": "result"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_searchincontent",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.searchInContent finds a token"
+}

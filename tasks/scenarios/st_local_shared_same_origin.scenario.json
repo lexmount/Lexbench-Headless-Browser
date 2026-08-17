@@ -1,0 +1,71 @@
+{
+  "scenario_id": "st_local_shared_same_origin",
+  "family": "state",
+  "title": "localStorage is shared across pages of one origin",
+  "description": "Writes localStorage in the first page, creates a second page on the same origin, and reads the key there. Same-origin pages must observe one storage area.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.setItem('abb_shared', 'shared-' + (21 * 3)), 'set'"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.getItem('abb_shared') || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_page_read_ok",
+      "step": 5
+    },
+    {
+      "kind": "saved_equals",
+      "label": "storage_shared",
+      "name": "answer",
+      "expected": "shared-63"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "shared-63"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

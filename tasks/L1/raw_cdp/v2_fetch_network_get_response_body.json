@@ -1,0 +1,83 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "With the Network domain enabled, a page fetch() drives Network.responseReceived (captures requestId) and Network.loadingFinished; Network.getResponseBody then returns the decoded body (base64Encoded false for text). Covers Network.getResponseBody plus the responseReceived/loadingFinished events.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "resp",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.responseReceived"
+      },
+      {
+        "optional": true,
+        "save_result_as": "fin",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.loadingFinished"
+      },
+      {
+        "method": "Network.getResponseBody",
+        "params": {
+          "requestId": "{saved:resp.requestId}"
+        },
+        "save_result_as": "rb"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.get_response_body",
+    "cdp.network.response_received",
+    "cdp.network.loading_finished"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.responseReceived",
+        "name": "resp"
+      },
+      {
+        "expected": "REAL-SERVER-BODY",
+        "kind": "saved_path_contains",
+        "name": "rb",
+        "path": "body"
+      },
+      {
+        "expected": false,
+        "kind": "saved_path_equals",
+        "name": "rb",
+        "path": "base64Encoded"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_network_get_response_body",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.getResponseBody after loadingFinished"
+}

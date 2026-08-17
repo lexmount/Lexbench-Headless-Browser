@@ -1,0 +1,106 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Page.navigate walks through three fixture pages, Page.getNavigationHistory reads back the entry list, and Page.navigateToHistoryEntry jumps to the first entry. Asserts the history contains the visited entries and that jumping to entry 0 lands back on the original page.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/child'",
+          "returnByValue": true
+        },
+        "save_result_as": "child"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/interactive'",
+          "returnByValue": true
+        },
+        "save_result_as": "inter"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:child.result.value}"
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:inter.result.value}"
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Page.getNavigationHistory",
+        "save_result_as": "hist"
+      },
+      {
+        "method": "Page.navigateToHistoryEntry",
+        "params": {
+          "entryId": "{saved:hist.entries.1.id}"
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.pathname",
+          "returnByValue": true
+        },
+        "save_as": "finalpath"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate",
+    "cdp.page.get_navigation_history",
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 3,
+        "name": "hist",
+        "path": "entries"
+      },
+      {
+        "expected": "netpage",
+        "kind": "value_contains",
+        "name": "finalpath"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_navigation_history",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.getNavigationHistory + navigateToHistoryEntry"
+}

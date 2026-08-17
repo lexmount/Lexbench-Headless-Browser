@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "Structural probe for the auth path: Fetch.enable accepts handleAuthRequests true (auth-handling mode), and Fetch.continueWithAuth is a recognized command that cleanly rejects an invalid interception id. A full Basic-auth challenge (Fetch.authRequired) cannot be produced against the 200-only fixture server; see skipped_fetch.md.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "handleAuthRequests": true,
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "expect_unsupported": true,
+        "method": "Fetch.continueWithAuth",
+        "params": {
+          "authChallengeResponse": {
+            "password": "p",
+            "response": "ProvideCredentials",
+            "username": "u"
+          },
+          "requestId": "abb-nonexistent-000"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.continue_with_auth"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Fetch.continueWithAuth",
+        "name": "value"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_continue_with_auth_probe",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.enable(handleAuthRequests) + continueWithAuth recognized"
+}

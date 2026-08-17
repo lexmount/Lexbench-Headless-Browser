@@ -1,0 +1,65 @@
+{
+  "scenario_id": "fr_child_posts_parent",
+  "family": "frames_oopif",
+  "title": "Child frames deliver postMessage to the parent document",
+  "description": "Both static children post a greeting on load; the parent collects them and answers with the sorted join, proving frame scripts executed and the message channel works.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.__msgs && window.__msgs.length >= 2"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__msgs.slice().sort().join('|')",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "messages_arrived",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "both_children_posted",
+      "name": "answer",
+      "expected": "hello-a|hello-b"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.frame_attached",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "hello-a|hello-b"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Verifies raw.page.reloadLifecycle by issuing raw CDP command(s) Page.enable, Page.navigate, Page.reload against an about:blank page. It passes when every required CDP step completes without a protocol error; the `load_after_navigate` event is observed; the `load_after_reload` event is observed. The driver waits for the navigation load event before reloading, then requires the reload load event.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Page.navigate",
+        "optional": false,
+        "params": {
+          "url": "{fixture_url}"
+        }
+      },
+      {
+        "save_result_as": "load_after_navigate",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "method": "Page.reload",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "save_result_as": "load_after_reload",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate",
+    "cdp.page.reload"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      },
+      {
+        "kind": "event_observed",
+        "name": "load_after_navigate"
+      },
+      {
+        "kind": "event_observed",
+        "name": "load_after_reload"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_page_reloadlifecycle",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.page.reloadLifecycle"
+}

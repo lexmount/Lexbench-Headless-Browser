@@ -1,0 +1,48 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.expr.arrayBuffer by issuing raw CDP command(s) Runtime.evaluate against the self-hosted fixture `/l1/core`. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. JavaScript exception details are recorded but do not affect the verdict.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "awaitPromise": true,
+          "expression": "new Uint8Array(new ArrayBuffer(4)).byteLength",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate",
+    "web.array_buffer"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_expr_arraybuffer",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.expr.arrayBuffer"
+}

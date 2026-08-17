@@ -1,0 +1,110 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A data table whose visible cells read 'see summary' while each cell's aria-label carries the real figure. getFullAXTree exposes the role-structured table (rowheader/columnheader/cell) and the per-cell accessible names ('North total is 7420', 'South total is 3155'). The figures are only obtainable via the AX tree.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.role.table",
+    "web.ax.name"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "North total is 7420"
+          },
+          "role": {
+            "value": "cell"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "South total is 3155"
+          },
+          "role": {
+            "value": "cell"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "North"
+          },
+          "role": {
+            "value": "rowheader"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Total"
+          },
+          "role": {
+            "value": "columnheader"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/axl2/role_table"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility_l2",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_axl2_role_table_extraction",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "structured table figures read from AX cell names"
+}

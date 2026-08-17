@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>flow: records</title></head>
+<body>
+<h1>Score records</h1>
+<label for="dept-filter">Department</label>
+<select id="dept-filter" aria-label="Department filter">
+  <option value="all">all</option>
+  <option value="ops">ops</option>
+  <option value="eng">eng</option>
+</select>
+<button id="apply" aria-label="Apply filter">apply</button>
+<table id="records" aria-label="Records table">
+  <tbody>
+    <tr data-dept="eng" data-score="55"><td>ada</td></tr>
+    <tr data-dept="ops" data-score="62"><td>bob</td></tr>
+    <tr data-dept="eng" data-score="93"><td>cal</td></tr>
+    <tr data-dept="ops" data-score="71"><td>dee</td></tr>
+    <tr data-dept="hr" data-score="40"><td>eve</td></tr>
+    <tr data-dept="ops" data-score="89"><td>fox</td></tr>
+    <tr data-dept="eng" data-score="66"><td>gus</td></tr>
+    <tr data-dept="hr" data-score="78"><td>hal</td></tr>
+  </tbody>
+</table>
+<output id="stat" role="status">-</output>
+<script>
+(function () {
+  document.getElementById('apply').addEventListener('click', function () {
+    var dept = document.getElementById('dept-filter').value;
+    var rows = document.querySelectorAll('#records tbody tr');
+    var count = 0;
+    var sum = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var match = dept === 'all' || rows[i].getAttribute('data-dept') === dept;
+      rows[i].style.display = match ? '' : 'none';
+      if (match) { count += 1; sum += Number(rows[i].getAttribute('data-score')); }
+    }
+    var avg = count ? Math.round(sum / count) : 0;
+    document.getElementById('stat').textContent = dept + ':' + count + ':' + avg;
+  });
+})();
+</script>
+</body>
+</html>

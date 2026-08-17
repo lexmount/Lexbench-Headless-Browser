@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Asserts the DOM.attributeModified event is emitted when an attribute is set on a tracked node.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 0
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "selector": "#title"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "DOM.setAttributeValue",
+        "params": {
+          "name": "data-m",
+          "nodeId": "{saved:q.nodeId}",
+          "value": "1"
+        }
+      },
+      {
+        "match": {
+          "name": "data-m"
+        },
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.attributeModified"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.attribute_modified"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "attr_mod_event",
+        "method": "DOM.attributeModified"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_ev_attributemodified",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.attributeModified fires on setAttributeValue"
+}

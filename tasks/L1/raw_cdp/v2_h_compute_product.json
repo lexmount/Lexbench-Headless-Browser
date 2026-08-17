@@ -1,0 +1,120 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Builds a child page session via the dialect handshake, navigates to a compute fixture, clicks the compute button via Runtime.evaluate, and reads the page-computed result (a*b+7 from body data attributes => 6*7+7 = 49). The answer emerges from the runtime computation, not a literal in the markup.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "h_page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Page.enable",
+        "session": "h_page"
+      },
+      {
+        "method": "Page.setLifecycleEventsEnabled",
+        "params": {
+          "enabled": true
+        },
+        "session": "h_page"
+      },
+      {
+        "method": "Runtime.enable",
+        "session": "h_page"
+      },
+      {
+        "method": "Runtime.runIfWaitingForDebugger",
+        "session": "h_page"
+      },
+      {
+        "match": {
+          "name": "load"
+        },
+        "save_result_as": "loaded",
+        "session": "h_page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.lifecycleEvent"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('go').click(); Number(document.getElementById('result').textContent);",
+          "returnByValue": true
+        },
+        "save_as": "answer",
+        "session": "h_page"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.attached_to_target",
+    "cdp.runtime.run_if_waiting_for_debugger",
+    "cdp.page.lifecycle_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.lifecycleEvent",
+        "name": "loaded"
+      },
+      {
+        "expected": 49,
+        "kind": "value_equals",
+        "name": "answer"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/compute"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.handwritten",
+    "version.v0_2"
+  ],
+  "task_id": "v2_h_compute_product",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 40000,
+    "task_ms": 25000
+  },
+  "title": "bootstrap replay -> data-attribute product"
+}

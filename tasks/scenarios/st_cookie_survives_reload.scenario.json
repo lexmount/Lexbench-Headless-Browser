@@ -1,0 +1,67 @@
+{
+  "scenario_id": "st_cookie_survives_reload",
+  "family": "state",
+  "title": "A cookie survives a reload",
+  "description": "Sets a cookie, reloads, and parses the cookie back. Exercises cookie-jar persistence across navigation.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.cookie = 'abbr=c-' + (44 * 2), 'set'"
+    },
+    {
+      "op": "reload"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(document.cookie.match(/abbr=([^;]+)/) || [])[1] || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "reload_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "cookie_survives",
+      "name": "answer",
+      "expected": "c-88"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.reload"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "c-88"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.releaseObject lifecycle: evaluate returns an objectId, getProperties confirms the object is usable, then releaseObject frees it and a second getProperties on the same (now stale) objectId is declared expect_unsupported — a clean 'Could not find object with given id' rejection is the passing outcome, proving the object is genuinely released rather than lingering.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__probeObj"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}",
+          "ownProperties": true
+        },
+        "save_result_as": "before"
+      },
+      {
+        "method": "Runtime.releaseObject",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}"
+        }
+      },
+      {
+        "expect_unsupported": true,
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}",
+          "ownProperties": true
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.get_properties",
+    "cdp.runtime.release_object"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "alpha"
+        },
+        "kind": "array_contains",
+        "name": "before",
+        "path": "result"
+      },
+      {
+        "kind": "unsupported_observed",
+        "method": "Runtime.getProperties"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_release_object",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "releaseObject makes the objectId unusable"
+}

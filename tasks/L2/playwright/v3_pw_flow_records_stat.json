@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "End-to-end multi-step flow with real Playwright: on the records fixture, select 'ops' in the department dropdown via the framework's native select path, click apply (on_framework_main_path), and read #stat. The page filters table rows by data-dept and aggregates count and rounded mean from data-score attributes at runtime (62,71,89 -> 'ops:3:74'); the token is never present as a literal.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "select_option",
+        "selector": "#dept-filter",
+        "value": "ops"
+      },
+      {
+        "op": "click",
+        "selector": "#apply"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#stat"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.select_option",
+    "fw.playwright.page.click",
+    "fw.playwright.page.text_content",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/flow/records"
+  },
+  "subset_id": "l2.playwright",
+  "tags": [
+    "family.flow",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_flow_records_stat",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Playwright select filter -> aggregated stat"
+}

@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b treewalker filter</title></head>
+<body>
+<div id="root">
+  <div class="skip"><span data-t="S1">x</span></div>
+  <div class="reject"><span data-t="R1">x</span></div>
+  <span data-t="A1">x</span>
+</div>
+<div id="out"></div>
+<script>
+try{
+  var root=document.getElementById('root');
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT,{
+    acceptNode:function(n){
+      if(n.classList.contains('reject')) return NodeFilter.FILTER_REJECT;
+      if(n.classList.contains('skip')) return NodeFilter.FILTER_SKIP;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  var seen=[];
+  while(w.nextNode()){ seen.push(w.currentNode.getAttribute('data-t')||w.currentNode.className); }
+  document.getElementById('out').textContent='TW:'+seen.join(',');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>v0.4 waiting stress</title></head>
+<body>
+<h1 id="title">Waiting Stress Fixture</h1>
+<!-- 按钮上方的动态区一律定高：badge 插入 / vanish 隐藏不得移动 #late-btn 的位置。
+     场景语义只考时序等待；共享 fixture 的布局位移会让"先算坐标再派发"的 driver
+     (rod/chromiumoxide) 在坐标计算与鼠标派发之间空击，属 fixture 耦合而非驱动语义。 -->
+<div id="slot1" style="min-height:1.6em"></div>
+<div id="two-phase" style="min-height:1.6em">warming</div>
+<div style="min-height:1.6em"><div id="vanish">transient-notice</div></div>
+<button id="late-btn" disabled>Late action</button>
+<div id="late-btn-out">none</div>
+<ul id="list"></ul>
+<div id="attr-target">attr pending</div>
+<div id="replace"><span class="spinner">loading…</span></div>
+<script>
+  // All timers are deterministic and fire once; answers emerge from the
+  // interactions below, never as static literals in the initial DOM.
+  setTimeout(function () {
+    var badge = document.createElement("span");
+    badge.id = "slow-badge";
+    badge.textContent = "badge-" + (7 * 13);
+    document.getElementById("slot1").appendChild(badge);
+  }, 400);
+
+  setTimeout(function () { document.getElementById("two-phase").textContent = "phase:1"; }, 250);
+  setTimeout(function () { document.getElementById("two-phase").textContent = "phase:2:W" + (3 + 4); }, 600);
+
+  setTimeout(function () { document.getElementById("vanish").style.display = "none"; }, 300);
+
+  setTimeout(function () {
+    var btn = document.getElementById("late-btn");
+    btn.disabled = false;
+    btn.addEventListener("click", function () {
+      document.getElementById("late-btn-out").textContent = "clicked-late-" + (11 * 3);
+    });
+  }, 350);
+
+  ["item-a", "item-b", "item-c"].forEach(function (label, index) {
+    setTimeout(function () {
+      var item = document.createElement("li");
+      item.textContent = label;
+      document.getElementById("list").appendChild(item);
+    }, 150 * (index + 1));
+  });
+
+  setTimeout(function () {
+    document.getElementById("attr-target").setAttribute("data-ready", "ok-" + (29 * 2));
+  }, 300);
+
+  setTimeout(function () {
+    document.getElementById("replace").innerHTML = "content-" + (7 * 11);
+  }, 500);
+</script>
+</body>
+</html>

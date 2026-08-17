@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Input.insertText after focus: the driver focuses the text input (confirming document.activeElement), then Input.insertText injects a string, and reads back input.value to prove the composed text landed in the field. Anchors Input.insertText as a non-coordinate typing primitive.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('inp').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focused"
+      },
+      {
+        "method": "Input.insertText",
+        "params": {
+          "text": "insert-42"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('inp').value",
+          "returnByValue": true
+        },
+        "save_as": "val"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.insert_text"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "inp",
+        "kind": "value_equals",
+        "name": "focused"
+      },
+      {
+        "expected": "insert-42",
+        "kind": "value_equals",
+        "name": "val"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_inserttext_value",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Input.insertText changes the focused input value"
+}

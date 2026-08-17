@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Network domain, navigates, and waits for a Network.requestWillBeSent event, asserting it carries a requestId and a request.url. Real probe that Network.enable opens the network event stream (not merely a command ack).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable",
+        "session": "page"
+      },
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "session": "page"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "session": "page"
+      },
+      {
+        "save_result_as": "req",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.requestWillBeSent"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.enable",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.requestWillBeSent",
+        "name": "req"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "req",
+        "path": "requestId"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "req",
+        "path": "request.url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_network_enable_request_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Network.enable delivers requestWillBeSent"
+}

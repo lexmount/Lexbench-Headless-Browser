@@ -1,0 +1,80 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: network har through the agent-browser tool API. It passes when `agent-browser network har start {artifact_dir}/cap.har` succeeds; `agent-browser network har stop {artifact_dir}/cap.har` succeeds; the artifact `{artifact_dir}/cap.har` exists and is non-empty. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 0
+        },
+        {
+          "kind": "ab_ok",
+          "step": 3
+        },
+        {
+          "kind": "file_nonempty",
+          "path": "{artifact_dir}/cap.har"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "network",
+            "har",
+            "start",
+            "{artifact_dir}/cap.har"
+          ]
+        },
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "wait",
+            "200"
+          ]
+        },
+        {
+          "ab": [
+            "network",
+            "har",
+            "stop",
+            "{artifact_dir}/cap.har"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.network.har"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_network_har",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: network har"
+}

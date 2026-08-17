@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for :target version summary. The driver reads output from the self-hosted fixture `/fixtures/l2_round4/target_section.html#v2`, and the server-side grader compares it with the checked-in expected answer. The fixture opens with the `#v2` fragment, recomputes the target summary on page load, and the driver grades `#summary`.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#summary",
+        "settle": "nonempty",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 400
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.css.cascade"
+  ],
+  "grader": {
+    "checks": [
+      "answer_contains_all_keywords"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "human_query": "打开这个文档并定位到 v2 这一节,告诉我这一节标注的「适用版本」是什么。",
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "q02_target_section",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/l2_round4/target_section.html#v2"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "r4_q02_target_section",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": ":target version summary"
+}

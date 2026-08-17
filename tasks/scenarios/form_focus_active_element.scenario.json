@@ -1,0 +1,68 @@
+{
+  "scenario_id": "form_focus_active_element",
+  "family": "forms",
+  "title": "The driver focus route changes document.activeElement",
+  "description": "Focuses the core text field through each driver's public route or documented Runtime.evaluate fallback, then verifies the page's active element.",
+  "layer": "L1",
+  "extra_tags": [
+    "purpose.issue_106"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "focus",
+      "selector": "#field"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.activeElement && document.activeElement.id",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "focus_route_completed",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "active_element_changed",
+      "name": "answer",
+      "expected": "field"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.focus",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "field"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

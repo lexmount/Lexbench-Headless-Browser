@@ -1,0 +1,65 @@
+{
+  "scenario_id": "form_press_enter_handler",
+  "family": "forms",
+  "title": "press Enter reaches the focused field's key handler",
+  "description": "Presses Enter inside a text field whose keydown handler records the event; exercises real key-event dispatch, not value mutation.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "press",
+      "selector": "#enter-field",
+      "key": "Enter"
+    },
+    {
+      "op": "text_content",
+      "selector": "#enter-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "press_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "keydown_seen",
+      "name": "answer",
+      "expected": "enter-65"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.dispatch_key_event"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "enter-65"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

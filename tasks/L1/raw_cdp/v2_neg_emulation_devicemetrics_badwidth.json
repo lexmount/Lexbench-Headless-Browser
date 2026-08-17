@@ -1,0 +1,49 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative (bad param type): Emulation.setDeviceMetricsOverride.width must be an integer; passing a string must yield a clean InvalidParams rejection rather than a hang.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Emulation.setDeviceMetricsOverride",
+        "params": {
+          "deviceScaleFactor": 1,
+          "height": 600,
+          "mobile": false,
+          "width": "wide"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.emulation.set_device_metrics_override"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Emulation.setDeviceMetricsOverride"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_emulation_devicemetrics_badwidth",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "emulation_devicemetrics_badwidth"
+}

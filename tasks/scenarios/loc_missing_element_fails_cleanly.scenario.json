@@ -1,0 +1,66 @@
+{
+  "scenario_id": "loc_missing_element_fails_cleanly",
+  "family": "locator",
+  "title": "A missing selector fails the op, not the harness",
+  "description": "Reads a selector that matches nothing; the op must fail cleanly (step_fails) and the attempt derives its answer from that failure.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "text_content",
+      "selector": "#does-not-exist",
+      "save_as": "probe",
+      "expect_fail": true
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.querySelector('#does-not-exist') === null ? 'clean-miss' : 'phantom'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_fails",
+      "label": "missing_fails",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "clean_miss",
+      "name": "answer",
+      "expected": "clean-miss"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "clean-miss"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

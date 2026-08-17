@@ -1,0 +1,59 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Target.attachToBrowserTarget opens a flat session onto the browser target; Browser.getVersion runs on that session to prove it is live, then Target.detachFromTarget tears the session down by sessionId (playwright browser-session path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.attachToBrowserTarget",
+        "params": {},
+        "save_result_as": "att",
+        "save_session_as": "bsess",
+        "session": "browser"
+      },
+      {
+        "method": "Browser.getVersion",
+        "save_result_as": "ver",
+        "session": "bsess"
+      },
+      {
+        "method": "Target.detachFromTarget",
+        "params": {
+          "sessionId": "{saved:att.sessionId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.attach_to_browser_target",
+    "cdp.target.detach_from_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "ver",
+        "path": "product"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_target_attach_detach",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.attachToBrowserTarget + detachFromTarget"
+}

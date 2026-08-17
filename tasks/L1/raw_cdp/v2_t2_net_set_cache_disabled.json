@@ -1,0 +1,75 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With Network.setCacheDisabled(true) a cacheable resource is fetched: the driver waits for a Network.responseReceived (proving the request went to the network) and reads the body back. Asserts caching-disabled requests still resolve via the network and deliver the correct payload.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Network.setCacheDisabled",
+        "params": {
+          "cacheDisabled": true
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?cd='+Date.now()).then(function(r){return r.text();})"
+        }
+      },
+      {
+        "save_result_as": "rr",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.responseReceived"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "fetch('/v2/t2a/cacheable.txt?cd2='+Date.now()).then(function(r){return r.text();}).then(function(t){return 'OK:'+t;})",
+          "returnByValue": true
+        },
+        "save_as": "body"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.set_cache_disabled"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.responseReceived",
+        "name": "rr"
+      },
+      {
+        "expected": "OK:cacheable-payload",
+        "kind": "value_contains",
+        "name": "body"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_set_cache_disabled",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.setCacheDisabled forces network loads"
+}

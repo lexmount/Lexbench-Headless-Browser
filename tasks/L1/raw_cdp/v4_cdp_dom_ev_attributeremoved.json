@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Asserts DOM.attributeRemoved fires when a tracked node's attribute is removed.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 0
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "selector": "#title"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "DOM.setAttributeValue",
+        "params": {
+          "name": "data-r",
+          "nodeId": "{saved:q.nodeId}",
+          "value": "1"
+        }
+      },
+      {
+        "match": {
+          "name": "data-r"
+        },
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.attributeModified"
+      },
+      {
+        "method": "DOM.removeAttribute",
+        "params": {
+          "name": "data-r",
+          "nodeId": "{saved:q.nodeId}"
+        }
+      },
+      {
+        "match": {
+          "name": "data-r"
+        },
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.attributeRemoved"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.attribute_removed"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "attr_rm_event",
+        "method": "DOM.attributeRemoved"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_ev_attributeremoved",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.attributeRemoved fires on removeAttribute"
+}

@@ -1,0 +1,3 @@
+<!doctype html><html><head><meta charset="utf-8"><title>dlg</title></head>
+<body><dialog id="d">DIALOG_BODY</dialog><div id="out"></div><script>try{var d=document.getElementById('d');d.showModal();
+document.getElementById('out').textContent=d.open?'DIALOG_OPEN':'DIALOG_CLOSED';}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

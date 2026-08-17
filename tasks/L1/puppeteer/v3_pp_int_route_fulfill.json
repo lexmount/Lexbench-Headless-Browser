@@ -1,0 +1,69 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Interception probe: Puppeteer setRequestInterception + request.respond() (Fetch domain under the hood) mocks **/api/probe with a JSON payload; an in-page fetch (evaluate returns a Promise, awaited by the probe) must observe the mock body mock:173, a value that exists nowhere in the fixture.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "interception_registered",
+        "step": 2
+      },
+      {
+        "expected": "mock:173",
+        "kind": "saved_equals",
+        "label": "fetch_sees_mock",
+        "name": "api_result"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "body": "{\"source\":\"mock\",\"value\":173}",
+        "content_type": "application/json",
+        "op": "route_fulfill",
+        "pattern": "**/api/probe",
+        "status": 200
+      },
+      {
+        "expression": "fetch('/api/probe').then(r => r.json()).then(j => j.source + ':' + j.value)",
+        "op": "evaluate",
+        "save_as": "api_result"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.set_request_interception",
+    "fw.puppeteer.request.respond",
+    "cdp.fetch.enable",
+    "cdp.fetch.request_paused",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_intercept",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_int_route_fulfill",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer request interception fulfills a mocked API"
+}

@@ -1,0 +1,57 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright creates a fresh page target (no navigation, about:blank execution context) and evaluates 6*7. Passes when the evaluation returns 42, proving Target.createTarget plus a working Runtime.evaluate round-trip on the new target.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "new_page_ok",
+        "step": 0
+      },
+      {
+        "expected": "42",
+        "kind": "saved_equals",
+        "label": "eval_returns_42",
+        "name": "product"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "expression": "6*7",
+        "op": "evaluate",
+        "save_as": "product"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.browser_context.new_page",
+    "fw.playwright.page.evaluate",
+    "cdp.target.create_target",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_conn_new_page_eval",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "newPage + evaluate on about:blank"
+}

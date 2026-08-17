@@ -1,0 +1,66 @@
+{
+  "scenario_id": "form_label_click_toggles",
+  "family": "forms",
+  "title": "Clicking a label toggles its control and fires change",
+  "description": "Clicks the label (not the checkbox) and reads the change-handler output; label activation semantics must reach the associated control.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "click",
+      "selector": "#via-label"
+    },
+    {
+      "op": "text_content",
+      "selector": "#label-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "label_click_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "change_fired",
+      "name": "answer",
+      "expected": "via-label-on"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "via-label-on"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ],
+  "driver_skips": {
+    "chrome_devtools_mcp": "a <label> has no AX-tree node of its own (its text becomes the control's accessible name), so the uid-based click surface of chrome-devtools-mcp cannot address the label element"
+  }
+}

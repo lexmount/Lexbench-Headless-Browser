@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright navigates to the controls fixture where a script appends #late-item 300ms after load, then waits for that selector and reads its text. Passes when the wait resolves and the text equals the computed marker 'late-28', proving the polling/injected-helper wait machinery works on this engine.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "wait_for_selector_ok",
+        "step": 2
+      },
+      {
+        "expected": "late-28",
+        "kind": "saved_equals",
+        "label": "late_item_text",
+        "name": "late_text"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#late-item",
+        "timeout_ms": 5000
+      },
+      {
+        "op": "text_content",
+        "save_as": "late_text",
+        "selector": "#late-item"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.wait_for_selector",
+    "fw.playwright.page.text_content",
+    "cdp.runtime.call_function_on",
+    "cdp.page.add_script_to_evaluate_on_new_document"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_nav_wait_for_selector",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "waitForSelector on a node injected 300ms after load"
+}

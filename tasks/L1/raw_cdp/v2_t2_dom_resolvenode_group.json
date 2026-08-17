@@ -1,0 +1,90 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Resolves the #inc node into a named objectGroup (the agent-browser element-handle path), runs Runtime.callFunctionOn on the handle to read its tagName, then Runtime.releaseObjectGroup tears the group down -- exercising resolveNode's objectGroup parameter and the group release lifecycle.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#inc"
+        },
+        "save_result_as": "found"
+      },
+      {
+        "method": "DOM.resolveNode",
+        "params": {
+          "nodeId": "{saved:found.nodeId}",
+          "objectGroup": "t2bgrp"
+        },
+        "save_result_as": "resolved"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){return this.tagName;}",
+          "objectId": "{saved:resolved.object.objectId}",
+          "returnByValue": true
+        },
+        "save_as": "tag"
+      },
+      {
+        "method": "Runtime.releaseObjectGroup",
+        "params": {
+          "objectGroup": "t2bgrp"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.resolve_node",
+    "cdp.runtime.call_function_on",
+    "cdp.runtime.release_object_group"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "resolved",
+        "path": "object.objectId"
+      },
+      {
+        "expected": "BUTTON",
+        "kind": "value_equals",
+        "name": "tag"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_resolvenode_group",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.resolveNode objectGroup + Runtime.releaseObjectGroup"
+}

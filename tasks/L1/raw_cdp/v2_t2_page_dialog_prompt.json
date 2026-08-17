@@ -1,0 +1,80 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A deferred prompt() opens a dialog; the driver accepts it with a supplied promptText via Page.handleJavaScriptDialog. Asserts the dialog type is 'prompt' and the page received exactly the injected answer string.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){ window.__p = prompt('your-name?','default'); }, 0); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "dlg",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.javascriptDialogOpening"
+      },
+      {
+        "method": "Page.handleJavaScriptDialog",
+        "params": {
+          "accept": true,
+          "promptText": "abb-answer"
+        }
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__p",
+          "returnByValue": true
+        },
+        "save_as": "pres"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.handle_javascript_dialog",
+    "cdp.page.javascript_dialog_opening"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "prompt",
+        "kind": "saved_path_equals",
+        "name": "dlg",
+        "path": "type"
+      },
+      {
+        "expected": "abb-answer",
+        "kind": "value_equals",
+        "name": "pres"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_dialog_prompt",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.handleJavaScriptDialog supplies promptText"
+}

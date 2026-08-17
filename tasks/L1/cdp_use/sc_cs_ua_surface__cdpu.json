@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/cs_ua_surface.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Reads the user agent through the driver's own identity surface and through page JavaScript. Exercises the session's identity plumbing end to end; every engine spoofs a Mozilla-family UA, so the page-observed value must contain 'Mozilla/'.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "driver_ua_readable",
+        "step": 2
+      },
+      {
+        "expected": "Mozilla/",
+        "kind": "saved_contains",
+        "label": "page_ua_mozilla",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_cdp_use",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "user_agent",
+        "save_as": "driver_ua"
+      },
+      {
+        "expression": "navigator.userAgent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.cdp_use.op.new_page",
+    "fw.cdp_use.op.goto",
+    "fw.cdp_use.op.user_agent",
+    "fw.cdp_use.op.evaluate",
+    "cdp.browser.get_version"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.cdp_use",
+  "tags": [
+    "family.connect_session",
+    "version.v0_4"
+  ],
+  "task_id": "sc_cs_ua_surface__cdpu",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Read the browser identity through the driver and the page (cdp_use)"
+}

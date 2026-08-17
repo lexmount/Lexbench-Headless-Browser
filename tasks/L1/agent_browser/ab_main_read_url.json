@@ -1,0 +1,56 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser main: read.url through the agent-browser tool API. It passes when `agent-browser read {fixture_origin}/page2` succeeds; `agent-browser read {fixture_origin}/page2` returns data containing `Page Two`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 0
+        },
+        {
+          "expected": "Page Two",
+          "kind": "ab_data_contains",
+          "step": 0
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "read",
+            "{fixture_origin}/page2"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.read.url"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "purpose.deprecated_api",
+    "version.v0_1"
+  ],
+  "task_id": "ab_main_read_url",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser main: read.url"
+}

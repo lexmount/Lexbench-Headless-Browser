@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b event capture/bubble order</title></head>
+<body>
+<div id="outer"><div id="inner">x</div></div>
+<div id="out"></div>
+<script>
+try{
+  var outer=document.getElementById('outer');
+  var inner=document.getElementById('inner');
+  var log=[];
+  outer.addEventListener('ping',function(){log.push('OC');},true);
+  inner.addEventListener('ping',function(){log.push('IC');},true);
+  inner.addEventListener('ping',function(){log.push('IB');},false);
+  outer.addEventListener('ping',function(){log.push('OB');},false);
+  inner.dispatchEvent(new CustomEvent('ping',{bubbles:true}));
+  document.getElementById('out').textContent='EVT:'+log.join(',');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

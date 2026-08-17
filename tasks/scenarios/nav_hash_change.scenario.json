@@ -1,0 +1,68 @@
+{
+  "scenario_id": "nav_hash_change",
+  "family": "navigation_lifecycle",
+  "title": "hash navigation changes location without a reload",
+  "description": "Sets location.hash in-page and confirms both the hash and that no document reload happened (a marker global survives).",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__abb_alive = 7, location.hash = 'sec-2', 'set'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "location.hash === '#sec-2'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "location.hash + ':' + (window.__abb_alive === 7 ? 'no-reload' : 'reloaded')",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "hash_settled",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "hash_no_reload",
+      "name": "answer",
+      "expected": "#sec-2:no-reload"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.navigated_within_document"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "#sec-2:no-reload"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

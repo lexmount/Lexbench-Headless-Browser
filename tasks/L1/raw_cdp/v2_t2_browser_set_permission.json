@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Browser.setPermission sets geolocation to 'denied' for the default context; navigator.permissions.query then reports 'denied', confirming the single-permission API path (puppeteer).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.setPermission",
+        "params": {
+          "permission": {
+            "name": "geolocation"
+          },
+          "setting": "denied"
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "navigator.permissions.query({name:'geolocation'}).then(function(p){return p.state;})",
+          "returnByValue": true
+        },
+        "save_as": "state"
+      },
+      {
+        "method": "Browser.resetPermissions",
+        "optional": true,
+        "params": {},
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.set_permission"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "denied",
+        "kind": "value_equals",
+        "name": "state"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_browser_set_permission",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Browser.setPermission single-permission override"
+}

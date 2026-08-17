@@ -1,0 +1,74 @@
+{
+  "scenario_id": "form_submit_roundtrip",
+  "family": "forms",
+  "title": "Submit a GET form and read the echoed query",
+  "description": "Fills the query input, clicks submit, waits for the reloaded document, and reads the server-echoed query value. Exercises the full fill -> submit -> navigation -> readback chain.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#q",
+      "value": "probe-624"
+    },
+    {
+      "op": "click",
+      "selector": "#q-submit"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "location.search.indexOf('q=') >= 0 && !!document.getElementById('q-echo')"
+    },
+    {
+      "op": "text_content",
+      "selector": "#q-echo",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "submit_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "query_echoed",
+      "name": "answer",
+      "expected": "submitted:probe-624"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.insert_text",
+    "cdp.page.navigate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "submitted:probe-624"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

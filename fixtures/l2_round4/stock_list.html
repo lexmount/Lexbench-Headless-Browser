@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>今日特价 · 数码优选</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #f5f6f8; color: #222; }
+  header { background: #d23f31; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  .sub { opacity: .85; font-size: 13px; margin-top: 4px; }
+  main { max-width: 720px; margin: 20px auto; padding: 0 16px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .name { font-size: 16px; font-weight: 600; }
+  .price { color: #d23f31; font-weight: 700; margin-left: 12px; }
+  /*
+    库存状态通过级联 CSS 自定义属性编码：
+    base 把 --stock 设为绿色（有货），缺货行用更具体的 .sold 覆盖成灰色。
+    页面 JS 读 getComputedStyle 的 --stock-color 决定状态文字。
+  */
+  .row { --stock-color: rgb(22, 163, 74); }      /* 默认有货=绿 */
+  .row.sold { --stock-color: rgb(148, 148, 148); } /* 缺货=灰，级联覆盖 */
+  .badge {
+    font-size: 13px; padding: 3px 10px; border-radius: 999px;
+    color: #fff; background: var(--stock-color);
+  }
+  .answer {
+    margin-top: 22px; padding: 14px 18px; background: #fff; border-radius: 10px;
+    border: 1px dashed #d23f31; font-size: 14px; line-height: 1.7;
+  }
+  .answer h2 { margin: 0 0 8px; font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>今日特价</h1>
+  <div class="sub">数码优选 · 限时秒杀，售完即止</div>
+</header>
+<main>
+  <div id="list">
+    <div class="row" data-name="无线降噪耳机" data-price="￥499">
+      <span class="name">无线降噪耳机</span>
+      <span><span class="price">￥499</span> <span class="badge">…</span></span>
+    </div>
+    <div class="row sold" data-name="4K 显示器 27 寸" data-price="￥1299">
+      <span class="name">4K 显示器 27 寸</span>
+      <span><span class="price">￥1299</span> <span class="badge">…</span></span>
+    </div>
+    <div class="row" data-name="机械键盘 87 键" data-price="￥329">
+      <span class="name">机械键盘 87 键</span>
+      <span><span class="price">￥329</span> <span class="badge">…</span></span>
+    </div>
+    <div class="row sold" data-name="人体工学椅" data-price="￥899">
+      <span class="name">人体工学椅</span>
+      <span><span class="price">￥899</span> <span class="badge">…</span></span>
+    </div>
+    <div class="row" data-name="USB-C 65W 充电器" data-price="￥129">
+      <span class="name">USB-C 65W 充电器</span>
+      <span><span class="price">￥129</span> <span class="badge">…</span></span>
+    </div>
+  </div>
+
+  <div class="answer" id="answer">（正在读取库存状态…）</div>
+</main>
+
+<script>
+(function () {
+  var IN_STOCK = "rgb(22, 163, 74)"; // 有货时级联出的绿色
+  var answerEl = document.getElementById("answer");
+  var inStock = [];
+  var resolved = 0;
+
+  var rows = document.querySelectorAll(".row");
+  rows.forEach(function (row) {
+    var color = "";
+    try {
+      // 读级联出的自定义属性颜色 —— 关键判别机制
+      color = getComputedStyle(row).getPropertyValue("--stock-color").trim();
+    } catch (e) {
+      color = "";
+    }
+    var badge = row.querySelector(".badge");
+    if (color) {
+      resolved++;
+      if (color === IN_STOCK) {
+        badge.textContent = "有货";
+        badge.style.background = "rgb(22,163,74)";
+        inStock.push({ name: row.dataset.name, price: row.dataset.price });
+      } else {
+        badge.textContent = "缺货";
+        badge.style.background = "rgb(148,148,148)";
+      }
+    } else {
+      // 引擎读不到级联自定义属性 → 优雅降级
+      badge.textContent = "状态未知";
+      badge.style.background = "#bbb";
+    }
+  });
+
+  if (resolved === 0) {
+    answerEl.innerHTML = "<h2>有货商品</h2>（无法判定库存：浏览器未能读取级联样式，状态全部未知）";
+    return;
+  }
+
+  if (inStock.length === 0) {
+    answerEl.innerHTML = "<h2>有货商品</h2>（当前无有货商品）";
+    return;
+  }
+
+  var lines = inStock.map(function (p) { return p.name + " " + p.price; });
+  answerEl.innerHTML = "<h2>有货商品（共 " + inStock.length + " 件）</h2>" + lines.join("<br>");
+})();
+</script>
+</body>
+</html>

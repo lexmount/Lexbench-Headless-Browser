@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Evaluates an expression in the top paused call frame and checks the result value.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){debugger; window.__v4done=1;},30)"
+        }
+      },
+      {
+        "save_result_as": "pz",
+        "timeout_ms": 4000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.evaluateOnCallFrame",
+        "params": {
+          "callFrameId": "{saved:pz.callFrames.0.callFrameId}",
+          "expression": "6*7",
+          "returnByValue": true
+        },
+        "save_result_as": "ev"
+      },
+      {
+        "method": "Debugger.resume"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.evaluate_on_call_frame"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 42,
+        "kind": "saved_path_equals",
+        "label": "eval_in_frame",
+        "name": "ev",
+        "path": "result.value"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_evaluateoncallframe",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.evaluateOnCallFrame in a paused frame"
+}

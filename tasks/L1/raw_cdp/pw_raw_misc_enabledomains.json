@@ -1,0 +1,59 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.misc.enableDomains by issuing raw CDP command(s) Log.enable, Security.enable, Performance.enable, Inspector.enable against an about:blank page. Every CDP command is optional: this survey records support, and command errors do not fail the task.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Log.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Security.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Performance.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Inspector.enable",
+        "optional": true,
+        "params": {}
+      }
+    ]
+  },
+  "features": [
+    "cdp.log.enable",
+    "cdp.security.enable",
+    "cdp.performance.enable",
+    "cdp.inspector.enable"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_misc_enabledomains",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Best-effort CDP domain enable survey"
+}

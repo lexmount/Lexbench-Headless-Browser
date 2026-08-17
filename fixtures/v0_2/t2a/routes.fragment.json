@@ -1,0 +1,11 @@
+{
+  "/v2/t2a/netpage": "v0_2/t2a/netpage.html",
+  "/v2/t2a/child": "v0_2/t2a/child.html",
+  "/v2/t2a/interactive": "v0_2/t2a/interactive.html",
+  "/v2/t2a/csp": "v0_2/t2a/csp_strict.html",
+  "/v2/t2a/cacheable.txt": "v0_2/t2a/cacheable.txt",
+  "/v2/t2a/download": "v0_2/t2a/download_me.bin",
+  "/v2/t2a/swpage": "v0_2/t2a/swpage.html",
+  "/v2/t2a/sw.js": "v0_2/t2a/sw.js",
+  "/v2/t2a/sw-probe": "v0_2/t2a/sw_probe.txt"
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>套餐定价 · 云笔记 Pro</title>
+<style>
+  :root {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    /* 全局定价变量：货币符号 + 专业版基础价/折扣，最终价由级联 var() 合成 */
+    --currency: "￥";
+    --pro-base: 99;
+    --pro-discount: 20;
+  }
+  body { margin: 0; background: #0f172a; color: #e2e8f0; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 20px; }
+  h1 { text-align: center; font-weight: 700; }
+  .cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+  .card {
+    background: #1e293b; border-radius: 14px; padding: 26px 22px; width: 210px;
+    border: 1px solid #334155;
+  }
+  .card.pro { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56,189,248,.3); }
+  .plan { font-size: 18px; font-weight: 700; }
+  .desc { color: #94a3b8; font-size: 13px; margin: 10px 0 18px; line-height: 1.6; }
+  .price-tag { font-size: 26px; font-weight: 800; color: #38bdf8; }
+  /*
+    专业版基础价/折扣只存在于级联 CSS 自定义属性里（--pro-base / --pro-discount）。
+    DOM 里没有 "79" 这个文本；页面 JS 必须先读出这些级联变量，再算最终价。
+  */
+  .answer {
+    margin: 30px auto 0; max-width: 420px; background: #1e293b;
+    border: 1px dashed #38bdf8; border-radius: 12px; padding: 16px 20px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>选择适合你的套餐</h1>
+  <div class="cards">
+    <div class="card">
+      <div class="plan">免费版</div>
+      <div class="desc">个人轻量使用，2GB 存储。</div>
+      <div class="price-tag">￥0/月</div>
+    </div>
+    <div class="card pro" id="pro">
+      <div class="plan">专业版</div>
+      <div class="desc">无限存储、版本历史、协作编辑。限时直降。</div>
+      <div class="price-tag" id="proPrice">计算中…</div>
+    </div>
+    <div class="card">
+      <div class="plan">团队版</div>
+      <div class="desc">含管理后台与 SSO，按席位计费。</div>
+      <div class="price-tag">￥199/月</div>
+    </div>
+  </div>
+
+  <div class="answer" id="answer">（正在结算专业版最终月费…）</div>
+</main>
+
+<script>
+(function () {
+  var proPriceEl = document.getElementById("proPrice");
+  var answerEl = document.getElementById("answer");
+  var card = document.getElementById("pro");
+
+  var baseStr = "", discStr = "", currency = "";
+  try {
+    var cs = getComputedStyle(card);
+    // 读级联出的基础价/折扣/货币 —— 关键判别机制（getPropertyValue 自定义属性）
+    baseStr = cs.getPropertyValue("--pro-base").trim();
+    discStr = cs.getPropertyValue("--pro-discount").trim();
+    currency = cs.getPropertyValue("--currency").trim().replace(/['"]/g, "");
+  } catch (e) {
+    baseStr = "";
+  }
+
+  var base = parseFloat(baseStr), disc = parseFloat(discStr);
+  // 引擎读得到级联自定义属性 → 算出最终价；读不到（空串）→ 优雅降级
+  if (baseStr && discStr && !isNaN(base) && !isNaN(disc)) {
+    var finalNum = base - disc; // 99 - 20 = 79
+    var priceText = (currency || "￥") + finalNum + "/月";
+    proPriceEl.textContent = priceText;
+    answerEl.innerHTML = "专业版最终月费：<b>" + priceText + "</b>";
+  } else {
+    proPriceEl.textContent = "价格未知";
+    answerEl.innerHTML = "（无法计算专业版价格：浏览器未读取到 CSS 变量级联）";
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/loc_attribute_selector_click.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Clicks a button addressed by [data-x=\"go-7\"] and reads its handler output. Exercises attribute-selector support in the driver's element resolution.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "click_ok",
+        "step": 2
+      },
+      {
+        "expected": "attr-hit-go-7",
+        "kind": "saved_equals",
+        "label": "handler_saw_attr",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "button[data-x=\"go-7\"]"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#attr-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.click",
+    "fw.chrome_remote_interface.op.text_content",
+    "cdp.dom.query_selector",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_attribute_selector_click__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Click an element located by attribute selector (chrome_remote_interface)"
+}

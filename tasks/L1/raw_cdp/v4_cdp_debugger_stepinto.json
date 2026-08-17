@@ -1,0 +1,70 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Steps into from a pause via Debugger.stepInto.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){debugger; window.__v4done=1;},30)"
+        }
+      },
+      {
+        "save_result_as": "pz",
+        "timeout_ms": 4000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.stepInto"
+      },
+      {
+        "optional": true,
+        "timeout_ms": 3000,
+        "wait_for_event": "Debugger.paused"
+      },
+      {
+        "method": "Debugger.resume"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.step_into"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_stepinto",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.stepInto from a pause"
+}

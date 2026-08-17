@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b range extractContents</title></head>
+<body>
+<div id="src"><span>ABCDE</span><span>FGHIJ</span></div>
+<div id="out"></div>
+<script>
+try{
+  var src=document.getElementById('src');
+  var r=document.createRange();
+  r.setStart(src.firstChild.firstChild,2);
+  r.setEnd(src.lastChild.firstChild,3);
+  var frag=r.extractContents();
+  var fragText=frag.textContent;
+  var srcText=src.textContent;
+  var collapsed=(r.startContainer===r.endContainer)&&(r.startOffset===r.endOffset);
+  document.getElementById('out').textContent='EXTRACT:'+fragText+'|'+srcText+'|collapsed='+collapsed;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

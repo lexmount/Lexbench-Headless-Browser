@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Creates a page target then calls Target.getTargets and asserts the returned targetInfos array is non-empty and contains at least one 'page' entry with a targetId. Real semantic probe of getTargets return structure.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "about:blank"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "method": "Target.getTargets",
+        "params": {},
+        "save_result_as": "targets",
+        "session": "browser"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.get_targets",
+    "cdp.target.create_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "targets",
+        "path": "targetInfos"
+      },
+      {
+        "expected": {
+          "type": "page"
+        },
+        "kind": "array_contains",
+        "name": "targets",
+        "path": "targetInfos"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "targets",
+        "path": "targetInfos.0.targetId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_get_targets",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.getTargets enumerates page targets"
+}

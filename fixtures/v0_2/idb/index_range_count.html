@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb index count + range</title></head><body><div id="out">PENDING</div><script>
+// Index combined with IDBKeyRange and count(): index.count(lowerBound(50))
+// tallies records whose indexed 'score' >= 50, and index.getAllKeys(bound(50,80))
+// returns primary keys in ascending index order over the score range.
+var DB='v2idb_idxrange_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){
+    var st=e.target.result.createObjectStore('s',{keyPath:'id'});
+    st.createIndex('byScore','score',{unique:false});
+  };
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    [{id:1,score:40},{id:2,score:60},{id:3,score:55},{id:4,score:90},{id:5,score:50}].forEach(function(x){st.put(x);});
+    tx.oncomplete=function(){
+      var idx=db.transaction('s').objectStore('s').index('byScore');
+      var ge=idx.count(IDBKeyRange.lowerBound(50));
+      var keys=idx.getAllKeys(IDBKeyRange.bound(50,80));
+      var rtx=idx.objectStore.transaction;
+      rtx.oncomplete=function(){set('GE50='+ge.result+'_RANGE_KEYS='+keys.result.join(','));};
+      rtx.onerror=function(){fail(rtx.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

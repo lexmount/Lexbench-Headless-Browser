@@ -1,0 +1,17 @@
+{
+  "/v2/idb/upgrade_migrate": "v0_2/idb/upgrade_migrate.html",
+  "/v2/idb/index_query": "v0_2/idb/index_query.html",
+  "/v2/idb/cursor_forward": "v0_2/idb/cursor_forward.html",
+  "/v2/idb/cursor_reverse": "v0_2/idb/cursor_reverse.html",
+  "/v2/idb/cursor_advance": "v0_2/idb/cursor_advance.html",
+  "/v2/idb/getall_keys_count": "v0_2/idb/getall_keys_count.html",
+  "/v2/idb/txn_abort_rollback": "v0_2/idb/txn_abort_rollback.html",
+  "/v2/idb/multistore_atomic": "v0_2/idb/multistore_atomic.html",
+  "/v2/idb/compound_key": "v0_2/idb/compound_key.html",
+  "/v2/idb/multientry_index": "v0_2/idb/multientry_index.html",
+  "/v2/idb/blob_value": "v0_2/idb/blob_value.html",
+  "/v2/idb/nested_keypath": "v0_2/idb/nested_keypath.html",
+  "/v2/idb/keyrange_bound": "v0_2/idb/keyrange_bound.html",
+  "/v2/idb/keyrange_only_upper": "v0_2/idb/keyrange_only_upper.html",
+  "/v2/idb/index_range_count": "v0_2/idb/index_range_count.html"
+}

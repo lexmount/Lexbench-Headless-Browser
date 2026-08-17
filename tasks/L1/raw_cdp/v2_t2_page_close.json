@@ -1,0 +1,96 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A child target is created and attached, Page.close is issued on the child session, and the driver waits for Target.targetDestroyed for that targetId. Asserts closing the page actually tears the target down (verified on the browser session).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setDiscoverTargets",
+        "params": {
+          "discover": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": false
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "about:blank"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "child",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "session": "child"
+      },
+      {
+        "method": "Page.close",
+        "session": "child"
+      },
+      {
+        "match": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "save_result_as": "destroyed",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.targetDestroyed"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.close"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Target.targetDestroyed",
+        "name": "destroyed"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "destroyed",
+        "path": "targetId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_close",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.close destroys the target"
+}

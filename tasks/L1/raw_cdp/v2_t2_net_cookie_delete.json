@@ -1,0 +1,88 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Full delete lifecycle: setCookies writes a cookie, getCookies confirms it is present, Network.deleteCookies removes it by name+url, and a final getCookies confirms the origin's cookie set is now empty. Asserts the cookie is truly gone, not merely that deleteCookies returned.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.setCookies",
+        "params": {
+          "cookies": [
+            {
+              "name": "abb_del",
+              "url": "{fixture_url}",
+              "value": "x"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Network.getCookies",
+        "params": {
+          "urls": [
+            "{fixture_url}"
+          ]
+        },
+        "save_result_as": "before"
+      },
+      {
+        "method": "Network.deleteCookies",
+        "params": {
+          "name": "abb_del",
+          "url": "{fixture_url}"
+        }
+      },
+      {
+        "method": "Network.getCookies",
+        "params": {
+          "urls": [
+            "{fixture_url}"
+          ]
+        },
+        "save_result_as": "after"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.delete_cookies",
+    "cdp.network.set_cookies",
+    "cdp.network.get_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "abb_del"
+        },
+        "kind": "array_contains",
+        "name": "before",
+        "path": "cookies"
+      },
+      {
+        "expected": 0,
+        "kind": "array_length",
+        "name": "after",
+        "path": "cookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_cookie_delete",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.deleteCookies removes a cookie"
+}

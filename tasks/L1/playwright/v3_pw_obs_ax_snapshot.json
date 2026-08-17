@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright captures an accessibility snapshot of the controls fixture (probe tries page.accessibility.snapshot first, falling back to locator.ariaSnapshot). Passes when the serialized snapshot contains button semantics (loose contains check), proving the AX tree surface is readable through the framework.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "ax_snapshot_ok",
+        "step": 2
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "snapshot_nonempty",
+        "name": "ax"
+      },
+      {
+        "expected": "button",
+        "kind": "saved_contains",
+        "label": "button_semantics_present",
+        "name": "ax"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "ax_snapshot",
+        "save_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.accessibility.snapshot",
+    "fw.playwright.locator.aria_snapshot",
+    "cdp.accessibility.get_full_ax_tree",
+    "cdp.accessibility.query_ax_tree"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_observation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_obs_ax_snapshot",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "accessibility snapshot exposes button semantics"
+}

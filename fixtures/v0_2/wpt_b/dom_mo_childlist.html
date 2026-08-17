@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b MutationObserver childList</title></head>
+<body>
+<div id="box"><div id="old">old</div></div>
+<div id="out"></div>
+<script>
+try{
+  var box=document.getElementById('box');
+  var mo=new MutationObserver(function(records){
+    var added=0,removed=0;
+    for(var i=0;i<records.length;i++){
+      if(records[i].type==='childList'){ added+=records[i].addedNodes.length; removed+=records[i].removedNodes.length; }
+    }
+    document.getElementById('out').textContent='MO_CL:records='+records.length+';added='+added+';removed='+removed;
+  });
+  mo.observe(box,{childList:true});
+  var n1=document.createElement('div'); n1.textContent='n1'; box.appendChild(n1);
+  var n2=document.createElement('div'); n2.textContent='n2'; box.appendChild(n2);
+  box.removeChild(document.getElementById('old'));
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

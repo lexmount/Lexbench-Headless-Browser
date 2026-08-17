@@ -1,0 +1,76 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright fills #textbox with a 14-character string; the fixture's own input listener writes the current length into #textbox-len. Passes when the value reads back exactly and the page-side length output shows 14, proving fill dispatches real input events (Input.insertText path) rather than silently setting .value.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "fill_ok",
+        "step": 2
+      },
+      {
+        "expected": "abb-fill-042xy",
+        "kind": "saved_equals",
+        "label": "value_matches",
+        "name": "value"
+      },
+      {
+        "expected": "14",
+        "kind": "saved_equals",
+        "label": "input_event_observed",
+        "name": "len_out"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#textbox",
+        "value": "abb-fill-042xy"
+      },
+      {
+        "op": "input_value",
+        "save_as": "value",
+        "selector": "#textbox"
+      },
+      {
+        "op": "text_content",
+        "save_as": "len_out",
+        "selector": "#textbox-len"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.fill",
+    "cdp.input.insert_text",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_act_fill_form",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "fill fires input events observed by page JS"
+}

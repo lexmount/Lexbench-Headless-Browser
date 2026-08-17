@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c11 domparser</title></head>
+<body><div id="out"></div>
+<script>try{
+ var doc=new DOMParser().parseFromString('<section><h2 id="h">DOMPARSER_C11</h2></section>','text/html');
+ document.getElementById('out').textContent=doc.getElementById('h').textContent;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

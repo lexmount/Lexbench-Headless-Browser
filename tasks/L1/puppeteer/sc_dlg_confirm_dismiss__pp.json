@@ -1,0 +1,82 @@
+{
+  "_generated_from": "tasks/scenarios/dlg_confirm_dismiss.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Arms a dismissing dialog handler and confirms the page observes confirm() === false.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "confirm_resolved",
+        "step": 4
+      },
+      {
+        "expected": "confirm-no-33",
+        "kind": "saved_equals",
+        "label": "no_branch",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "action": "dismiss",
+        "op": "on_dialog"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-confirm"
+      },
+      {
+        "expression": "document.getElementById('dlg-out').textContent.indexOf('confirm-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#dlg-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.on_dialog",
+    "fw.puppeteer.op.click",
+    "fw.puppeteer.op.wait_for_function",
+    "fw.puppeteer.op.text_content",
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_java_script_dialog"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.dialog_download_upload",
+    "version.v0_4"
+  ],
+  "task_id": "sc_dlg_confirm_dismiss__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Dismissing a confirm dialog drives the page down the no-branch (puppeteer)"
+}

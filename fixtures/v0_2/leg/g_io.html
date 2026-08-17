@@ -1,0 +1,4 @@
+<!doctype html><html><head><meta charset="utf-8"><title>io</title></head>
+<body><div id="t">x</div><div id="out">PENDING</div><script>try{var io=new IntersectionObserver(function(es){
+es.forEach(function(e){if(e.isIntersecting){document.getElementById('out').textContent='IO_FIRED';io.disconnect();}});});
+io.observe(document.getElementById('t'));setTimeout(function(){if(document.getElementById('out').textContent==='PENDING')document.getElementById('out').textContent='IO_NEVER';},1500);}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

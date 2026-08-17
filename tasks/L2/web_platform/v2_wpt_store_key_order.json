@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "WPT-derived L2 mechanism probe (storage): localStorage key() semantics. The fixture asserts the actual WPT storage_key contract in-page — every in-range index returns a distinct existing key, out-of-range returns null, and updating an existing key's value preserves the enumeration order — then reports the sorted key set. No specific enumeration order is required.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "nonempty",
+        "settle_timeout_ms": 5000,
+        "wait_ms": 250
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.storage.local_storage"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "v2_wpt_store_key_order",
+    "kind": "self_hosted_fixture",
+    "url": "/v2/wpt_a/store?case=key_order"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "family.web_platform_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_wpt_store_key_order",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "localStorage key()/length contract (order-insensitive)"
+}

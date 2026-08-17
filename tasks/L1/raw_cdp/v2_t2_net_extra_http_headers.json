@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Network.setExtraHTTPHeaders installs a custom header, then a page fetch is paused by Fetch so the driver can inspect the actual outgoing request headers seen at the network layer. Asserts the injected header is present on the wire (server-observable), not merely that the command was accepted.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Network.setExtraHTTPHeaders",
+        "params": {
+          "headers": {
+            "x-abb-probe": "t2a-header-42"
+          }
+        }
+      },
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "urlPattern": "*cacheable*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?eh='+Date.now()).then(function(r){return r.text();}).catch(function(){})"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "optional": true,
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.set_extra_http_headers"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "t2a-header-42",
+        "kind": "saved_path_equals",
+        "name": "paused",
+        "path": "request.headers.x-abb-probe"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_extra_http_headers",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.setExtraHTTPHeaders reaches the wire"
+}

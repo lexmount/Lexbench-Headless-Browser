@@ -1,0 +1,73 @@
+{
+  "scenario_id": "app_locked_without_login",
+  "family": "multi_step_flow",
+  "title": "The item list is locked without a session",
+  "description": "Clears any leftover session cookie, reloads, and confirms the server refuses the item list.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.cookie = 'abb_app_sid=; Max-Age=0; path=/'; 'cleared'"
+    },
+    {
+      "op": "reload"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('filter-count').textContent === 'locked'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#filter-count",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "locked_state",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "server_refused",
+      "name": "answer",
+      "expected": "locked"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "locked"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

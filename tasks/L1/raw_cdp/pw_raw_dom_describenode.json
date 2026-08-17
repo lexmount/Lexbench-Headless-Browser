@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.dom.describeNode by issuing raw CDP command(s) DOM.enable, DOM.getDocument, DOM.describeNode against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "optional": false,
+        "params": {
+          "depth": 1
+        },
+        "save_as": "doc"
+      },
+      {
+        "method": "DOM.describeNode",
+        "optional": false,
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}"
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.get_document",
+    "cdp.dom.describe_node"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_dom_describenode",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.dom.describeNode"
+}

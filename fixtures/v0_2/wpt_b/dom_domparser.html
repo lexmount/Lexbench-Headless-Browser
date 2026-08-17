@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b DOMParser boundary</title></head>
+<body>
+<div id="out"></div>
+<script>
+try{
+  var xml=new DOMParser().parseFromString('<root><a></root>','application/xml');
+  var xmlErr=xml.querySelector('parsererror')!==null;
+  var html=new DOMParser().parseFromString('<div><p>hi','text/html');
+  var htmlP=html.querySelector('p')?html.querySelector('p').textContent:'NONE';
+  var htmlErr=html.querySelector('parsererror')!==null;
+  document.getElementById('out').textContent='DOMPARSE:xmlerr='+xmlErr+';html='+htmlP+';htmlerr='+(htmlErr?'Y':'N');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

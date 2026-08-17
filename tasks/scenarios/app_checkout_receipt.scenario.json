@@ -1,0 +1,95 @@
+{
+  "scenario_id": "app_checkout_receipt",
+  "family": "multi_step_flow",
+  "title": "Checkout returns a server-computed order receipt",
+  "description": "Logs in, adds one item, checks out, and answers with the order id the server derived from the cart.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-gizmo-y')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-gizmo-y"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-gizmo-y')"
+    },
+    {
+      "op": "click",
+      "selector": "#checkout-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('receipt').textContent.indexOf('ord-') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#receipt",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "receipt_shown",
+      "step": 8
+    },
+    {
+      "kind": "saved_equals",
+      "label": "order_id",
+      "name": "answer",
+      "expected": "ord-13-1"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "ord-13-1"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Navigation probe: after goto, real Puppeteer page.title() (isolated-world evaluate over the frame model built from Page.getFrameTree) must return the exact fixture title and page.url() the fixture path.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "CDP Core Fixture",
+        "kind": "saved_equals",
+        "label": "title_exact",
+        "name": "page_title"
+      },
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "url_is_fixture",
+        "name": "page_url"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "title",
+        "save_as": "page_title"
+      },
+      {
+        "op": "url",
+        "save_as": "page_url"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.title",
+    "fw.puppeteer.page.url",
+    "cdp.page.get_frame_tree",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_nav_title_url",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer reads page.title() and page.url() after goto"
+}

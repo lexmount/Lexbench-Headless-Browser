@@ -1,0 +1,70 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.callFunctionOn argument passing: evaluate yields a plain object objectId, then callFunctionOn passes three arguments (two primitive CallArguments by value plus one object-by-value with a nested field) and returns their computed sum. Verifies arguments are marshalled correctly into the function call (20 + 20 + 2 = 42).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "({})"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "arguments": [
+            {
+              "value": 20
+            },
+            {
+              "value": 20
+            },
+            {
+              "value": {
+                "bonus": 2
+              }
+            }
+          ],
+          "functionDeclaration": "function(a,b,c){ return a + b + c.bonus; }",
+          "objectId": "{saved:obj.result.objectId}",
+          "returnByValue": true
+        },
+        "save_as": "sum"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "name": "sum"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_callfn_arguments",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "callFunctionOn passes CallArguments to the function"
+}

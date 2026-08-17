@@ -1,0 +1,117 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Three feature-flag checkboxes: Analytics (checked), Beta UI (unchecked), Dark mode (checked). getFullAXTree exposes each checkbox's 'checked' tristate property; the true/false pattern is only readable from the AX tree. Nodes are located by role+name identity, not by array position.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.state.checked"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "contains_path": "properties",
+        "expected": {
+          "name": "checked",
+          "value": {
+            "value": "true"
+          }
+        },
+        "kind": "array_match_contains",
+        "match": {
+          "name": {
+            "value": "Analytics"
+          },
+          "role": {
+            "value": "checkbox"
+          }
+        },
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "contains_path": "properties",
+        "expected": {
+          "name": "checked",
+          "value": {
+            "value": "false"
+          }
+        },
+        "kind": "array_match_contains",
+        "match": {
+          "name": {
+            "value": "Beta UI"
+          },
+          "role": {
+            "value": "checkbox"
+          }
+        },
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "contains_path": "properties",
+        "expected": {
+          "name": "checked",
+          "value": {
+            "value": "true"
+          }
+        },
+        "kind": "array_match_contains",
+        "match": {
+          "name": {
+            "value": "Dark mode"
+          },
+          "role": {
+            "value": "checkbox"
+          }
+        },
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/axl2/state_summary"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility_l2",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_axl2_checked_summary",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "checkbox checked-state summary read from AX properties"
+}

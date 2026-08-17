@@ -1,0 +1,44 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative: 'Moli' is not a CDP domain and inspectEverything is not a command. A call into a wholly nonexistent domain must be cleanly rejected as unknown.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Moli.inspectEverything",
+        "params": {}
+      }
+    ]
+  },
+  "features": [
+    "cdp.protocol.unknown_method"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Moli.inspectEverything"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_nonexistent_domain",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "nonexistent_domain"
+}

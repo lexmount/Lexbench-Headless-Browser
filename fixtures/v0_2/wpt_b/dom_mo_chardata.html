@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b MutationObserver characterData</title></head>
+<body>
+<div id="t">first</div>
+<div id="out"></div>
+<script>
+try{
+  var textNode=document.getElementById('t').firstChild;
+  var mo=new MutationObserver(function(records){
+    var vals=[];
+    for(var i=0;i<records.length;i++){ vals.push(records[i].type+':'+records[i].oldValue); }
+    document.getElementById('out').textContent='MO_CD:'+vals.join(',');
+  });
+  mo.observe(textNode,{characterData:true,characterDataOldValue:true});
+  textNode.data='second';
+  textNode.data='third';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

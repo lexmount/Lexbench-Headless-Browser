@@ -1,0 +1,69 @@
+{
+  "scenario_id": "net_route_passthrough",
+  "family": "network_interception",
+  "title": "An unintercepted fetch reaches the real server",
+  "description": "Control case for the family: with no interception armed, the page fetch must hit the real endpoint and compute from the server payload.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "click",
+      "selector": "#btn-data"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('net-out').textContent.indexOf('server:') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#net-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "fetch_done",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "real_payload",
+      "name": "answer",
+      "expected": "server:72"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.network.request_will_be_sent",
+    "cdp.network.response_received"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "server:72"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

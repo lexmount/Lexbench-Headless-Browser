@@ -1,0 +1,90 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "With both Fetch (Request stage) and Network enabled, a fetch pauses first (Fetch.requestPaused); only after Fetch.continueRequest does the origin respond and Network.responseReceived fire. Asserts the observed-event order: requestPaused is index 0, responseReceived follows.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        }
+      },
+      {
+        "save_result_as": "resp",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.responseReceived"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.request_paused",
+    "cdp.network.response_received"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "Fetch.requestPaused",
+        "kind": "saved_path_equals",
+        "name": "__events_observed__",
+        "path": "0"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.responseReceived",
+        "name": "resp"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "resp",
+        "path": "requestId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_network_relative_ordering",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.requestPaused precedes Network.responseReceived"
+}

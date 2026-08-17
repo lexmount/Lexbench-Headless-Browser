@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With Runtime enabled, an async uncaught throw surfaces as Runtime.exceptionThrown; the driver waits for it and asserts exceptionDetails is populated.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){ throw new Error('t2b-async-boom'); }, 0)"
+        }
+      },
+      {
+        "save_result_as": "exc",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Runtime.exceptionThrown"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.exception_thrown"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.exceptionThrown",
+        "name": "exc"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "exc",
+        "path": "exceptionDetails.exceptionId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_runtime_exception",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.exceptionThrown event"
+}

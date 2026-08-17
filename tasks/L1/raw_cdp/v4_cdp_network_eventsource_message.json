@@ -1,0 +1,56 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Opens an EventSource to the same-origin SSE fixture (/__sse__/messages), which streams a few text/event-stream messages. Asserts Network.eventSourceMessageReceived is delivered for a streamed message.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__es=new EventSource('/__sse__/messages'); window.__es.onmessage=function(e){window.__sse=e.data;}; 'ok'"
+        }
+      },
+      {
+        "save_result_as": "sse",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.eventSourceMessageReceived"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.event_source_message_received"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.eventSourceMessageReceived",
+        "name": "sse"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_network_eventsource_message",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.eventSourceMessageReceived on an SSE stream"
+}

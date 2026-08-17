@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/obs_ax_snapshot_label.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Takes an AX snapshot and checks it contains the accessible name that the page computed at load.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "snapshot_taken",
+        "step": 3
+      },
+      {
+        "expected": "ax-name-63",
+        "kind": "saved_contains",
+        "label": "computed_label_present",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_ferrum",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('ax-btn').getAttribute('aria-label') !== null",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "ax_snapshot",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.ferrum.op.new_page",
+    "fw.ferrum.op.goto",
+    "fw.ferrum.op.wait_for_function",
+    "fw.ferrum.op.ax_snapshot",
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.ferrum",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.issue_106",
+    "purpose.issue_106_snapshot",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_ax_snapshot_label__fr",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The accessibility snapshot carries a script-computed aria-label (ferrum)"
+}

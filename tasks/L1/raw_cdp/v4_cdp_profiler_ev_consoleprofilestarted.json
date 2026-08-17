@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calls console.profile() in the page and asserts Profiler.consoleProfileStarted is emitted.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Profiler.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "console.profile('v4');console.profileEnd('v4');"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "Profiler.consoleProfileStarted"
+      },
+      {
+        "method": "Profiler.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.profiler.console_profile_started"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "console_profile_started",
+        "method": "Profiler.consoleProfileStarted"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_profiler_ev_consoleprofilestarted",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Profiler.consoleProfileStarted on console.profile"
+}

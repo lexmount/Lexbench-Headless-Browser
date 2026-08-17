@@ -1,0 +1,84 @@
+{
+  "_generated_from": "tasks/scenarios/up_upload_filereader.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Attaches the payload to a bare file input (no submit); the page's change handler reads it with FileReader and writes a computed digest of length and first token.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "filereader_done",
+        "step": 4
+      },
+      {
+        "expected": "read:24:abb",
+        "kind": "saved_equals",
+        "label": "client_read",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "content": "abb-upload-payload-2026\n",
+        "op": "write_file",
+        "path": "{artifact_dir}/probe-upload.txt"
+      },
+      {
+        "op": "set_input_files",
+        "path": "{artifact_dir}/probe-upload.txt",
+        "selector": "#fr-file"
+      },
+      {
+        "expression": "document.getElementById('fr-out').textContent.indexOf('read:') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#fr-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.write_file",
+    "fw.puppeteer.op.set_input_files",
+    "fw.puppeteer.op.wait_for_function",
+    "fw.puppeteer.op.text_content",
+    "cdp.dom.set_file_input_files",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.dialog_download_upload",
+    "version.v0_4"
+  ],
+  "task_id": "sc_up_upload_filereader__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A file attached to an input is readable by page-side FileReader (puppeteer)"
+}

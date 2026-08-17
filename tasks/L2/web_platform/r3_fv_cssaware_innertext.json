@@ -1,0 +1,48 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for CSS-aware innerText (display:none exclusion). The driver reads output from the self-hosted fixture `/fixtures/l2_round3/fv_cssaware_innertext.html`, and the server-side grader compares it with the checked-in expected answer. The driver grades `#card.innerText` directly and requires the hidden `DRAFT_LEAK_500` text to be absent; `#out` mirrors the same visible text.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "innerText",
+        "selector": "#card",
+        "settle": "nonempty",
+        "settle_timeout_ms": 3000,
+        "wait_ms": 250
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.dom.text_extraction",
+    "web.css.computed_style"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "fv_cssaware_innertext",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/l2_round3/fv_cssaware_innertext.html"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "purpose.defect_repro",
+    "purpose.diagnostic",
+    "version.v0_1"
+  ],
+  "task_id": "r3_fv_cssaware_innertext",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "CSS-aware innerText (display:none exclusion)"
+}

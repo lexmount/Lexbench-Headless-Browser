@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c20 not-has</title></head>
+<body><div class="card"><span class="flag">x</span>has</div><div class="card" id="t">NOTHAS_C20</div><div id="out"></div>
+<script>try{
+ var el=document.querySelector('.card:not(:has(.flag))');
+ document.getElementById('out').textContent=el?('NOTHAS_C20:'+el.textContent):'NOMATCH';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

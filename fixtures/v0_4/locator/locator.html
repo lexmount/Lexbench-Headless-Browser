@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>v0.4 locator semantics</title></head>
+<body>
+<h1 id="title">Locator Semantics Fixture</h1>
+<button data-x="go-7" id="attr-btn">Attr target</button>
+<div id="attr-out">none</div>
+<ul id="fruits"><li>alpha</li><li>bravo</li><li>charlie</li></ul>
+<div class="card">c1</div><div class="card">c2</div><div class="card">c3</div><div class="card">c4</div>
+<button class="btn" data-rank="first">One</button>
+<button class="btn" data-rank="second">Two</button>
+<div id="btn-out">none</div>
+<div id="zone"><span class="value"></span></div>
+<span class="value">outside-zone</span>
+<p id="lead">lead</p><p class="next"></p>
+<div id="dup">main-dup</div>
+<div id="shadow-open-host"></div>
+<div id="shadow-closed-host"></div>
+<iframe id="child-frame" srcdoc="&lt;div id='dup'&gt;frame-dup&lt;/div&gt;&lt;div id='frame-msg'&gt;&lt;/div&gt;&lt;script&gt;document.getElementById('frame-msg').textContent='frame-msg-'+(5*11);&lt;/script&gt;"></iframe>
+<script>
+  // Interaction/derivation targets: values are computed, never static literals.
+  document.querySelector("#zone .value").textContent = "zone-val-" + (7 * 3);
+  document.querySelector("#lead + .next").textContent = "adjacent-" + (11 * 3);
+  document.getElementById("attr-btn").addEventListener("click", function () {
+    document.getElementById("attr-out").textContent = "attr-hit-" + this.getAttribute("data-x");
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".btn"), function (btn) {
+    btn.addEventListener("click", function () {
+      document.getElementById("btn-out").textContent = "clicked-" + this.getAttribute("data-rank");
+    });
+  });
+  var openHost = document.getElementById("shadow-open-host");
+  var openRoot = openHost.attachShadow({ mode: "open" });
+  var inner = document.createElement("span");
+  inner.id = "inner";
+  inner.textContent = "shadow-open-" + (6 * 7);
+  openRoot.appendChild(inner);
+  var closedHost = document.getElementById("shadow-closed-host");
+  var closedRoot = closedHost.attachShadow({ mode: "closed" });
+  var secret = document.createElement("span");
+  secret.textContent = "closed-secret";
+  closedRoot.appendChild(secret);
+</script>
+</body>
+</html>

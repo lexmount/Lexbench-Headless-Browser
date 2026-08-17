@@ -1,0 +1,212 @@
+{
+  "v2_wpt_crypto_aesgcm_roundtrip": {
+    "expected": "ROUNDTRIP:OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_digest_bytelength": {
+    "expected": "32",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_getrandomvalues_shape": {
+    "expected": "true:true:16:true",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_hmac_roundtrip": {
+    "expected": "VERIFY:true:32",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_hmac_tamper": {
+    "expected": "VERIFY:false",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_sha1_abc": {
+    "expected": "a9993e364706816aba3e25717850c26c9cd0d89d",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_sha256_abc": {
+    "expected": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_sha256_empty": {
+    "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_sha384_abc": {
+    "expected": "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_crypto_sha512_abc": {
+    "expected": "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_bom_strip": {
+    "expected": "1:A",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_encode_into": {
+    "expected": "5:6",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_encoding_prop": {
+    "expected": "utf-8",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_fatal_throws": {
+    "expected": "THREW:TypeError",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_labels": {
+    "expected": "utf-8,windows-1252,windows-1252,gbk,shift_jis,windows-1252",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_nonfatal_replacement": {
+    "expected": "1:65533",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_stream_split": {
+    "expected": "0:1:é",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_surrogate_replace": {
+    "expected": "3:239,191,189",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_enc_utf8_astral": {
+    "expected": "6:65,240,159,152,128,66",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_coerce_string": {
+    "expected": "string:5",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_cookie_multiple": {
+    "expected": "true:true",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_cookie_readwrite": {
+    "expected": "VAL1",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_event_fires": {
+    "expected": "evk=EVVAL",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_key_order": {
+    "expected": "ok:a,b,c",
+    "mode": "equals",
+    "oracle": "WPT webstorage/storage_key.window.js assertions; order-insensitive"
+  },
+  "v2_wpt_store_local_setget": {
+    "expected": "V1|1|k|null|0",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_overwrite_length": {
+    "expected": "2:1",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_removeitem_missing": {
+    "expected": "0:null",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_store_session_local_independent": {
+    "expected": "null|null|S",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_backslash": {
+    "expected": "http://www.google.com/foo",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_default_port_http": {
+    "expected": "http://foo/",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_empty_query": {
+    "expected": "http://example.org/foo/bar?",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_idn_punycode": {
+    "expected": "xn--6qqa088eba",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_lowercase_host": {
+    "expected": "http://example.com/",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_nonspecial_opaque": {
+    "expected": "non-special:opaque",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_pct_space_path": {
+    "expected": "/a/%20/c",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_protocol_relative": {
+    "expected": "http://foo/bar",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_rel_dot": {
+    "expected": "http://www.example.com/test.txt",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_rel_dotdot": {
+    "expected": "http://www.example.com/aaa/test.txt",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_sp_getall": {
+    "expected": "1,2",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_sp_plus_space": {
+    "expected": "a b",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_sp_set_replace": {
+    "expected": "a=9&b=3",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_url_sp_sort": {
+    "expected": "a=1&b=2&c=3",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  }
+}

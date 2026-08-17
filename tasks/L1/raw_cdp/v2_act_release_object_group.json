@@ -1,0 +1,78 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.releaseObjectGroup lifecycle: evaluate binds the object to objectGroup 'abbGroup' and returns its objectId, getProperties confirms usability, then releaseObjectGroup frees the whole group and a second getProperties on the stale objectId is declared expect_unsupported. A clean rejection proves group release invalidated the member handle.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__probeObj",
+          "objectGroup": "abbGroup"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}",
+          "ownProperties": true
+        },
+        "save_result_as": "before"
+      },
+      {
+        "method": "Runtime.releaseObjectGroup",
+        "params": {
+          "objectGroup": "abbGroup"
+        }
+      },
+      {
+        "expect_unsupported": true,
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}",
+          "ownProperties": true
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.get_properties",
+    "cdp.runtime.release_object_group"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "beta"
+        },
+        "kind": "array_contains",
+        "name": "before",
+        "path": "result"
+      },
+      {
+        "kind": "unsupported_observed",
+        "method": "Runtime.getProperties"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_release_object_group",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "releaseObjectGroup invalidates member object handles"
+}

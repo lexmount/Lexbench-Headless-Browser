@@ -1,0 +1,54 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "The scene is a host page (/__cache__/host) that loads an immutable, far-future-cacheable subresource (/__cache__/immutable.js). After enabling Network tracking, reloading the page re-requests the subresource, which Chrome serves from the browser cache. Asserts Network.requestServedFromCache is reported.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Page.reload",
+        "params": {}
+      },
+      {
+        "save_result_as": "cached",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.requestServedFromCache"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.request_served_from_cache"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.requestServedFromCache",
+        "name": "cached"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/__cache__/host"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_network_request_served_from_cache",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.requestServedFromCache on reload of an immutable subresource"
+}

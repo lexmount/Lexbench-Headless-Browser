@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c19 ci-attr</title></head>
+<body><div data-k="HeLLo">a</div><div data-k="WORLD">CIATTR_C19</div><div id="out"></div>
+<script>try{
+ var el=document.querySelector('[data-k="world" i]');
+ document.getElementById('out').textContent=el?('CIATTR_C19:'+el.textContent):'NOMATCH';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

@@ -1,0 +1,99 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "Network.loadNetworkResource fetches an origin resource out-of-band for a given frameId; the returned resource reports success, httpStatusCode 200, and an IO stream handle that IO.read drains to the body text. Covers the loadNetworkResource + IO stream read path.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin+'/v0_2/fetch/abbfetch-real'",
+          "returnByValue": true
+        },
+        "save_as": "realurl"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "save_result_as": "ft"
+      },
+      {
+        "method": "Network.loadNetworkResource",
+        "params": {
+          "frameId": "{saved:ft.frameTree.frame.id}",
+          "options": {
+            "disableCache": true,
+            "includeCredentials": false
+          },
+          "url": "{saved:realurl.result.value}"
+        },
+        "save_result_as": "lnr"
+      },
+      {
+        "method": "IO.read",
+        "params": {
+          "handle": "{saved:lnr.resource.stream}",
+          "size": 4096
+        },
+        "save_result_as": "lread"
+      },
+      {
+        "method": "IO.close",
+        "params": {
+          "handle": "{saved:lnr.resource.stream}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.load_network_resource",
+    "cdp.io.read",
+    "cdp.io.close"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "name": "lnr",
+        "path": "resource.success"
+      },
+      {
+        "expected": 200,
+        "kind": "saved_path_equals",
+        "name": "lnr",
+        "path": "resource.httpStatusCode"
+      },
+      {
+        "expected": "REAL-SERVER-BODY",
+        "kind": "saved_path_contains",
+        "name": "lread",
+        "path": "data"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_load_network_resource",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.loadNetworkResource streams a resource"
+}

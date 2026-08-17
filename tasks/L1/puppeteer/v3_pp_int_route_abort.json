@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Interception probe: Puppeteer setRequestInterception + request.abort() blocks **/api/blocked; the in-page fetch must reject and take the catch branch (fetch-blocked), never the response branch.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "interception_registered",
+        "step": 2
+      },
+      {
+        "expected": "fetch-blocked",
+        "kind": "saved_equals",
+        "label": "fetch_takes_catch_branch",
+        "name": "fetch_result"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "route_abort",
+        "pattern": "**/api/blocked"
+      },
+      {
+        "expression": "fetch('/api/blocked').then(r => 'unexpected:' + r.status).catch(() => 'fetch-blocked')",
+        "op": "evaluate",
+        "save_as": "fetch_result"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.set_request_interception",
+    "fw.puppeteer.request.abort",
+    "cdp.fetch.enable",
+    "cdp.fetch.fail_request"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_intercept",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_int_route_abort",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer request interception aborts a blocked API"
+}

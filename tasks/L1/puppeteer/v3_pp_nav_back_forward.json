@@ -1,0 +1,87 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Navigation probe: goto core fixture, goto /page2, then page.goBack() must land back on the core fixture and page.goForward() must return to /page2 (Page.getNavigationHistory + Page.navigateToHistoryEntry path).",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "go_back_ok",
+        "step": 3
+      },
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "back_lands_on_core",
+        "name": "url_after_back"
+      },
+      {
+        "kind": "step_ok",
+        "label": "go_forward_ok",
+        "step": 5
+      },
+      {
+        "expected": "/page2",
+        "kind": "saved_contains",
+        "label": "forward_lands_on_page2",
+        "name": "url_after_forward"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_origin}/page2"
+      },
+      {
+        "op": "go_back",
+        "save_as": "back_result"
+      },
+      {
+        "op": "url",
+        "save_as": "url_after_back"
+      },
+      {
+        "op": "go_forward",
+        "save_as": "forward_result"
+      },
+      {
+        "op": "url",
+        "save_as": "url_after_forward"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.go_back",
+    "fw.puppeteer.page.go_forward",
+    "cdp.page.get_navigation_history",
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_nav_back_forward",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer goBack/goForward walk session history"
+}

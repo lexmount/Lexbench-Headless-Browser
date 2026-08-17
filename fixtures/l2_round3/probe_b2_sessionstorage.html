@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>b2 sessionStorage</title></head>
+<body>
+<div id="out"></div>
+<script>
+try {
+  sessionStorage.setItem('r3s','SESSIONSTORAGE_VAL_B2');
+  document.getElementById('out').textContent = sessionStorage.getItem('r3s') || 'NULL';
+} catch(e){ document.getElementById('out').textContent = 'ERR:'+e.message; }
+</script>
+</body></html>

@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A cookie set from page JS (document.cookie) and a cookie set via Network.setCookies are both enumerated by Network.getAllCookies, which returns every cookie in the browser regardless of URL scope. Asserts both cookies appear in the browser-wide listing.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.cookie='abb_js=fromjs'; 'ok'",
+          "returnByValue": true
+        }
+      },
+      {
+        "method": "Network.setCookies",
+        "params": {
+          "cookies": [
+            {
+              "name": "abb_cdp",
+              "url": "{fixture_url}",
+              "value": "fromcdp"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Network.getAllCookies",
+        "save_result_as": "all"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.get_all_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "abb_js"
+        },
+        "kind": "array_contains",
+        "name": "all",
+        "path": "cookies"
+      },
+      {
+        "expected": {
+          "name": "abb_cdp"
+        },
+        "kind": "array_contains",
+        "name": "all",
+        "path": "cookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_get_all_cookies",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.getAllCookies enumerates the whole jar"
+}

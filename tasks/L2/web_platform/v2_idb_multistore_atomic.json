@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web platform semantics probe for IndexedDB single transaction over two object stores is atomic: abort rolls back both stores together. The scripted CDP driver observes page output from the self-hosted fixture `/v2/idb/multistore_atomic`, and the server-side grader compares it against the Chrome-baked expected answer. The answer is computed only by executing the IndexedDB operation (it is not present in the static resource); the DB name is isolated per attempt via the `db` query param.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "not_pending",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 200
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.storage.indexeddb.transaction.atomicity"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "multistore_atomic",
+    "kind": "self_hosted_fixture",
+    "url": "/v2/idb/multistore_atomic?db={session}"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "family.indexeddb",
+    "version.v0_2"
+  ],
+  "task_id": "v2_idb_multistore_atomic",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "IndexedDB multi-store single-transaction atomicity"
+}

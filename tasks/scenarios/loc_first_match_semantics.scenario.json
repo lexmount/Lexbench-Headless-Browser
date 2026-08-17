@@ -1,0 +1,66 @@
+{
+  "scenario_id": "loc_first_match_semantics",
+  "family": "locator",
+  "title": "A multi-match selector acts on the first match",
+  "description": "Clicks .btn where two buttons match; querySelector semantics require the FIRST one, whose handler records its rank.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "click",
+      "selector": ".btn"
+    },
+    {
+      "op": "text_content",
+      "selector": "#btn-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "click_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "first_won",
+      "name": "answer",
+      "expected": "clicked-first"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "clicked-first"
+  },
+  "drivers": [
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ],
+  "driver_skips": {
+    "playwright": "Playwright's locator strict mode intentionally rejects multi-match selectors instead of acting on the first match — the strictness itself is the Playwright-side semantics, so a first-match scenario cannot bind to it."
+  }
+}

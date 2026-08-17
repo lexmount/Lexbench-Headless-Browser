@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A WebSocket whose handshake is rejected by the non-WS fixture server drives Network.webSocketFrameError and Network.webSocketClosed. Asserts both failure-path events are observed (a successful 101 handshake is not producible by the fixture server, so response/frame-data events are skips).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "var w = new WebSocket(location.origin.replace('http','ws')+'/v2/t2a/wsY'); w.onerror=function(){}; w.onclose=function(){}; 'ok'"
+        }
+      },
+      {
+        "save_result_as": "wsfe",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Network.webSocketFrameError"
+      },
+      {
+        "save_result_as": "wscl",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Network.webSocketClosed"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.web_socket_frame_error",
+    "cdp.network.web_socket_closed"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketFrameError",
+        "name": "wsfe"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.webSocketClosed",
+        "name": "wscl"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_websocket_close_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.webSocketClosed + webSocketFrameError"
+}

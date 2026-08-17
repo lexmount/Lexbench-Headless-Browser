@@ -1,0 +1,87 @@
+{
+  "_generated_from": "tasks/scenarios/computed_style_breadth.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Calls CSS.getComputedStyleForNode through each raw-capable driver, requires at least 100 distinct properties, and verifies display, visibility, opacity, and pointer-events remain readable.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "computed_style_read",
+        "step": 3
+      },
+      {
+        "expected": "breadth-ok|count=",
+        "kind": "saved_contains",
+        "label": "property_set_is_broad",
+        "name": "answer"
+      },
+      {
+        "expected": "display=block|visibility=visible|opacity=0.75|pointer-events=auto",
+        "kind": "saved_contains",
+        "label": "critical_properties_readable",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#computed-style-target",
+        "state": "visible"
+      },
+      {
+        "min_property_count": 100,
+        "op": "computed_style_breadth",
+        "required_properties": [
+          "display",
+          "visibility",
+          "opacity",
+          "pointer-events"
+        ],
+        "save_as": "answer",
+        "selector": "#computed-style-target"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.wait_for_selector",
+    "fw.pydoll.op.computed_style_breadth",
+    "cdp.css.get_computed_style_for_node"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.issue_106",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_computed_style_breadth__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Computed style exposes a broad property set and critical interaction properties (pydoll)"
+}

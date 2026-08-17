@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b range surroundContents</title></head>
+<body>
+<div id="src">Pre<b id="mid">MID</b>Post</div>
+<div id="out"></div>
+<script>
+try{
+  var mid=document.getElementById('mid');
+  var r=document.createRange();
+  r.selectNode(mid);
+  var mark=document.createElement('mark');
+  r.surroundContents(mark);
+  var wrapped=document.querySelector('#src > mark');
+  var inner=wrapped?wrapped.firstChild.tagName:'NONE';
+  document.getElementById('out').textContent='SURROUND:'+inner+':'+(wrapped?wrapped.textContent:'FAIL')+':'+document.getElementById('src').textContent;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

@@ -1,0 +1,82 @@
+{
+  "_generated_from": "tasks/scenarios/net_route_abort_handled.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Arms an abort route on the data endpoint; the page fetch must reject and the page records the error name.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "abort_observed",
+        "step": 4
+      },
+      {
+        "expected": "fetch-failed:TypeError",
+        "kind": "saved_equals",
+        "label": "error_name",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "route_abort",
+        "pattern": "**/v0_4/net/data"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-data"
+      },
+      {
+        "expression": "document.getElementById('net-out').textContent.indexOf('fetch-failed') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#net-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.op.new_page",
+    "fw.playwright.op.goto",
+    "fw.playwright.op.route_abort",
+    "fw.playwright.op.click",
+    "fw.playwright.op.wait_for_function",
+    "fw.playwright.op.text_content",
+    "cdp.fetch.fail_request",
+    "cdp.network.loading_failed"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.network_interception",
+    "version.v0_4"
+  ],
+  "task_id": "sc_net_route_abort_handled__pw",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "An aborted fetch surfaces as a page-level network error (playwright)"
+}

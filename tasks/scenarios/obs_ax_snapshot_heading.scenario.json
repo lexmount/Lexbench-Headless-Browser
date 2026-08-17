@@ -1,0 +1,71 @@
+{
+  "scenario_id": "obs_ax_snapshot_heading",
+  "family": "observation",
+  "title": "The accessibility snapshot reflects heading structure",
+  "description": "Takes an AX snapshot and checks the computed heading text is exposed on the tree.",
+  "layer": "L1",
+  "diagnostic": true,
+  "task_version": 2,
+  "extra_tags": [
+    "purpose.issue_106",
+    "purpose.issue_106_snapshot"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('ax-heading').textContent.indexOf('ax-heading-') !== -1"
+    },
+    {
+      "op": "ax_snapshot",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "snapshot_taken",
+      "step": 3
+    },
+    {
+      "kind": "saved_contains",
+      "label": "heading_present",
+      "name": "answer",
+      "expected": "ax-heading-63"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "ax-heading-63"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser"
+  ],
+  "driver_skips": {
+    "selenium": "the cross-engine Selenium/WebDriver route has no standard accessibility-tree command and deliberately does not depend on Chromium-only execute_cdp_cmd"
+  }
+}

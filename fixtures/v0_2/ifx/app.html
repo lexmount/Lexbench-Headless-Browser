@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>v0.2 interception fixture app</title>
+</head>
+<body>
+<h1 id="title">Interception fixture</h1>
+<div id="out">idle</div>
+<script>
+// Application-style page for the F8 v2_ifx_* end-to-end interception probes.
+// Each helper fetches a server route, derives an "answer", and renders it into
+// #out plus a window global. The driver rewrites the network response via CDP
+// Fetch before these helpers observe it, so the rendered answer reflects the
+// intercepted value rather than what the origin route actually holds.
+window.__abbReady = true;
+function __render(v) { document.getElementById('out').textContent = String(v); return v; }
+
+// mock rewrite / field inject: parse JSON and read a field (default "answer").
+window.__abbApiField = function (url, field) {
+  field = field || 'answer';
+  return fetch(url).then(function (r) { return r.json(); })
+    .then(function (d) { window.__answer = __render(d[field]); return window.__answer; })
+    .catch(function (e) { window.__answer = __render('NETERR:' + String(e)); return window.__answer; });
+};
+// blocked resource with client fallback path.
+window.__abbWithFallback = function (url, fallback) {
+  return fetch(url).then(function (r) {
+    if (!r.ok) throw new Error('bad status ' + r.status);
+    return r.json();
+  }).then(function (d) { window.__answer = __render(d.answer); return window.__answer; })
+    .catch(function () { window.__answer = __render(fallback); return window.__answer; });
+};
+// status-driven degradation branch.
+window.__abbStatusBranch = function (url) {
+  return fetch(url).then(function (r) {
+    if (r.ok) return r.json().then(function (d) { window.__answer = __render('OK:' + d.answer); return window.__answer; });
+    window.__answer = __render('DEGRADED_MODE_' + r.status);
+    return window.__answer;
+  }).catch(function (e) { window.__answer = __render('NETERR:' + String(e)); return window.__answer; });
+};
+// raw text body (document tamper).
+window.__abbText = function (url) {
+  return fetch(url).then(function (r) { return r.text(); })
+    .then(function (t) { window.__answer = __render(t); return window.__answer; })
+    .catch(function (e) { window.__answer = __render('NETERR:' + String(e)); return window.__answer; });
+};
+// response-header rewrite observed on the client.
+window.__abbHeader = function (url, hname) {
+  return fetch(url).then(function (r) {
+    window.__answer = __render(r.headers.get(hname) || 'NOHEADER');
+    return window.__answer;
+  }).catch(function (e) { window.__answer = __render('NETERR:' + String(e)); return window.__answer; });
+};
+// two concurrent requests, one fulfilled + one continued.
+window.__abbTwo = function (u1, u2) {
+  return Promise.all([
+    fetch(u1).then(function (r) { return r.json(); }).then(function (d) { window.__a = d.answer; }).catch(function (e) { window.__a = 'ERR'; }),
+    fetch(u2).then(function (r) { return r.json(); }).then(function (d) { window.__b = d.answer; }).catch(function (e) { window.__b = 'ERR'; })
+  ]).then(function () { __render(String(window.__a) + '|' + String(window.__b)); });
+};
+</script>
+</body>
+</html>

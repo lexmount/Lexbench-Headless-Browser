@@ -1,0 +1,64 @@
+{
+  "scenario_id": "st_session_storage_roundtrip",
+  "family": "state",
+  "title": "sessionStorage set/get round-trip",
+  "description": "Writes and reads a sessionStorage key within one page session.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "sessionStorage.setItem('abb_s', 's-' + (11 * 4)), 'set'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "sessionStorage.getItem('abb_s') || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "get_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "value_roundtrips",
+      "name": "answer",
+      "expected": "s-44"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "s-44"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

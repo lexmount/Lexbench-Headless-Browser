@@ -1,0 +1,101 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "An init script (addScriptToEvaluateOnNewDocument) marks every new document; after a reload the marker is present. Page.removeScriptToEvaluateOnNewDocument by identifier, then another reload, and the marker is gone. Asserts the removal actually stopped the per-document injection.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.addScriptToEvaluateOnNewDocument",
+        "params": {
+          "source": "window.__initMark='present';"
+        },
+        "save_result_as": "added"
+      },
+      {
+        "method": "Page.reload"
+      },
+      {
+        "save_result_as": "load1",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__initMark || 'ABSENT'",
+          "returnByValue": true
+        },
+        "save_as": "mark1"
+      },
+      {
+        "method": "Page.removeScriptToEvaluateOnNewDocument",
+        "params": {
+          "identifier": "{saved:added.identifier}"
+        }
+      },
+      {
+        "method": "Page.reload"
+      },
+      {
+        "save_result_as": "load2",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "typeof window.__initMark",
+          "returnByValue": true
+        },
+        "save_as": "mark2type"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.remove_script_to_evaluate_on_new_document"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "present",
+        "kind": "value_equals",
+        "name": "mark1"
+      },
+      {
+        "expected": "undefined",
+        "kind": "value_equals",
+        "name": "mark2type"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_remove_init_script",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 25000
+  },
+  "title": "Page.removeScriptToEvaluateOnNewDocument stops injection"
+}

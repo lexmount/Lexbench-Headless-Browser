@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>T2A Network Page</title></head>
+<body>
+<h1 id="title">t2a-netpage</h1>
+<p id="marker">netpage-ready</p>
+<script>
+window.__t2aReady = true;
+// Fetch a same-origin resource; drives Network.requestWillBeSent /
+// responseReceived / loadingFinished plus the *ExtraInfo variants.
+window.__abbFetch = function (url) {
+  return fetch(url).then(function (r) { return r.text(); })
+    .then(function (t) { window.__abbLast = t; return t; })
+    .catch(function (e) { window.__abbLast = 'ERR:' + String(e); return window.__abbLast; });
+};
+// Add / remove a child frame on demand (Page.frameAttached / frameDetached).
+window.__abbAddFrame = function (src) {
+  var f = document.createElement('iframe');
+  f.id = 'abbframe';
+  f.src = src;
+  document.body.appendChild(f);
+};
+window.__abbRemoveFrame = function () {
+  var f = document.getElementById('abbframe');
+  if (f) { f.parentNode.removeChild(f); }
+};
+</script>
+</body>
+</html>

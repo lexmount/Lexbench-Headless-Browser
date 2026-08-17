@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>API 变更文档 · 版本说明</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; color: #1f2328; background: #fff; }
+  .layout { display: flex; max-width: 920px; margin: 0 auto; }
+  nav { width: 180px; padding: 24px 16px; border-right: 1px solid #eee; font-size: 14px; }
+  nav a { display: block; color: #0969da; text-decoration: none; padding: 6px 0; }
+  article { flex: 1; padding: 24px 28px; }
+  h1 { font-size: 22px; margin-top: 0; }
+  section { padding: 16px 0; border-bottom: 1px solid #f0f0f0; scroll-margin-top: 12px; }
+  section h2 { font-size: 17px; margin: 0 0 8px; }
+  section:target { background: #fff8c5; border-radius: 8px; padding: 16px; }
+  .meta-bar {
+    position: sticky; top: 0; background: #1f2328; color: #fff;
+    padding: 12px 28px; font-size: 14px;
+  }
+  .meta-bar b { color: #ffd33d; }
+  dl { margin: 8px 0; }
+  dt { font-weight: 600; color: #57606a; font-size: 13px; }
+  dd { margin: 2px 0 10px; }
+  /*
+    「适用版本」的具体版本号不写进静态 DOM 文本，而是由各节的 ::before 生成内容承载。
+    页面 JS 用 :target 定位当前节，再读该节版本徽标的 ::before content。
+    引擎若不读 ::before 生成内容 → 读到空串 → 版本未知。
+  */
+  .ver-badge::before { font-weight: 700; color: #0969da; }
+  #v1 .ver-badge::before { content: "1.0.0 及以上"; }
+  #v2 .ver-badge::before { content: "2.4.0 及以上"; }
+  #v3 .ver-badge::before { content: "3.1.0 及以上"; }
+</style>
+</head>
+<body>
+<div class="meta-bar" id="summary">（定位中…）</div>
+<div class="layout">
+  <nav>
+    <a href="#v1">v1 接口说明</a>
+    <a href="#v2">v2 接口说明</a>
+    <a href="#v3">v3 接口说明</a>
+  </nav>
+  <article>
+    <h1>支付 API 版本说明</h1>
+
+    <section id="v1">
+      <h2>v1 接口说明</h2>
+      <dl>
+        <dt>适用版本</dt><dd><span class="ver-badge"></span></dd>
+        <dt>说明</dt><dd>初始版本，提供基础下单与查询能力。</dd>
+      </dl>
+    </section>
+
+    <section id="v2">
+      <h2>v2 接口说明</h2>
+      <dl>
+        <dt>适用版本</dt><dd><span class="ver-badge"></span></dd>
+        <dt>说明</dt><dd>新增分账与退款回调，签名算法升级为 HMAC-SHA256。</dd>
+      </dl>
+    </section>
+
+    <section id="v3">
+      <h2>v3 接口说明</h2>
+      <dl>
+        <dt>适用版本</dt><dd><span class="ver-badge"></span></dd>
+        <dt>说明</dt><dd>引入异步批量结算与新的幂等键规范。</dd>
+      </dl>
+    </section>
+  </article>
+</div>
+
+<script>
+(function () {
+  var summary = document.getElementById("summary");
+
+  function readBadge(sec) {
+    var badge = sec.querySelector(".ver-badge");
+    if (!badge) return "";
+    var c = "";
+    try {
+      // 读该节版本徽标的 ::before 生成内容 —— 关键判别机制
+      c = getComputedStyle(badge, "::before").content || "";
+    } catch (e) {
+      c = "";
+    }
+    c = c.trim();
+    if (!c || c === "none" || c === "normal") return "";
+    return c.replace(/^['"]|['"]$/g, "");
+  }
+
+  function update() {
+    var sec = null;
+    try {
+      // 用 :target 伪类定位当前锚定的节
+      sec = document.querySelector("section:target");
+    } catch (e) {
+      sec = null;
+    }
+    if (!sec) {
+      summary.innerHTML = "（未能定位到锚点小节：适用版本未知）";
+      return;
+    }
+    var title = sec.querySelector("h2") ? sec.querySelector("h2").textContent : sec.id;
+    var applies = readBadge(sec);
+    if (applies) {
+      summary.innerHTML = "当前定位：<b>" + title + "</b> · 适用版本：<b>" + applies + "</b>";
+    } else {
+      // ::before 生成内容读不到 → 优雅降级
+      summary.innerHTML = "当前定位：<b>" + title + "</b> · （适用版本未知：未能读取生成内容）";
+    }
+  }
+
+  update();
+  // 初次加载时 Chrome 在 load 阶段才设置 CSS target element（DOMContentLoaded 时
+  // section:target 仍不匹配），解析期的 update() 会误报「未能定位」，load 后需重算。
+  window.addEventListener("load", update);
+  window.addEventListener("hashchange", update);
+})();
+</script>
+</body>
+</html>

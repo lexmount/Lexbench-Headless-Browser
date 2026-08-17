@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/fr_nested_two_levels.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Inserts a child that embeds its own child; the top document reads the grandchild's script-computed message through two levels of same-origin frame traversal.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "grandchild_loaded",
+        "step": 3
+      },
+      {
+        "expected": "child-leaf-42",
+        "kind": "saved_equals",
+        "label": "grandchild_text",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chromedp",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "var f = document.createElement('iframe'); f.src = '/v0_4/frames/child?tag=mid&deep=1'; document.getElementById('slot').appendChild(f); 'inserted'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "window.frames.length === 3 && frames[2].frames.length === 1 && !!frames[2].frames[0].document.getElementById('msg') && frames[2].frames[0].document.getElementById('msg').textContent.indexOf('leaf') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "frames[2].frames[0].document.getElementById('msg').textContent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chromedp.op.new_page",
+    "fw.chromedp.op.goto",
+    "fw.chromedp.op.evaluate",
+    "fw.chromedp.op.wait_for_function",
+    "cdp.page.frame_attached",
+    "cdp.page.get_frame_tree"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.chromedp",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_nested_two_levels__chromedp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A grandchild frame two levels down is reachable through the frame tree (chromedp)"
+}

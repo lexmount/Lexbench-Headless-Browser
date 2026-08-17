@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A fetch drives Network.requestWillBeSentExtraInfo and Network.responseReceivedExtraInfo, which carry the raw request/response header maps. Asserts both extra-info events arrive and expose a non-empty headers object.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?ei='+Date.now()).then(function(r){return r.text();}); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "reqx",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.requestWillBeSentExtraInfo"
+      },
+      {
+        "save_result_as": "respx",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.responseReceivedExtraInfo"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.request_will_be_sent_extra_info",
+    "cdp.network.response_received_extra_info"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.requestWillBeSentExtraInfo",
+        "name": "reqx"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "reqx",
+        "path": "headers"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.responseReceivedExtraInfo",
+        "name": "respx"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "respx",
+        "path": "headers"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_extra_info_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network *ExtraInfo header events arrive"
+}

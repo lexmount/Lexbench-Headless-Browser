@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/form_select_option.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Selects the Engineering option in the #dept dropdown on the probe controls page; the page's change handler writes 'picked:eng' into #dept-out. Reads it back. Exercises select_option and confirms the driver triggers the change event rather than only setting value.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "select_ok",
+        "step": 2
+      },
+      {
+        "expected": "picked:eng",
+        "kind": "saved_equals",
+        "label": "dept_picked_eng",
+        "name": "answer"
+      }
+    ],
+    "kind": "mcp_chrome_devtools",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "select_option",
+        "selector": "#dept",
+        "value": "eng"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#dept-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_devtools_mcp.op.new_page",
+    "fw.chrome_devtools_mcp.op.goto",
+    "fw.chrome_devtools_mcp.op.select_option",
+    "fw.chrome_devtools_mcp.op.text_content",
+    "cdp.dom.set_attribute_value"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.chrome_devtools_mcp",
+  "tags": [
+    "family.forms",
+    "version.v0_4"
+  ],
+  "task_id": "sc_form_select_option__mcp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Select a dropdown option and observe the change event (chrome_devtools_mcp)"
+}

@@ -1,0 +1,73 @@
+{
+  "scenario_id": "obs_console_log_captured",
+  "family": "observation",
+  "title": "A page console.log with computed content is captured by the driver",
+  "description": "Clicks a button that logs a computed message and answers with the driver's console capture.",
+  "layer": "L1",
+  "diagnostic": true,
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "get_console"
+    },
+    {
+      "op": "click",
+      "selector": "#log-btn"
+    },
+    {
+      "op": "wait_ms",
+      "ms": 300
+    },
+    {
+      "op": "get_console",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "console_read",
+      "step": 5
+    },
+    {
+      "kind": "saved_contains",
+      "label": "log_captured",
+      "name": "answer",
+      "expected": "console-probe-32"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.console_api_called"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "console-probe-32"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "cdp_use": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "pydoll": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "stagehand": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "chrome_devtools_mcp": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "chromedp": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "rod": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "chromiumoxide": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "ferrum": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "agent_browser": "adapter op vocabulary has no console-capture op (get_console is probe-only)",
+    "selenium": "adapter op vocabulary has no console-capture op (get_console is probe-only)"
+  }
+}

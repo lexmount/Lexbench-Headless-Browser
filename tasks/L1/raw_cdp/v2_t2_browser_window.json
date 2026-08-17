@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Resolves the page targetId, then Browser.getWindowForTarget yields a windowId and bounds, Browser.getWindowBounds reads them back, and Browser.setWindowBounds / setContentsSize attempt a resize (best-effort in headless). Asserts a windowId and bounds were returned.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.getTargetInfo",
+        "save_result_as": "ti",
+        "session": "page"
+      },
+      {
+        "method": "Browser.getWindowForTarget",
+        "params": {
+          "targetId": "{saved:ti.targetInfo.targetId}"
+        },
+        "save_result_as": "win",
+        "session": "browser"
+      },
+      {
+        "method": "Browser.getWindowBounds",
+        "params": {
+          "windowId": "{saved:win.windowId}"
+        },
+        "save_result_as": "bounds",
+        "session": "browser"
+      },
+      {
+        "method": "Browser.setWindowBounds",
+        "optional": true,
+        "params": {
+          "bounds": {
+            "height": 640,
+            "width": 900
+          },
+          "windowId": "{saved:win.windowId}"
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Browser.setContentsSize",
+        "optional": true,
+        "params": {
+          "height": 620,
+          "width": 880,
+          "windowId": "{saved:win.windowId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.get_window_for_target",
+    "cdp.browser.get_window_bounds",
+    "cdp.browser.set_window_bounds",
+    "cdp.browser.set_contents_size"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "win",
+        "path": "windowId"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "bounds",
+        "path": "bounds"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_browser_window",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Browser.getWindowForTarget / getWindowBounds / setWindowBounds"
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Probe Fixture</title>
+<script src="/app.js"></script>
+</head>
+<body>
+<h1 id="title">Probe Fixture</h1>
+<button id="inc">Inc</button><output id="count">0</output>
+<input id="field" type="text">
+<input id="file" type="file">
+<select id="dropdown"><option value="a">A</option><option value="b">B</option></select>
+<input id="cb" type="checkbox">
+<a id="dl" href="/download.txt" download>download</a>
+<button id="cfm" onclick="window.__r = confirm('ok?')">confirm</button>
+<div id="tall" style="height:3000px"></div>
+<script>
+document.getElementById('inc').addEventListener('click', function () {
+  var out = document.getElementById('count');
+  out.textContent = String(Number(out.textContent) + 1);
+});
+console.log('probe-console-ready');
+</script>
+</body>
+</html>

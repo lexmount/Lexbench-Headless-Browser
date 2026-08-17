@@ -1,0 +1,77 @@
+{
+  "_generated_from": "tasks/scenarios/form_fill_overwrites.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fills the same input twice; fill semantics require clear-then-set, so only the second value must remain.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "second_fill_ok",
+        "step": 3
+      },
+      {
+        "expected": "second-77",
+        "kind": "saved_equals",
+        "label": "second_value_only",
+        "name": "answer"
+      }
+    ],
+    "kind": "tool_agent_browser",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#overwrite",
+        "value": "first-11"
+      },
+      {
+        "op": "fill",
+        "selector": "#overwrite",
+        "value": "second-77"
+      },
+      {
+        "op": "input_value",
+        "save_as": "answer",
+        "selector": "#overwrite"
+      }
+    ]
+  },
+  "features": [
+    "fw.agent_browser.op.new_page",
+    "fw.agent_browser.op.goto",
+    "fw.agent_browser.op.fill",
+    "fw.agent_browser.op.input_value",
+    "cdp.input.insert_text"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "subset_id": "l1.agent_browser_scenarios",
+  "tags": [
+    "family.forms",
+    "version.v0_4"
+  ],
+  "task_id": "sc_form_fill_overwrites__ab",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A second fill replaces the first value (agent_browser)"
+}

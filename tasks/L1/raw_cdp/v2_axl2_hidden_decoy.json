@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Two identically-labelled 'Enter' buttons: one inside an aria-hidden subtree (accessible name 'DECOY-0000') and one exposed (accessible name 'GRANT-6650'). getFullAXTree ignores the decoy subtree and exposes only the real button, so the correct code is only distinguishable via the AX tree.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.ignored",
+    "web.ax.aria_hidden"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "GRANT-6650"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "ariaHiddenSubtree"
+            }
+          ]
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/axl2/hidden_decoy"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility_l2",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_axl2_hidden_decoy",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "aria-hidden decoy is ignored; the real answer is the exposed control"
+}

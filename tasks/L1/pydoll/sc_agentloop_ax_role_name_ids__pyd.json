@@ -1,0 +1,74 @@
+{
+  "_generated_from": "tasks/scenarios/agentloop_ax_role_name_ids.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Fetches the full accessibility tree through each driver's own CDP route, finds a deterministic button, and requires its role, computed accessible name, and backendDOMNodeId to survive the adapter boundary.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "ax_identity_read",
+        "step": 3
+      },
+      {
+        "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+        "kind": "saved_contains",
+        "label": "role_name_backend_id_complete",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('ax-stable').getAttribute('aria-label') === 'ax-stable-63'",
+        "op": "wait_for_function"
+      },
+      {
+        "name": "ax-stable-63",
+        "op": "ax_node_identity",
+        "role": "button",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.wait_for_function",
+    "fw.pydoll.op.ax_node_identity",
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.issue_106",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_agentloop_ax_role_name_ids__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "An agent-facing AX query preserves role, name, and backend DOM identity (pydoll)"
+}

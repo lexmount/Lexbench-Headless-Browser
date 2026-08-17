@@ -1,0 +1,50 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Arms then clears a breakpoint on the 'click' event listener category.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOMDebugger.setEventListenerBreakpoint",
+        "params": {
+          "eventName": "click"
+        }
+      },
+      {
+        "method": "DOMDebugger.removeEventListenerBreakpoint",
+        "params": {
+          "eventName": "click"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_debugger.set_event_listener_breakpoint"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_domdebugger_seteventlistenerbreakpoint",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMDebugger.setEventListenerBreakpoint / remove"
+}

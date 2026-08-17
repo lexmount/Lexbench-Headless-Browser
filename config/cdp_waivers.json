@@ -1,0 +1,73 @@
+{
+  "_comment": "CDP coverage waiver ledger. Each entry excuses one stable protocol member from the `gap` count with an auditable, self-contained reason. `python3 -m runner.run coverage --check` requires this ledger to match runner.coverage.FROZEN_WAIVERS member-for-member. Additions or removals require updating the policy and frozen whitelist together; coverable members that merely lack a fixture remain gaps rather than waivers.",
+  "_categories": {
+    "hardware": "requires physical hardware / OS capability a headless engine cannot own",
+    "chrome_private": "Chrome-internal behaviour with no cross-implementation contract",
+    "security_domain": "security/permission surface not applicable to the bench sandbox",
+    "not_applicable": "structurally out of the benchmark's protocol-observation scope"
+  },
+  "_schema": {
+    "<Domain.method>": {
+      "category": "one of _categories",
+      "reason": "concrete justification for excusing this member from coverage"
+    }
+  },
+  "waivers": {
+    "Browser.close": {
+      "category": "not_applicable",
+      "reason": "Closes the browser under test and tears down the very connection being observed; there is no in-session protocol observation of the effect."
+    },
+    "Browser.addPrivacySandboxCoordinatorKeyConfig": {
+      "category": "chrome_private",
+      "reason": "Privacy Sandbox coordinator-key plumbing internal to Chrome; no cross-implementation contract and no observable protocol effect for a native engine."
+    },
+    "Browser.addPrivacySandboxEnrollmentOverride": {
+      "category": "chrome_private",
+      "reason": "Privacy Sandbox enrollment override internal to Chrome; Chrome-only enrollment machinery with no cross-implementation semantics to conform to."
+    },
+    "Debugger.setScriptSource": {
+      "category": "not_applicable",
+      "reason": "Chrome rejects live source edits under a CDP connect/headless session ('setScriptSource functionality no longer available'), including file-backed scripts; the command is not exercisable in this harness (verified against Chrome 150)."
+    },
+    "Network.webTransportCreated": {
+      "category": "not_applicable",
+      "reason": "Requires an HTTP/3 WebTransport server; the self-hosted fixture stack is HTTP/1.1 only, so no WebTransport session can be established."
+    },
+    "Network.webTransportConnectionEstablished": {
+      "category": "not_applicable",
+      "reason": "Requires an HTTP/3 WebTransport server; not reachable from the HTTP/1.1 fixture stack."
+    },
+    "Network.webTransportClosed": {
+      "category": "not_applicable",
+      "reason": "Requires an HTTP/3 WebTransport session to first exist and then close; no WebTransport infra in the fixture stack."
+    },
+    "Page.interstitialShown": {
+      "category": "security_domain",
+      "reason": "Fires only when Chrome renders a real security interstitial (e.g. a certificate error); not reproducible against the trusted local 127.0.0.1 fixture server."
+    },
+    "Page.interstitialHidden": {
+      "category": "security_domain",
+      "reason": "Paired with interstitialShown; requires dismissing a security interstitial that the local fixture server never triggers."
+    },
+    "Performance.metrics": {
+      "category": "not_applicable",
+      "reason": "The Performance.metrics event is not emitted under a headless CDP connect session (only pushed to a live inspector timeline); the command surface is covered by Performance.getMetrics (v4_cdp_performance_disable)."
+    },
+    "Runtime.exceptionRevoked": {
+      "category": "not_applicable",
+      "reason": "Fires when a previously reported exception is revoked; there is no deterministic, non-flaky trigger for revocation without a live inspector, so a stable Chrome-gated assertion is not achievable."
+    },
+    "Runtime.inspectRequested": {
+      "category": "not_applicable",
+      "reason": "Emitted only in response to a DevTools inspect() interaction; not reachable from a headless CDP driver."
+    },
+    "Target.receivedMessageFromTarget": {
+      "category": "not_applicable",
+      "reason": "Deprecated non-flatten-session artifact; the harness attaches with flatten=true (Target.attachToTarget), and flatten sessions route messages directly and never emit this event."
+    },
+    "Target.targetCrashed": {
+      "category": "not_applicable",
+      "reason": "Requires crashing a target (e.g. navigating to chrome://crash), which destabilizes the shared browser process for the remainder of the run."
+    }
+  }
+}

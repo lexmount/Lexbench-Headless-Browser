@@ -1,0 +1,99 @@
+{
+  "scenario_id": "app_cart_total_two_items",
+  "family": "multi_step_flow",
+  "title": "Two different items sum to the server-computed total",
+  "description": "Logs in, adds two items with different prices, and answers with the aggregated total.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-a"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-gizmo-x"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-gizmo-x')"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('cart-total').textContent === 'total-14'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#cart-total",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "both_added",
+      "step": 8
+    },
+    {
+      "kind": "saved_equals",
+      "label": "aggregate_total",
+      "name": "answer",
+      "expected": "total-14"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "total-14"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

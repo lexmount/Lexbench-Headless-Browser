@@ -1,0 +1,75 @@
+{
+  "_generated_from": "tasks/scenarios/nav_hash_change.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Sets location.hash in-page and confirms both the hash and that no document reload happened (a marker global survives).",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "hash_settled",
+        "step": 3
+      },
+      {
+        "expected": "#sec-2:no-reload",
+        "kind": "saved_equals",
+        "label": "hash_no_reload",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__abb_alive = 7, location.hash = 'sec-2', 'set'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "location.hash === '#sec-2'",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "location.hash + ':' + (window.__abb_alive === 7 ? 'no-reload' : 'reloaded')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.evaluate",
+    "fw.pydoll.op.wait_for_function",
+    "cdp.page.navigated_within_document"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.navigation_lifecycle",
+    "version.v0_4"
+  ],
+  "task_id": "sc_nav_hash_change__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "hash navigation changes location without a reload (pydoll)"
+}

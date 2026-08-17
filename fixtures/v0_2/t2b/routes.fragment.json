@@ -1,0 +1,9 @@
+{
+  "/v2/t2b/iframe_host": "v0_2/t2b/iframe_host.html",
+  "/v2/t2b/iframe_child": "v0_2/t2b/iframe_child.html",
+  "/v2/t2b/file_input": "v0_2/t2b/file_input.html",
+  "/v2/t2b/download_page": "v0_2/t2b/download_page.html",
+  "/v2/t2b/download_payload.bin": "v0_2/t2b/download_payload.bin",
+  "/v2/t2b/csp_violation": "v0_2/t2b/csp_violation.html",
+  "/v2/t2b/log_404": "v0_2/t2b/log_404.html"
+}

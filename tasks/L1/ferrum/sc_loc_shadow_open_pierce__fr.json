@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/loc_shadow_open_pierce.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "The page attaches an open shadow root at load. Reads the shadow content via explicit shadowRoot traversal - the engine must implement attachShadow and expose shadowRoot.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "shadow_read_ok",
+        "step": 3
+      },
+      {
+        "expected": "shadow-open-42",
+        "kind": "saved_equals",
+        "label": "open_shadow_content",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_ferrum",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "!!document.getElementById('shadow-open-host').shadowRoot",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.getElementById('shadow-open-host').shadowRoot.getElementById('inner').textContent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.ferrum.op.new_page",
+    "fw.ferrum.op.goto",
+    "fw.ferrum.op.wait_for_function",
+    "fw.ferrum.op.evaluate",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "subset_id": "l1.ferrum",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_loc_shadow_open_pierce__fr",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Read inside an open shadow root (ferrum)"
+}

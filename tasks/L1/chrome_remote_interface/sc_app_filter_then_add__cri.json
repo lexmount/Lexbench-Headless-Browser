@@ -1,0 +1,109 @@
+{
+  "_generated_from": "tasks/scenarios/app_filter_then_add.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Logs in, filters to the gizmo group, adds the first match, and answers with its cart line.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "added_from_filter",
+        "step": 9
+      },
+      {
+        "expected": "gizmo-x:1",
+        "kind": "saved_equals",
+        "label": "cart_line",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user-in",
+        "value": "eve-7"
+      },
+      {
+        "op": "click",
+        "selector": "#login-btn"
+      },
+      {
+        "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.querySelectorAll('#items li').length === 5",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "fill",
+        "selector": "#filter-in",
+        "value": "giz"
+      },
+      {
+        "expression": "document.getElementById('filter-in').dispatchEvent(new Event('input', {bubbles: true})); 'fired'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "document.getElementById('filter-count').textContent === 'giz:2'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-gizmo-x"
+      },
+      {
+        "expression": "!!document.getElementById('cart-gizmo-x')",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.getElementById('cart-gizmo-x').textContent.trim().replace(/ rm$/, '')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.fill",
+    "fw.chrome_remote_interface.op.click",
+    "fw.chrome_remote_interface.op.wait_for_function",
+    "fw.chrome_remote_interface.op.evaluate",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_filter_then_add__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "An item added from a filtered view lands in the cart (chrome_remote_interface)"
+}

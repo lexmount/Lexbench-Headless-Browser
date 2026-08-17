@@ -1,0 +1,100 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.bindingCalled executionContextId correctness: the binding is invoked twice from the page's main world. The first bindingCalled event captures its executionContextId; the second wait_for_event only matches if the reported executionContextId is identical to the first (and the payload is the second call's), proving bindingCalled attributes each call to the correct, stable execution context rather than a spurious id.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.addBinding",
+        "params": {
+          "name": "__abbCtx"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbCtx('first-42')"
+        }
+      },
+      {
+        "match": {
+          "name": "__abbCtx",
+          "payload": "first-42"
+        },
+        "save_result_as": "b1",
+        "session": "page",
+        "timeout_ms": 4000,
+        "wait_for_event": "Runtime.bindingCalled"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbCtx('second-42')"
+        }
+      },
+      {
+        "match": {
+          "executionContextId": "{saved:b1.executionContextId}",
+          "name": "__abbCtx",
+          "payload": "second-42"
+        },
+        "save_result_as": "b2",
+        "session": "page",
+        "timeout_ms": 4000,
+        "wait_for_event": "Runtime.bindingCalled"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.add_binding",
+    "cdp.runtime.binding_called"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.bindingCalled",
+        "name": "b1"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Runtime.bindingCalled",
+        "name": "b2"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "b1",
+        "path": "executionContextId"
+      },
+      {
+        "expected": "second-42",
+        "kind": "saved_path_equals",
+        "name": "b2",
+        "path": "payload"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_binding_execution_context",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "bindingCalled reports a consistent executionContextId"
+}

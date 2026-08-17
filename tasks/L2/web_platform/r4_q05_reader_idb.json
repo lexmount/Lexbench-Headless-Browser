@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for IndexedDB reader list. The driver reads output from the self-hosted fixture `/fixtures/l2_round4/reader_idb.html`, and the server-side grader compares it with the checked-in expected answer.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#answer",
+        "settle": "nonempty",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 400
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.storage.indexeddb"
+  ],
+  "grader": {
+    "checks": [
+      "answer_contains_all_keywords"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "human_query": "这个收藏夹应用里存了哪几篇文章?给我标题列表。",
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "q05_reader_idb",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/l2_round4/reader_idb.html"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "r4_q05_reader_idb",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "IndexedDB reader list"
+}

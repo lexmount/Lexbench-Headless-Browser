@@ -1,0 +1,21 @@
+{
+  "scenario_id": "nav_cross_page",
+  "family": "navigation_lifecycle",
+  "title": "Navigate across two pages and read the second heading",
+  "description": "Navigates to the core fixture, then to a second page, and reads the second page's #title. Exercises a second full navigation (document swap) and confirms the driver observes the new document rather than the stale first one.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/l1/core"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "goto", "url": "{fixture_base_url}/page2"},
+    {"op": "text_content", "selector": "#title", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "second_goto_ok", "step": 2},
+    {"kind": "saved_equals", "label": "heading_is_page_two", "name": "answer", "expected": "Page Two"}
+  ],
+  "cdp_anchors": ["cdp.page.navigate"],
+  "expected_answer": {"mode": "equals", "expected": "Page Two"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

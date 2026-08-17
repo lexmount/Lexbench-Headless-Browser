@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b :focus-within</title>
+<style>
+#box { background-color: rgb(10, 10, 10); }
+#box:focus-within { background-color: rgb(4, 4, 4); }
+</style></head>
+<body>
+<div id="box"><input id="inp"></div>
+<div id="out"></div>
+<script>
+try{
+  document.getElementById('inp').focus();
+  var bg=getComputedStyle(document.getElementById('box')).backgroundColor;
+  document.getElementById('out').textContent='FOCUS_WITHIN:'+(bg==='rgb(4, 4, 4)'?'ACTIVE':'INACTIVE')+':'+bg;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

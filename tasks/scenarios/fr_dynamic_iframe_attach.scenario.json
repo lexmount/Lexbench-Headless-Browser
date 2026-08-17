@@ -1,0 +1,69 @@
+{
+  "scenario_id": "fr_dynamic_iframe_attach",
+  "family": "frames_oopif",
+  "title": "A dynamically inserted iframe attaches and runs its document",
+  "description": "Inserts a third iframe after load and reads its script-computed message once the new frame's document is live.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "var f = document.createElement('iframe'); f.src = '/v0_4/frames/child?tag=dyn'; document.getElementById('slot').appendChild(f); 'inserted'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.frames.length === 3 && !!frames[2].document.getElementById('msg') && frames[2].document.getElementById('msg').textContent.indexOf('dyn') !== -1"
+    },
+    {
+      "op": "evaluate",
+      "expression": "frames[2].document.getElementById('msg').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "frame_attached",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "dynamic_child_text",
+      "name": "answer",
+      "expected": "child-dyn-42"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.frame_attached",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "child-dyn-42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

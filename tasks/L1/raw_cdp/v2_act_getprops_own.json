@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.getProperties(ownProperties:true) over a page object: evaluate returns the objectId of window.__probeObj, then getProperties enumerates its own properties. Verifies the own data properties (alpha, beta, nested) and the own enumerable accessor (computed) all appear in the returned property descriptor array.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__probeObj"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": "{saved:obj.result.objectId}",
+          "ownProperties": true
+        },
+        "save_result_as": "props"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.get_properties"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 3,
+        "name": "props",
+        "path": "result"
+      },
+      {
+        "expected": {
+          "name": "alpha",
+          "value": {
+            "value": 1
+          }
+        },
+        "kind": "array_contains",
+        "name": "props",
+        "path": "result"
+      },
+      {
+        "expected": {
+          "name": "beta",
+          "value": {
+            "value": "two"
+          }
+        },
+        "kind": "array_contains",
+        "name": "props",
+        "path": "result"
+      },
+      {
+        "expected": {
+          "name": "computed"
+        },
+        "kind": "array_contains",
+        "name": "props",
+        "path": "result"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_getprops_own",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "getProperties enumerates own data + accessor properties"
+}

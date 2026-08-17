@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/obs_ax_snapshot_heading.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Takes an AX snapshot and checks the computed heading text is exposed on the tree.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "snapshot_taken",
+        "step": 3
+      },
+      {
+        "expected": "ax-heading-63",
+        "kind": "saved_contains",
+        "label": "heading_present",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chromiumoxide",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('ax-heading').textContent.indexOf('ax-heading-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "ax_snapshot",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chromiumoxide.op.new_page",
+    "fw.chromiumoxide.op.goto",
+    "fw.chromiumoxide.op.wait_for_function",
+    "fw.chromiumoxide.op.ax_snapshot",
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.chromiumoxide",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.issue_106",
+    "purpose.issue_106_snapshot",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_ax_snapshot_heading__oxide",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The accessibility snapshot reflects heading structure (chromiumoxide)"
+}

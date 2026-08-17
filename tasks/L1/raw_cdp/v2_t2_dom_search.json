@@ -1,0 +1,83 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "DOM.performSearch runs a text/selector query over the document, DOM.getSearchResults pages back the matching nodeIds, and DOM.discardSearchResults releases the search. Asserts the search reports a non-zero resultCount and returns at least one nodeId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "optional": true,
+        "params": {
+          "depth": 1
+        }
+      },
+      {
+        "method": "DOM.performSearch",
+        "params": {
+          "query": "paragraph"
+        },
+        "save_result_as": "search"
+      },
+      {
+        "method": "DOM.getSearchResults",
+        "params": {
+          "fromIndex": 0,
+          "searchId": "{saved:search.searchId}",
+          "toIndex": "{saved:search.resultCount}"
+        },
+        "save_result_as": "results"
+      },
+      {
+        "method": "DOM.discardSearchResults",
+        "optional": true,
+        "params": {
+          "searchId": "{saved:search.searchId}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.perform_search",
+    "cdp.dom.get_search_results",
+    "cdp.dom.discard_search_results"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "search",
+        "path": "resultCount"
+      },
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "results",
+        "path": "nodeIds"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_search",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.performSearch / getSearchResults / discardSearchResults"
+}

@@ -1,0 +1,52 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.target.pageRuntime by issuing raw CDP command(s) Runtime.enable, Runtime.evaluate against an about:blank page. It passes when the saved value `value` equals `42`. The task uses the runner-provided page target directly; it does not exercise Target-domain attachment.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "expression": "(() => 40 + 2)()",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 42,
+        "kind": "value_equals"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.core",
+    "purpose.smoke",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_target_pageruntime",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.evaluate returns 42 on the page target"
+}

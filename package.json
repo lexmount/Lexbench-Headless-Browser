@@ -1,0 +1,15 @@
+{
+  "name": "lexbench-headless-browser-harness",
+  "version": "0.5.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Pinned framework drivers for Browser Runtime Bench: real Playwright / Puppeteer connect-over-CDP harness. Versions are locked in harness_pins.json; install with `npm ci`.",
+  "dependencies": {
+    "@browserbasehq/stagehand": "3.7.0",
+    "agent-browser": "0.31.1",
+    "chrome-devtools-mcp": "1.6.0",
+    "chrome-remote-interface": "0.34.0",
+    "playwright-core": "1.61.1",
+    "puppeteer-core": "25.3.0"
+  }
+}

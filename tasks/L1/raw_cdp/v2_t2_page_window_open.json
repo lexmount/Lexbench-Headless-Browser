@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "window.open() drives Page.windowOpen. Asserts the event fires and reports the opened URL.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.open('/v2/t2a/child','_blank'); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "wo",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.windowOpen"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.window_open"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.windowOpen",
+        "name": "wo"
+      },
+      {
+        "expected": "/v2/t2a/child",
+        "kind": "saved_path_contains",
+        "name": "wo",
+        "path": "url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_window_open",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.windowOpen on window.open()"
+}

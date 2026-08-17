@@ -1,0 +1,43 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.schema.getDomains by issuing raw CDP command(s) Schema.getDomains against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. The command is sent over the page-target transport. This probe is diagnostic-only because the pinned Chrome protocol no longer exposes `Schema.getDomains`.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Schema.getDomains",
+        "optional": false,
+        "params": {},
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.schema.get_domains"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "purpose.diagnostic",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_schema_getdomains",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.schema.getDomains"
+}

@@ -1,0 +1,49 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] getBoundingClientRect over Runtime.evaluate on a fixed 300x150 element at (0,0) (Defect C root: kernels miscompute layout). Expect exactly '300x150@0,0'.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){var r=document.getElementById('fixed').getBoundingClientRect();return r.width+'x'+r.height+'@'+r.left+','+r.top;})()",
+          "returnByValue": true
+        },
+        "save_as": "v"
+      }
+    ]
+  },
+  "features": [
+    "web.layout.bounding_client_rect"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "300x150@0,0",
+        "kind": "value_equals",
+        "name": "v"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/trio"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_gbcr_fixed",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "getBoundingClientRect on fixed-px element"
+}

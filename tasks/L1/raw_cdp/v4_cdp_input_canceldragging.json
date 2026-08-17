@@ -1,0 +1,41 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Cancels any in-flight drag; the command must return a structured result even with no drag active.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Input.cancelDragging"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.cancel_dragging"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_input_canceldragging",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Input.cancelDragging is accepted"
+}

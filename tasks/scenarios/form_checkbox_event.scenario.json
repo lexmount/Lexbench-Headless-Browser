@@ -1,0 +1,21 @@
+{
+  "scenario_id": "form_checkbox_event",
+  "family": "forms",
+  "title": "Check a checkbox and observe its change handler output",
+  "description": "Checks the #agree checkbox on the probe controls page; the change handler writes 'checked' into #agree-out. Reads it back. Unlike a bare .checked read, this asserts the driver's check dispatches a real change event the page can react to.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v0_3/probe/controls"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "check", "selector": "#agree"},
+    {"op": "text_content", "selector": "#agree-out", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "check_ok", "step": 2},
+    {"kind": "saved_equals", "label": "agree_checked", "name": "answer", "expected": "checked"}
+  ],
+  "cdp_anchors": ["cdp.input.dispatch_mouse_event"],
+  "expected_answer": {"mode": "equals", "expected": "checked"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

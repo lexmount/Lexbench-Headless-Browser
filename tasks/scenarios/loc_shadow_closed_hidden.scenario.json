@@ -1,0 +1,60 @@
+{
+  "scenario_id": "loc_shadow_closed_hidden",
+  "family": "locator",
+  "title": "A closed shadow root is not exposed",
+  "description": "The page attaches a closed shadow root; element.shadowRoot must be null while the host still renders. Confirms closed-mode encapsulation.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('shadow-closed-host').shadowRoot === null ? 'closed-hidden' : 'exposed'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "probe_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "closed_encapsulated",
+      "name": "answer",
+      "expected": "closed-hidden"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "closed-hidden"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

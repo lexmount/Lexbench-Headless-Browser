@@ -1,0 +1,65 @@
+{
+  "scenario_id": "fr_static_child_read",
+  "family": "frames_oopif",
+  "title": "Read text out of a statically embedded same-origin iframe",
+  "description": "Waits for both static children to load and reads the first child's script-computed message through the frame tree.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.frames.length === 2 && !!frames[0].document.getElementById('msg') && frames[0].document.getElementById('msg').textContent.length > 0"
+    },
+    {
+      "op": "evaluate",
+      "expression": "frames[0].document.getElementById('msg').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "children_loaded",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "child_text",
+      "name": "answer",
+      "expected": "child-a-42"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.frame_attached",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "child-a-42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

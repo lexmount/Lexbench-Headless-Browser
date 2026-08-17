@@ -1,0 +1,59 @@
+{
+  "scenario_id": "cs_url_surface",
+  "family": "connect_session",
+  "title": "The driver's URL surface reflects the navigated location",
+  "description": "Navigates to the core fixture and reads the current URL through the driver's own url surface (not page JS). The reported location must contain the fixture path.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "url",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "url_readable",
+      "step": 2
+    },
+    {
+      "kind": "saved_contains",
+      "label": "url_has_fixture_path",
+      "name": "answer",
+      "expected": "/l1/core"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.navigate"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "/l1/core"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

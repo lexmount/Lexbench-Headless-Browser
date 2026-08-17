@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calibration against v2_h_frame_token (same fixture, same expected token): real Playwright navigates to the parent page, resolves the same-origin child frame from its frame tree (url contains 'frames_child'), and evaluates inside that frame to read #ctoken, which the child computes by reversing its data-src attribute ('xy9' -> '9yx'). Raw-CDP replay read the token via window.frames[0] from the parent context; divergence isolates the framework's frame enumeration/session model.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "9yx",
+        "kind": "saved_equals",
+        "label": "frame_token_equals_9yx",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('ctoken').textContent",
+        "op": "frame_evaluate",
+        "save_as": "answer",
+        "url_contains": "frames_child"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.frame.evaluate",
+    "cdp.page.get_frame_tree",
+    "cdp.runtime.evaluate",
+    "cdp.page.frame_navigated"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/frames_parent"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.calibration",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_cal_frame_token",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Playwright child-frame evaluate on the v0.2 frames fixture"
+}

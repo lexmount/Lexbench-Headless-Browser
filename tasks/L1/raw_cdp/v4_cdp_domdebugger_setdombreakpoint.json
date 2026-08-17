@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Sets a subtree-modified DOM breakpoint on the document node then removes it.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOMDebugger.setDOMBreakpoint",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "type": "subtree-modified"
+        }
+      },
+      {
+        "method": "DOMDebugger.removeDOMBreakpoint",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "type": "subtree-modified"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_debugger.set_dom_breakpoint"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_domdebugger_setdombreakpoint",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMDebugger.setDOMBreakpoint / removeDOMBreakpoint"
+}

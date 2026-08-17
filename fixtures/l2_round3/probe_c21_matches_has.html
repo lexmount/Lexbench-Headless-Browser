@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c21 matches-has</title></head>
+<body><div id="card"><b class="flag">f</b>MATCHESHAS_C21</div><div id="out"></div>
+<script>try{
+ var el=document.getElementById('card');
+ document.getElementById('out').textContent=el.matches(':has(.flag)')?('MATCHESHAS_C21:ok'):'NOMATCH';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

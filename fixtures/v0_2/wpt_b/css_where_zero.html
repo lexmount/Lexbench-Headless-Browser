@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b :where() zero specificity</title>
+<style>
+:where(#hi, .c) { color: rgb(9, 9, 9); }
+p { color: rgb(3, 3, 3); }
+</style></head>
+<body>
+<p id="t" class="c">x</p>
+<div id="out"></div>
+<script>
+try{
+  var color=getComputedStyle(document.getElementById('t')).color;
+  document.getElementById('out').textContent='WHERE_ZERO:'+(color==='rgb(3, 3, 3)'?'TYPE_WINS':'WHERE_OVERRODE')+':'+color;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

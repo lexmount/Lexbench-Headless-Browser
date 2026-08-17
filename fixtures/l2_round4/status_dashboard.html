@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>服务状态面板 · 运维监控</title>
+<style>
+  :root {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --c-ok: rgb(34, 197, 94);
+    --c-warn: rgb(234, 179, 8);
+    --c-fault: rgb(220, 38, 38);
+  }
+  body { margin: 0; background: #0b1220; color: #dbe4f0; }
+  header { padding: 18px 24px; border-bottom: 1px solid #1c2740; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 760px; margin: 22px auto; padding: 0 16px; }
+  .svc {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #111c33; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+  }
+  .svc .nm { font-size: 15px; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    /* 健康度只由级联变量算出的 computed background-color 编码 */
+    background: var(--health);
+  }
+  .state { font-size: 13px; color: #9fb0c8; margin-left: auto; margin-right: 14px; }
+  /* 级联：基类设健康度变量，更具体的状态类覆盖之 */
+  .svc { --health: var(--c-ok); }
+  .svc.lvl-warn  { --health: var(--c-warn); }
+  .svc.lvl-fault { --health: var(--c-fault); }
+  .answer {
+    margin-top: 22px; background: #111c33; border: 1px dashed #dc2626;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<header><h1>服务状态面板</h1></header>
+<main>
+  <div id="grid">
+    <div class="svc" data-name="用户中心">
+      <span class="nm">用户中心</span><span class="state">…</span><span class="dot"></span>
+    </div>
+    <div class="svc lvl-fault" data-name="支付网关">
+      <span class="nm">支付网关</span><span class="state">…</span><span class="dot"></span>
+    </div>
+    <div class="svc" data-name="订单服务">
+      <span class="nm">订单服务</span><span class="state">…</span><span class="dot"></span>
+    </div>
+    <div class="svc lvl-fault" data-name="消息推送">
+      <span class="nm">消息推送</span><span class="state">…</span><span class="dot"></span>
+    </div>
+    <div class="svc lvl-warn" data-name="搜索服务">
+      <span class="nm">搜索服务</span><span class="state">…</span><span class="dot"></span>
+    </div>
+  </div>
+
+  <div class="answer" id="answer">（正在采集服务健康度…）</div>
+</main>
+
+<script>
+(function () {
+  var FAULT = "rgb(220, 38, 38)";
+  var OK = "rgb(34, 197, 94)";
+  var WARN = "rgb(234, 179, 8)";
+  var answerEl = document.getElementById("answer");
+  var faults = [], resolved = 0;
+
+  document.querySelectorAll(".svc").forEach(function (svc) {
+    var dot = svc.querySelector(".dot");
+    var stateEl = svc.querySelector(".state");
+    var color = "";
+    try {
+      // 读 dot 的 computed background-color（由级联变量算出）—— 关键判别机制
+      color = getComputedStyle(dot).backgroundColor.trim();
+    } catch (e) {
+      color = "";
+    }
+    if (color && color !== "rgba(0, 0, 0, 0)" && color !== "transparent") {
+      resolved++;
+      var label;
+      if (color === FAULT) { label = "故障"; faults.push(svc.dataset.name); }
+      else if (color === WARN) { label = "降级"; }
+      else if (color === OK) { label = "正常"; }
+      else { label = "未知"; resolved--; }
+      stateEl.textContent = label;
+    } else {
+      stateEl.textContent = "状态未知";
+    }
+  });
+
+  if (resolved === 0) {
+    answerEl.innerHTML = "（无法读取服务健康度：浏览器未能解析级联背景色）";
+    return;
+  }
+  if (faults.length === 0) {
+    answerEl.innerHTML = "<b>故障服务</b>：当前无故障。";
+    return;
+  }
+  answerEl.innerHTML = "<b>故障服务（共 " + faults.length + " 个）</b>：" + faults.join("、");
+})();
+</script>
+</body>
+</html>

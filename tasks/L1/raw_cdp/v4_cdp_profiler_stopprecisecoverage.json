@@ -1,0 +1,54 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Stops precise coverage collection; exercises Profiler.stopPreciseCoverage.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Profiler.enable"
+      },
+      {
+        "method": "Profiler.startPreciseCoverage",
+        "params": {
+          "callCount": false,
+          "detailed": false
+        }
+      },
+      {
+        "method": "Profiler.stopPreciseCoverage"
+      },
+      {
+        "method": "Profiler.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.profiler.stop_precise_coverage"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_profiler_stopprecisecoverage",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Profiler.stopPreciseCoverage is accepted"
+}

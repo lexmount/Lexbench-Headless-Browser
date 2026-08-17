@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/wait_slow_badge.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Waits for a span inserted 400ms after load and reads its computed text. A driver that only samples the initial DOM misses it.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "badge_appeared",
+        "step": 2
+      },
+      {
+        "expected": "badge-91",
+        "kind": "saved_equals",
+        "label": "badge_text",
+        "name": "answer"
+      }
+    ],
+    "kind": "mcp_chrome_devtools",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#slow-badge"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#slow-badge"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_devtools_mcp.op.new_page",
+    "fw.chrome_devtools_mcp.op.goto",
+    "fw.chrome_devtools_mcp.op.wait_for_selector",
+    "fw.chrome_devtools_mcp.op.text_content",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.chrome_devtools_mcp",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_slow_badge__mcp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a 400ms-late element and read it (chrome_devtools_mcp)"
+}

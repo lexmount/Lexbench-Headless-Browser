@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web platform semantics probe for read seeded inventory from IndexedDB. The scripted CDP driver observes page output from the self-hosted fixture `/storage/indexeddb_inventory?seed={seed}&session={session}`, and the server-side grader compares it with the expected answer.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/storage_indexeddb_inventory_001.js"
+  },
+  "features": [
+    "web.storage.indexeddb",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_seed",
+      "indexeddb_write_observed",
+      "indexeddb_read_observed"
+    ],
+    "endpoint": "/__grade__/storage_indexeddb_inventory_001",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "storage_indexeddb_inventory",
+    "kind": "self_hosted_fixture",
+    "url": "/storage/indexeddb_inventory?seed={seed}&session={session}"
+  },
+  "seed_policy": {
+    "kind": "per_attempt",
+    "params": [
+      "sku",
+      "inventory_count"
+    ]
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "storage_indexeddb_inventory_001",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 60000,
+    "task_ms": 45000
+  },
+  "title": "Read seeded inventory from IndexedDB"
+}

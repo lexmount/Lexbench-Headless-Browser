@@ -1,0 +1,65 @@
+{
+  "scenario_id": "obs_box_model_geometry",
+  "family": "observation",
+  "title": "Layout geometry of a fixed-size element is observable",
+  "description": "Reads the bounding box of a 120x48 element and answers with its rounded dimensions — the box-model observation surface.",
+  "layer": "L1",
+  "diagnostic": true,
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('box')"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(function () { var r = document.getElementById('box').getBoundingClientRect(); return 'w' + Math.round(r.width) + ':h' + Math.round(r.height); })()",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "geometry_read",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "box_dimensions",
+      "name": "answer",
+      "expected": "w120:h48"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.get_box_model"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "w120:h48"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

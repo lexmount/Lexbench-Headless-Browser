@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "setCookies writes a cookie, getAllCookies confirms it, Network.clearBrowserCookies clears the whole browser cookie jar, and getAllCookies confirms the jar is empty afterwards. Asserts the browser-wide clear actually emptied the store.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.setCookies",
+        "params": {
+          "cookies": [
+            {
+              "name": "abb_c1",
+              "url": "{fixture_url}",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Network.getAllCookies",
+        "save_result_as": "before"
+      },
+      {
+        "method": "Network.clearBrowserCookies"
+      },
+      {
+        "method": "Network.getAllCookies",
+        "save_result_as": "after"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.clear_browser_cookies",
+    "cdp.network.get_all_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "abb_c1"
+        },
+        "kind": "array_contains",
+        "name": "before",
+        "path": "cookies"
+      },
+      {
+        "expected": 0,
+        "kind": "array_length",
+        "name": "after",
+        "path": "cookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_clear_browser_cookies",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.clearBrowserCookies wipes the cookie jar"
+}

@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Asserts DOM.documentUpdated fires when the document is wholesale replaced.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 0
+        }
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.open();document.write('<p>fresh</p>');document.close();"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.documentUpdated"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.document_updated"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "doc_updated_event",
+        "method": "DOM.documentUpdated"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.navigation",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_ev_documentupdated",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.documentUpdated fires on document replace"
+}

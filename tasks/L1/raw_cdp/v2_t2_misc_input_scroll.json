@@ -1,0 +1,60 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Input.synthesizeScrollGesture issues a wheel-style scroll on the tall fixture; Runtime.evaluate then reads window.scrollY and asserts the page actually scrolled (browser-use wheel-scroll path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Input.synthesizeScrollGesture",
+        "params": {
+          "gestureSourceType": "mouse",
+          "x": 40,
+          "y": 40,
+          "yDistance": -600
+        },
+        "session": "page"
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.scrollY",
+          "returnByValue": true
+        },
+        "save_as": "sy"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.synthesize_scroll_gesture"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "value_truthy",
+        "name": "sy"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_input_scroll",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Input.synthesizeScrollGesture scrolls the viewport"
+}

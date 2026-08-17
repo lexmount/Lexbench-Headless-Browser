@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A page fetch issues a POST with a known body; the driver captures its requestId from Network.requestWillBeSent and calls Network.getRequestPostData. Asserts the lazily-fetched post data equals the body the page actually sent.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?post=1',{method:'POST',body:'abb-post-body-42'}).catch(function(){}); 'ok'"
+        }
+      },
+      {
+        "match": {
+          "request": {
+            "method": "POST"
+          }
+        },
+        "save_result_as": "rws",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.requestWillBeSent"
+      },
+      {
+        "method": "Network.getRequestPostData",
+        "params": {
+          "requestId": "{saved:rws.requestId}"
+        },
+        "save_result_as": "pd"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.get_request_post_data"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.requestWillBeSent",
+        "name": "rws"
+      },
+      {
+        "expected": "abb-post-body-42",
+        "kind": "saved_path_contains",
+        "name": "pd",
+        "path": "postData"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_get_request_post_data",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.getRequestPostData returns the POST body"
+}

@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b constructable sheet + shadow adoptedStyleSheets</title></head>
+<body>
+<div id="host"></div>
+<div id="out"></div>
+<script>
+try{
+  var host=document.getElementById('host');
+  var shadow=host.attachShadow({mode:'open'});
+  shadow.innerHTML='<p class="s">SHADOW</p>';
+  var sheet=new CSSStyleSheet();
+  sheet.replaceSync('.s{color: rgb(6, 6, 6)}');
+  shadow.adoptedStyleSheets=[sheet];
+  var color=getComputedStyle(shadow.querySelector('.s')).color;
+  document.getElementById('out').textContent='CONSTRUCT:'+(color==='rgb(6, 6, 6)'?'SHADOW_ADOPTED_OK':'FAIL')+':'+color;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

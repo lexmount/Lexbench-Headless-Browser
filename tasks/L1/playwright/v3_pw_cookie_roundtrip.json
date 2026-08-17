@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright sets a cookie on the fixture URL through context.addCookies, reads it back through context.cookies, and also reads document.cookie inside the page. Passes when both readbacks contain the name/value pair, proving the Network/Storage cookie write and both read paths agree.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "set_cookie_ok",
+        "step": 2
+      },
+      {
+        "expected": "abb_probe",
+        "kind": "saved_contains",
+        "label": "api_readback_has_name",
+        "name": "cookies"
+      },
+      {
+        "expected": "cval-42",
+        "kind": "saved_contains",
+        "label": "api_readback_has_value",
+        "name": "cookies"
+      },
+      {
+        "expected": "abb_probe=cval-42",
+        "kind": "saved_contains",
+        "label": "document_cookie_agrees",
+        "name": "doc_cookie"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "name": "abb_probe",
+        "op": "set_cookie",
+        "url": "{fixture_url}",
+        "value": "cval-42"
+      },
+      {
+        "op": "get_cookies",
+        "save_as": "cookies",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.cookie",
+        "op": "evaluate",
+        "save_as": "doc_cookie"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.browser_context.add_cookies",
+    "fw.playwright.browser_context.cookies",
+    "cdp.network.set_cookie",
+    "cdp.storage.get_cookies"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_cookies",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_cookie_roundtrip",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "addCookies then read back via context.cookies and document.cookie"
+}

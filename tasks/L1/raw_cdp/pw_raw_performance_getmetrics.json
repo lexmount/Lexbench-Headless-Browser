@@ -1,0 +1,48 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.performance.getMetrics by issuing raw CDP command(s) Performance.enable, Performance.getMetrics against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Performance.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Performance.getMetrics",
+        "optional": false,
+        "params": {},
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.performance.enable",
+    "cdp.performance.get_metrics"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_performance_getmetrics",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.performance.getMetrics"
+}

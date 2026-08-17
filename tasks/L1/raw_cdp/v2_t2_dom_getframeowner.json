@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "On an iframe host page, Page.getFrameTree yields the child frameId and DOM.getFrameOwner returns the backendNodeId of the owning <iframe> element (puppeteer/agent-browser oopif adoption path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Page.getFrameTree",
+        "save_result_as": "tree"
+      },
+      {
+        "method": "DOM.getFrameOwner",
+        "params": {
+          "frameId": "{saved:tree.frameTree.childFrames.0.frame.id}"
+        },
+        "save_result_as": "owner"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.get_frame_tree",
+    "cdp.dom.get_frame_owner"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "owner",
+        "path": "backendNodeId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/iframe_host"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_getframeowner",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.getFrameOwner maps a child frame to its owner element"
+}

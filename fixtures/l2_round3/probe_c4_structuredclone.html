@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c4 structuredClone</title></head>
+<body>
+<div id="out"></div>
+<script>
+try {
+  var o = structuredClone({tag:'STRUCTURED_CLONE_C4', n:7});
+  document.getElementById('out').textContent = o.tag+'_'+o.n;
+} catch(e){ document.getElementById('out').textContent='ERR:'+e.message; }
+</script>
+</body></html>

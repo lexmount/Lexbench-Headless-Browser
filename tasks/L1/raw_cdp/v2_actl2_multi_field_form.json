@@ -1,0 +1,110 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate multi-field fill: focus and Input.insertText into two separate inputs in turn, then callFunctionOn clicks submit. The handler joins both field values with a server token. The status must contain both typed values and the token, proving each insertText targeted the correct focused field and the submit XHR fired.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('first').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focus1"
+      },
+      {
+        "method": "Input.insertText",
+        "params": {
+          "text": "AAA"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('last').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focus2"
+      },
+      {
+        "method": "Input.insertText",
+        "params": {
+          "text": "BBB"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('submit')"
+        },
+        "save_result_as": "submit"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:submit.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "sleep_ms": 700
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('status').textContent",
+          "returnByValue": true
+        },
+        "save_as": "status"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.insert_text",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "first",
+        "kind": "value_equals",
+        "name": "focus1"
+      },
+      {
+        "expected": "last",
+        "kind": "value_equals",
+        "name": "focus2"
+      },
+      {
+        "expected": "AAA/BBB/",
+        "kind": "value_contains",
+        "name": "status"
+      },
+      {
+        "expected": "TKN-ACTL2-8842",
+        "kind": "value_contains",
+        "name": "status"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/form2"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_multi_field_form",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "two-field insertText + callFunctionOn submit"
+}

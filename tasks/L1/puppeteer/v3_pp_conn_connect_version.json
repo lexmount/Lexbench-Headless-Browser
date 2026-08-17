@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Connection surface probe: real Puppeteer connects via connect({browserWSEndpoint}) (bootstrap: Target.getBrowserContexts + Target.setDiscoverTargets + Target.setAutoAttach) and reads browser.version() and browser.userAgent() over the live transport; both must return substantive identity strings without any page being created.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "/",
+        "kind": "saved_contains",
+        "label": "product_has_name_slash_version",
+        "name": "product"
+      },
+      {
+        "kind": "saved_truthy",
+        "label": "product_nonempty",
+        "name": "product"
+      },
+      {
+        "expected": "Mozilla",
+        "kind": "saved_contains",
+        "label": "ua_contains_mozilla",
+        "name": "ua"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "version",
+        "save_as": "product"
+      },
+      {
+        "op": "user_agent",
+        "save_as": "ua"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.puppeteer.connect",
+    "fw.puppeteer.browser.version",
+    "fw.puppeteer.browser.user_agent",
+    "cdp.target.get_browser_contexts",
+    "cdp.target.set_discover_targets",
+    "cdp.target.set_auto_attach",
+    "cdp.browser.get_version"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_conn_connect_version",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer connect reads browser version and user agent"
+}

@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Connection surface probe: real Puppeteer opens two pages in sequence; page one plants window.__probe and computes 11*2, page two must NOT see the global (multi-target session isolation) while computing its own value. Asserts 22 from page one and undefined:39 from page two.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "22",
+        "kind": "saved_equals",
+        "label": "page1_value",
+        "name": "first"
+      },
+      {
+        "expected": "undefined:39",
+        "kind": "saved_equals",
+        "label": "page2_isolated_value",
+        "name": "second"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "expression": "(window.__probe = 'p1', 11*2)",
+        "op": "evaluate",
+        "save_as": "first"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "expression": "String(window.__probe) + ':' + (13*3)",
+        "op": "evaluate",
+        "save_as": "second"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.browser.new_page",
+    "fw.puppeteer.page.evaluate",
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_connect",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_conn_two_pages",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer drives two pages with isolated JS worlds"
+}

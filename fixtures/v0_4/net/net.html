@@ -1,0 +1,61 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Network Interception Fixture</title>
+<h1 id="net-title">net-fixture</h1>
+<button id="btn-data">fetch data</button>
+<button id="btn-both">fetch both</button>
+<button id="btn-status">fetch status</button>
+<button id="btn-ctype">fetch ctype</button>
+<button id="btn-echo">fetch echo</button>
+<button id="btn-secure">fetch secure</button>
+<button id="btn-img">load image</button>
+<div id="net-out">idle</div>
+<script>
+  var out = document.getElementById('net-out');
+  document.getElementById('btn-data').addEventListener('click', function () {
+    fetch('/v0_4/net/data').then(function (r) { return r.json(); }).then(function (j) {
+      out.textContent = j.source + ':' + (j.value * 9);
+    }).catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-both').addEventListener('click', function () {
+    Promise.all([
+      fetch('/v0_4/net/data').then(function (r) { return r.json(); }),
+      fetch('/v0_4/net/other').then(function (r) { return r.json(); })
+    ]).then(function (pair) {
+      out.textContent = pair[0].source + ':' + (pair[0].value * 9) + '|' + pair[1].source + ':' + (pair[1].value * 9);
+    }).catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-status').addEventListener('click', function () {
+    fetch('/v0_4/net/data').then(function (r) { out.textContent = 'status:' + r.status; })
+      .catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-ctype').addEventListener('click', function () {
+    fetch('/v0_4/net/data').then(function (r) { out.textContent = 'ctype:' + String(r.headers.get('content-type')).split(';')[0]; })
+      .catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-echo').addEventListener('click', function () {
+    fetch('/v0_4/echo_headers').then(function (r) { return r.json(); }).then(function (j) {
+      var keys = Object.keys(j).sort();
+      out.textContent = keys.map(function (k) { return k + '=' + j[k]; }).join('|') || 'no-echo';
+    }).catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-secure').addEventListener('click', function () {
+    fetch('/v0_4/net/secure').then(function (r) {
+      if (!window.__secure_trace) window.__secure_trace = [];
+      if (r.status === 200) {
+        return r.text().then(function (t) {
+          window.__secure_trace.push(t);
+          out.textContent = window.__secure_trace.join('>');
+        });
+      }
+      window.__secure_trace.push(String(r.status));
+      out.textContent = window.__secure_trace.join('>');
+    }).catch(function (e) { out.textContent = 'fetch-failed:' + e.name; });
+  });
+  document.getElementById('btn-img').addEventListener('click', function () {
+    var img = new Image();
+    img.onload = function () { out.textContent = 'img-loaded'; };
+    img.onerror = function () { out.textContent = 'img-error'; };
+    img.src = '/l1/pixel.png?cachebust=' + (4 * 4);
+  });
+</script>

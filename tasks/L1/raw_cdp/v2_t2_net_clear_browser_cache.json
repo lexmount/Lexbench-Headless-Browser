@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Network.clearBrowserCache clears the HTTP cache; a subsequent fetch of a cacheable resource must still resolve from the network. Asserts the command is accepted cleanly and does not break later loads (there is no page-observable positive signal for cache eviction, so this is a capability/liveness probe).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Network.clearBrowserCache"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "fetch('/v2/t2a/cacheable.txt?cbc='+Date.now()).then(function(r){return r.text();}).then(function(t){return 'OK:'+t;})",
+          "returnByValue": true
+        },
+        "save_as": "body"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.clear_browser_cache"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      },
+      {
+        "expected": "OK:cacheable-payload",
+        "kind": "value_contains",
+        "name": "body"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_clear_browser_cache",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.clearBrowserCache then resource still loads"
+}

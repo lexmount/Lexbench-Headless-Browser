@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Audits domain over a no-doctype (quirks-mode) fixture and reloads to re-trigger inspection, waiting for the Audits.issueAdded event with code 'QuirksModeIssue'. Real probe that Audits.enable opens the issue stream (previously v0.1-untouched, experimental domain).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "session": "page"
+      },
+      {
+        "method": "Audits.enable",
+        "session": "page"
+      },
+      {
+        "method": "Page.reload",
+        "params": {},
+        "session": "page"
+      },
+      {
+        "match": {
+          "issue": {
+            "code": "QuirksModeIssue"
+          }
+        },
+        "save_result_as": "issue",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Audits.issueAdded"
+      }
+    ]
+  },
+  "features": [
+    "cdp.audits.enable",
+    "cdp.audits.issue_added"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Audits.issueAdded",
+        "name": "issue"
+      },
+      {
+        "expected": "QuirksModeIssue",
+        "kind": "saved_path_equals",
+        "name": "issue",
+        "path": "issue.code"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/boot/quirks"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_audits_enable_issue_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Audits.enable delivers issueAdded"
+}

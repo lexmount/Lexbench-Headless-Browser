@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c6 cssom</title>
+<style id="s">.marker{color:rgb(1,2,3)} .other{font-weight:700}</style></head>
+<body><div id="out"></div>
+<script>
+try{
+ var ss=document.styleSheets[0]; var rules=ss.cssRules||ss.rules; var found='';
+ for(var i=0;i<rules.length;i++){ if(rules[i].selectorText==='.marker'){found='CSSOM_MARKER_C6:'+rules[i].style.color;} }
+ document.getElementById('out').textContent=found||('NORULES:'+(rules?rules.length:'null'));
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

@@ -1,0 +1,71 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.callFunctionOn awaitPromise semantics: a function returning a Promise is called with awaitPromise:false (result is an unresolved promise RemoteObject with subtype 'promise') and with awaitPromise:true+returnByValue:true (the driver blocks until the promise settles and gets the resolved value). Verifies the awaitPromise contract.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "({})"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ return new Promise(function(r){ setTimeout(function(){ r('resolved-42'); }, 60); }); }",
+          "objectId": "{saved:obj.result.objectId}"
+        },
+        "save_result_as": "pending"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "awaitPromise": true,
+          "functionDeclaration": "function(){ return new Promise(function(r){ setTimeout(function(){ r('resolved-42'); }, 60); }); }",
+          "objectId": "{saved:obj.result.objectId}",
+          "returnByValue": true
+        },
+        "save_as": "resolved"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "promise",
+        "kind": "saved_path_equals",
+        "name": "pending",
+        "path": "result.subtype"
+      },
+      {
+        "expected": "resolved-42",
+        "kind": "value_equals",
+        "name": "resolved"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_callfn_await_promise",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "callFunctionOn awaitPromise resolves the returned promise"
+}

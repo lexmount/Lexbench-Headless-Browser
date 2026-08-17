@@ -1,0 +1,26 @@
+{
+  "v3_pp_flow_login_filter": {
+    "expected": "ERIC-57",
+    "mode": "equals"
+  },
+  "v3_pp_flow_records_stat": {
+    "expected": "ops:3:74",
+    "mode": "equals"
+  },
+  "v3_pp_flow_shop_cart": {
+    "expected": "17.40",
+    "mode": "equals"
+  },
+  "v3_pw_flow_login_filter": {
+    "expected": "ERIC-57",
+    "mode": "equals"
+  },
+  "v3_pw_flow_records_stat": {
+    "expected": "ops:3:74",
+    "mode": "equals"
+  },
+  "v3_pw_flow_shop_cart": {
+    "expected": "17.40",
+    "mode": "equals"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for IntersectionObserver callback. The driver reads output from the self-hosted fixture `/fixtures/v0_2/leg/g_io.html`, and the server-side grader compares it with the checked-in expected answer.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "not_pending",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 200
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.observer.intersection"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "g_io",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/v0_2/leg/g_io.html"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "family.legacy",
+    "version.v0_2"
+  ],
+  "task_id": "v2_leg_g_io",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "IntersectionObserver callback"
+}

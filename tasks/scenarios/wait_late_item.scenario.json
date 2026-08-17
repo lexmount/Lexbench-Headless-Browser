@@ -1,0 +1,21 @@
+{
+  "scenario_id": "wait_late_item",
+  "family": "waiting_dynamic",
+  "title": "Wait for a late-inserted list item",
+  "description": "Navigates to the probe controls page and waits for #late-item, which the page appends via setTimeout ~300ms after load, then reads its text. Exercises event-driven waiting for a DOM node that does not exist at load time.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v0_3/probe/controls"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "wait_for_selector", "selector": "#late-item"},
+    {"op": "text_content", "selector": "#late-item", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "late_item_appeared", "step": 2},
+    {"kind": "saved_equals", "label": "late_text", "name": "answer", "expected": "late-28"}
+  ],
+  "cdp_anchors": ["cdp.dom.query_selector"],
+  "expected_answer": {"mode": "equals", "expected": "late-28"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

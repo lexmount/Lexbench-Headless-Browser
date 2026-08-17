@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate form fill + submit: focus the input, Input.insertText types an order id, then callFunctionOn clicks the submit button. The submit handler combines the typed value with a server token fetched by XHR. The status text must contain both the inserted value (proving insertText landed) and the token (proving the submit XHR fired).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('field').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focused"
+      },
+      {
+        "method": "Input.insertText",
+        "params": {
+          "text": "ORDER-42"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('submit')"
+        },
+        "save_result_as": "submit"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:submit.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "sleep_ms": 700
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('status').textContent",
+          "returnByValue": true
+        },
+        "save_as": "status"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.insert_text",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "field",
+        "kind": "value_equals",
+        "name": "focused"
+      },
+      {
+        "expected": "ORDER-42",
+        "kind": "value_contains",
+        "name": "status"
+      },
+      {
+        "expected": "TKN-ACTL2-8842",
+        "kind": "value_contains",
+        "name": "status"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/form"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_inserttext_submit",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "insertText fill + callFunctionOn submit"
+}

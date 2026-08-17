@@ -1,0 +1,68 @@
+{
+  "scenario_id": "wait_enabled_then_click",
+  "family": "waiting_dynamic",
+  "title": "Wait for a disabled control to enable, then click it",
+  "description": "A button starts disabled and is enabled 350ms after load; its click handler is attached at enable time. Waits for enablement, clicks, and reads the handler's output.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!document.getElementById('late-btn').disabled"
+    },
+    {
+      "op": "click",
+      "selector": "#late-btn"
+    },
+    {
+      "op": "text_content",
+      "selector": "#late-btn-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "click_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "handler_fired",
+      "name": "answer",
+      "expected": "clicked-late-33"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "clicked-late-33"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

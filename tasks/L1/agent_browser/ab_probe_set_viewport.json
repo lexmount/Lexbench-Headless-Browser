@@ -1,0 +1,67 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: set viewport through the agent-browser tool API. It passes when `agent-browser set viewport 800 600` succeeds; the saved value `w` equals `800`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 1
+        },
+        {
+          "expected": "800",
+          "kind": "saved_equals",
+          "name": "w"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "set",
+            "viewport",
+            "800",
+            "600"
+          ]
+        },
+        {
+          "eval": "window.innerWidth",
+          "save_as": "w"
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.set.viewport"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_set_viewport",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: set viewport"
+}

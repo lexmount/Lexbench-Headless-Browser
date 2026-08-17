@@ -1,0 +1,78 @@
+{
+  "scenario_id": "nav_forward_after_back",
+  "family": "navigation_lifecycle",
+  "title": "history forward re-reaches the second document",
+  "description": "Navigates core -> page2, goes back, then forward again, and reads the second document's heading.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/page2"
+    },
+    {
+      "op": "go_back"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "location.pathname === '/l1/core'"
+    },
+    {
+      "op": "go_forward"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "location.pathname === '/page2'"
+    },
+    {
+      "op": "text_content",
+      "selector": "#title",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "forward_ok",
+      "step": 5
+    },
+    {
+      "kind": "saved_equals",
+      "label": "second_doc_again",
+      "name": "answer",
+      "expected": "Page Two"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "Page Two"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

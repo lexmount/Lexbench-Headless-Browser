@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The main frame is navigated to a new fixture page and the driver waits for Page.frameNavigated. Asserts the event's committed frame URL reflects the destination (navigation-commit semantics).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/child'",
+          "returnByValue": true
+        },
+        "save_result_as": "child"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:child.result.value}"
+        }
+      },
+      {
+        "match": {
+          "frame": {
+            "url": "{saved:child.result.value}"
+          }
+        },
+        "save_result_as": "fnav",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.frameNavigated"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.frame_navigated"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.frameNavigated",
+        "name": "fnav"
+      },
+      {
+        "expected": "/v2/t2a/child",
+        "kind": "saved_path_contains",
+        "name": "fnav",
+        "path": "frame.url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_frame_navigated",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.frameNavigated reports the committed URL"
+}

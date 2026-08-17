@@ -1,0 +1,75 @@
+{
+  "scenario_id": "dlg_confirm_dismiss",
+  "family": "dialog_download_upload",
+  "title": "Dismissing a confirm dialog drives the page down the no-branch",
+  "description": "Arms a dismissing dialog handler and confirms the page observes confirm() === false.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "on_dialog",
+      "action": "dismiss"
+    },
+    {
+      "op": "click",
+      "selector": "#btn-confirm"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('dlg-out').textContent.indexOf('confirm-') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#dlg-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "confirm_resolved",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "no_branch",
+      "name": "answer",
+      "expected": "confirm-no-33"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_java_script_dialog"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "confirm-no-33"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "cdp_use": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "pydoll": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "stagehand": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chrome_devtools_mcp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromedp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "rod": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromiumoxide": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "ferrum": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "agent_browser": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "selenium": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page"
+  }
+}

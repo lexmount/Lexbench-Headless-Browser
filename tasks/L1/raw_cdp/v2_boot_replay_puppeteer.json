@@ -1,0 +1,268 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Replays the Puppeteer CDP bootstrap across three session levels: browser/root (Target.getBrowserContexts, setDiscoverTargets, setAutoAttach with a page-excluding filter), the intermediate 'tab' target session that materializes on the browser session, its second-level auto-attach that downshifts to the real 'page' target, and finally the page-session initialize sequence (Network.enable [soft-fail], Page.enable, getFrameTree, setLifecycleEventsEnabled, Runtime.enable, addScriptToEvaluateOnNewDocument, createIsolatedWorld, Audits/Performance/Log/WebMCP enable, viewport emulation) before Runtime.runIfWaitingForDebugger releases the page. Asserts a genuine tab->page session chain and that Runtime.evaluate computes on the page session. Fatality per puppeteer.bootstrap.json (tab steps + Network.enable + WebMCP + createIsolatedWorld non-fatal).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.getBrowserContexts",
+        "params": {},
+        "save_result_as": "ctx",
+        "session": "browser"
+      },
+      {
+        "method": "Target.setDiscoverTargets",
+        "params": {
+          "discover": true,
+          "filter": [
+            {}
+          ]
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "filter": [
+            {
+              "exclude": true,
+              "type": "page"
+            },
+            {}
+          ],
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "type": "tab"
+          },
+          "waitingForDebugger": true
+        },
+        "save_result_as": "tabattach",
+        "save_session_as": "pp_tab",
+        "session": "browser",
+        "timeout_ms": 8000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Target.setAutoAttach",
+        "optional": true,
+        "params": {
+          "autoAttach": true,
+          "filter": [
+            {}
+          ],
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "pp_tab"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "pageattach",
+        "save_session_as": "pp_page",
+        "session": "pp_tab",
+        "timeout_ms": 8000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Runtime.runIfWaitingForDebugger",
+        "optional": true,
+        "session": "pp_tab"
+      },
+      {
+        "method": "Network.enable",
+        "optional": true,
+        "session": "pp_page"
+      },
+      {
+        "method": "Page.enable",
+        "session": "pp_page"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "params": {},
+        "save_result_as": "tree",
+        "session": "pp_page"
+      },
+      {
+        "method": "Page.setLifecycleEventsEnabled",
+        "params": {
+          "enabled": true
+        },
+        "session": "pp_page"
+      },
+      {
+        "method": "Runtime.enable",
+        "session": "pp_page"
+      },
+      {
+        "method": "Page.addScriptToEvaluateOnNewDocument",
+        "params": {
+          "source": "//# sourceURL=__abb_pp_internal__",
+          "worldName": "__abb_pp_utility_world__"
+        },
+        "save_result_as": "script",
+        "session": "pp_page"
+      },
+      {
+        "method": "Page.createIsolatedWorld",
+        "optional": true,
+        "params": {
+          "frameId": "{saved:tree.frameTree.frame.id}",
+          "grantUniveralAccess": true,
+          "worldName": "__abb_pp_utility_world__"
+        },
+        "session": "pp_page"
+      },
+      {
+        "method": "Audits.enable",
+        "optional": true,
+        "session": "pp_page"
+      },
+      {
+        "method": "Performance.enable",
+        "session": "pp_page"
+      },
+      {
+        "method": "Log.enable",
+        "session": "pp_page"
+      },
+      {
+        "method": "WebMCP.enable",
+        "optional": true,
+        "session": "pp_page"
+      },
+      {
+        "method": "Emulation.setDeviceMetricsOverride",
+        "params": {
+          "deviceScaleFactor": 1,
+          "height": 600,
+          "mobile": false,
+          "width": 800
+        },
+        "session": "pp_page"
+      },
+      {
+        "method": "Emulation.setTouchEmulationEnabled",
+        "params": {
+          "enabled": false
+        },
+        "session": "pp_page"
+      },
+      {
+        "method": "Runtime.runIfWaitingForDebugger",
+        "session": "pp_page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "6 * 7",
+          "returnByValue": true
+        },
+        "save_as": "answer",
+        "session": "pp_page"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.get_browser_contexts",
+    "cdp.target.set_discover_targets",
+    "cdp.target.set_auto_attach",
+    "cdp.target.attached_to_target",
+    "cdp.network.enable",
+    "cdp.page.enable",
+    "cdp.page.get_frame_tree",
+    "cdp.page.set_lifecycle_events_enabled",
+    "cdp.runtime.enable",
+    "cdp.page.add_script_to_evaluate_on_new_document",
+    "cdp.page.create_isolated_world",
+    "cdp.audits.enable",
+    "cdp.performance.enable",
+    "cdp.log.enable",
+    "cdp.runtime.run_if_waiting_for_debugger"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 0,
+        "name": "ctx",
+        "path": "browserContextIds"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Target.attachedToTarget",
+        "name": "tabattach"
+      },
+      {
+        "expected": "tab",
+        "kind": "saved_path_equals",
+        "name": "tabattach",
+        "path": "targetInfo.type"
+      },
+      {
+        "expected": "page",
+        "kind": "saved_path_equals",
+        "name": "pageattach",
+        "path": "targetInfo.type"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "tree",
+        "path": "frameTree.frame.id"
+      },
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "name": "answer"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "family.handwritten",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_replay_puppeteer",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 40000,
+    "task_ms": 25000
+  },
+  "title": "Puppeteer dialect bootstrap replay (browser -> tab -> page)"
+}

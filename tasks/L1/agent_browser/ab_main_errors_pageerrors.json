@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser main: errors.pageErrors through the agent-browser tool API. It passes when `agent-browser errors` succeeds; `agent-browser errors` returns data containing `intentional-page-error`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 3
+        },
+        {
+          "expected": "intentional-page-error",
+          "kind": "ab_data_contains",
+          "step": 3
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "eval",
+            "setTimeout(function(){ throw new Error('intentional-page-error'); }, 0)"
+          ]
+        },
+        {
+          "ab": [
+            "wait",
+            "150"
+          ]
+        },
+        {
+          "ab": [
+            "errors"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.errors.page_errors"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_main_errors_pageerrors",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser main: errors.pageErrors"
+}

@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Network.emulateNetworkConditions(offline=true) is applied and a fetch fails; then offline is cleared and the same fetch succeeds. Asserts the offline toggle actually severs and restores network connectivity as observed from the page.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Network.emulateNetworkConditions",
+        "params": {
+          "downloadThroughput": -1,
+          "latency": 0,
+          "offline": true,
+          "uploadThroughput": -1
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "fetch('/v2/t2a/cacheable.txt?off='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){return 'OK:'+t;}).catch(function(e){return 'ERR:'+String(e);})",
+          "returnByValue": true
+        },
+        "save_as": "offres"
+      },
+      {
+        "method": "Network.emulateNetworkConditions",
+        "params": {
+          "downloadThroughput": -1,
+          "latency": 0,
+          "offline": false,
+          "uploadThroughput": -1
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "fetch('/v2/t2a/cacheable.txt?on='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){return 'OK:'+t;}).catch(function(e){return 'ERR:'+String(e);})",
+          "returnByValue": true
+        },
+        "save_as": "onres"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.emulate_network_conditions"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "ERR",
+        "kind": "value_contains",
+        "name": "offres"
+      },
+      {
+        "expected": "OK:cacheable-payload",
+        "kind": "value_contains",
+        "name": "onres"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_emulate_offline",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.emulateNetworkConditions offline blocks fetch"
+}

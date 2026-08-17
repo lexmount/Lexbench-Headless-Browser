@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The confirmation code 'CONFIRM-4821' is carried solely by aria-label; the element's visible textContent reads 'REDACTED'. A DOM-text probe would return the decoy, but getFullAXTree exposes the real answer as the node's accessible name. Answer lives only in the AX tree.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.name",
+    "web.ax.hidden_answer"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 3,
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "CONFIRM-4821"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/axl2/arialabel_answer"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility_l2",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_axl2_arialabel_answer",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "answer readable only from the AX accessible name"
+}

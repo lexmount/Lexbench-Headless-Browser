@@ -1,0 +1,50 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Removes an XHR breakpoint by URL substring; exercises DOMDebugger.removeXHRBreakpoint.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOMDebugger.setXHRBreakpoint",
+        "params": {
+          "url": "/track"
+        }
+      },
+      {
+        "method": "DOMDebugger.removeXHRBreakpoint",
+        "params": {
+          "url": "/track"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_debugger.remove_xhr_breakpoint"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_domdebugger_removexhrbreakpoint",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMDebugger.removeXHRBreakpoint"
+}

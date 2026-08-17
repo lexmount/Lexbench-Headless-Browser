@@ -1,0 +1,43 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.browser.getBrowserCommandLine by issuing raw CDP command(s) Browser.getBrowserCommandLine against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. The Browser-domain command is sent over the page-target transport. This probe is diagnostic-only because the benchmark launch profile does not declare `--enable-automation`.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.getBrowserCommandLine",
+        "optional": false,
+        "params": {},
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.get_browser_command_line"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "purpose.diagnostic",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_browser_getbrowsercommandline",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.browser.getBrowserCommandLine"
+}

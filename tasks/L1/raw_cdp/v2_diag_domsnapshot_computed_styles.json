@@ -1,0 +1,71 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. DOMSnapshot.captureSnapshot with computedStyles:['display','color']; assert the requested computed styles came back: layout.styles is populated and the resolved values ('block' for display, 'rgb(0, 0, 0)' for color) appear in the strings table.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "DOMSnapshot.enable",
+        "optional": true
+      },
+      {
+        "method": "DOMSnapshot.captureSnapshot",
+        "params": {
+          "computedStyles": [
+            "display",
+            "color"
+          ]
+        },
+        "save_result_as": "snap"
+      }
+    ]
+  },
+  "features": [
+    "cdp.domsnapshot.capture_snapshot"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "snap",
+        "path": "documents.0.layout.styles"
+      },
+      {
+        "expected": "block",
+        "kind": "array_contains",
+        "name": "snap",
+        "path": "strings"
+      },
+      {
+        "expected": "rgb(0, 0, 0)",
+        "kind": "array_contains",
+        "name": "snap",
+        "path": "strings"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/snapshot"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_domsnapshot_computed_styles",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMSnapshot computedStyles round-trip"
+}

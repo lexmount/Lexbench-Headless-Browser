@@ -1,0 +1,124 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "End-to-end Basic-auth interception: Fetch.enable with handleAuthRequests, a page fetch() hits the 401-challenging /__auth__/ endpoint, Fetch.requestPaused is continued, Fetch.authRequired arrives carrying the Basic challenge, Fetch.continueWithAuth provides credentials, the retried request is continued and the page observes the authenticated 200 body. Closes the last T1_intercept anchor (Fetch.authRequired).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "handleAuthRequests": true,
+          "patterns": [
+            {
+              "urlPattern": "*__auth__*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/__auth__/data').then(function(r){return r.text();}).then(function(t){window.__abbAuth = t;}).catch(function(e){window.__abbAuth = 'ERR:' + String(e);})"
+        }
+      },
+      {
+        "save_result_as": "paused1",
+        "session": "page",
+        "timeout_ms": 5000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused1.requestId}"
+        }
+      },
+      {
+        "save_result_as": "challenge",
+        "session": "page",
+        "timeout_ms": 5000,
+        "wait_for_event": "Fetch.authRequired"
+      },
+      {
+        "method": "Fetch.continueWithAuth",
+        "params": {
+          "authChallengeResponse": {
+            "password": "secret",
+            "response": "ProvideCredentials",
+            "username": "bench"
+          },
+          "requestId": "{saved:challenge.requestId}"
+        }
+      },
+      {
+        "optional": true,
+        "save_result_as": "paused2",
+        "session": "page",
+        "timeout_ms": 5000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "optional": true,
+        "params": {
+          "requestId": "{saved:paused2.requestId}"
+        }
+      },
+      {
+        "sleep_ms": 600
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbAuth",
+          "returnByValue": true
+        },
+        "save_as": "fetched"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.auth_required",
+    "cdp.fetch.continue_with_auth",
+    "cdp.fetch.continue_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.authRequired",
+        "name": "challenge"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "challenge",
+        "path": "authChallenge.scheme"
+      },
+      {
+        "expected": "granted",
+        "kind": "value_contains",
+        "name": "fetched"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_auth_required_e2e",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.authRequired end-to-end Basic auth challenge"
+}

@@ -1,0 +1,64 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Log domain, triggers a failed subresource fetch (404), and waits for the Log.entryAdded event, asserting it carries entry text. Real probe that Log.enable opens the browser log stream.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Log.enable",
+        "session": "page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/__abb_boot_missing__').catch(function(){})"
+        },
+        "session": "page"
+      },
+      {
+        "save_result_as": "logentry",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Log.entryAdded"
+      }
+    ]
+  },
+  "features": [
+    "cdp.log.enable",
+    "cdp.log.entry_added"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Log.entryAdded",
+        "name": "logentry"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "logentry",
+        "path": "entry.text"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_log_enable_entry_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Log.enable delivers entryAdded"
+}

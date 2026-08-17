@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>v0.2 action bench</title></head>
+<body>
+<h1>action bench</h1>
+<button id="btn" data-token="BTN-TOKEN-42">click me</button>
+<div id="status">idle</div>
+<input id="inp" type="text" value="">
+<div id="keylog">keys:0</div>
+<script>
+// Click bookkeeping (used by callFunctionOn element-click probes).
+window.__btnClicks = 0;
+document.getElementById("btn").addEventListener("click", function () {
+  window.__btnClicks += 1;
+  document.getElementById("status").textContent =
+    "clicked:" + window.__btnClicks + ":" + this.getAttribute("data-token");
+});
+
+// Key event bookkeeping (used by Input.dispatchKeyEvent probes). A real
+// keydown/keyup pair from the input engine increments these counters and
+// mirrors the composed value so the driver can read it back.
+window.__keyDown = 0;
+window.__keyUp = 0;
+window.__lastKey = "";
+var inp = document.getElementById("inp");
+inp.addEventListener("keydown", function (e) {
+  window.__keyDown += 1;
+  window.__lastKey = e.key;
+  document.getElementById("keylog").textContent =
+    "keys:" + window.__keyDown + ":" + window.__keyUp;
+});
+inp.addEventListener("keyup", function (e) {
+  window.__keyUp += 1;
+  document.getElementById("keylog").textContent =
+    "keys:" + window.__keyDown + ":" + window.__keyUp;
+});
+
+// Object with own data properties and one enumerable accessor property, used
+// by Runtime.getProperties own/accessor probes.
+window.__probeObj = (function () {
+  var o = { alpha: 1, beta: "two", nested: { deep: true } };
+  Object.defineProperty(o, "computed", {
+    get: function () { return 42; },
+    enumerable: true,
+    configurable: true
+  });
+  return o;
+})();
+
+// Bindings the page invokes to exercise addBinding / bindingCalled. Both are
+// installed by the driver via Runtime.addBinding before these run.
+window.__callAbbBinding = function (name, payload) {
+  if (typeof window[name] === "function") { window[name](payload); }
+};
+</script>
+</body>
+</html>

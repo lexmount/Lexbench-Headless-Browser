@@ -1,0 +1,60 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Performance domain and asserts Performance.getMetrics returns a non-empty metrics array containing a named JSHeapUsedSize metric. Real probe of Performance.enable/getMetrics return structure (previously v0.1-untouched).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Performance.enable",
+        "session": "page"
+      },
+      {
+        "method": "Performance.getMetrics",
+        "params": {},
+        "save_result_as": "metrics",
+        "session": "page"
+      }
+    ]
+  },
+  "features": [
+    "cdp.performance.enable"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 3,
+        "name": "metrics",
+        "path": "metrics"
+      },
+      {
+        "expected": {
+          "name": "JSHeapUsedSize"
+        },
+        "kind": "array_contains",
+        "name": "metrics",
+        "path": "metrics"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_performance_enable_metrics",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Performance.enable + getMetrics returns metrics"
+}

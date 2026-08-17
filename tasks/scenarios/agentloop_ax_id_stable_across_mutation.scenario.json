@@ -1,0 +1,82 @@
+{
+  "scenario_id": "agentloop_ax_id_stable_across_mutation",
+  "family": "observation",
+  "title": "An unchanged AX target keeps its identity across an unrelated DOM mutation",
+  "description": "Reads a deterministic AX target, inserts an unrelated sibling, reads the target again, and requires the raw backendDOMNodeId or MCP uid mapping to remain stable.",
+  "layer": "L1",
+  "diagnostic": true,
+  "extra_tags": [
+    "purpose.issue_106"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('ax-stable').getAttribute('aria-label') === 'ax-stable-63'"
+    },
+    {
+      "op": "ax_node_identity",
+      "role": "button",
+      "name": "ax-stable-63",
+      "save_as": "before"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(() => { const target = document.getElementById('ax-stable'); const inserted = document.createElement('span'); inserted.id = 'ax-unrelated-insert'; inserted.textContent = 'unrelated mutation'; target.before(inserted); return 'mutated'; })()"
+    },
+    {
+      "op": "ax_node_identity",
+      "role": "button",
+      "name": "ax-stable-63",
+      "compare_to": "before",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_ax_identity_read",
+      "step": 5
+    },
+    {
+      "kind": "saved_contains",
+      "label": "identity_stable",
+      "name": "answer",
+      "expected": "stable|role=button|name=ax-stable-63|"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "stable|role=button|name=ax-stable-63|"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum"
+  ],
+  "driver_skips": {
+    "agent_browser": "agent-browser snapshot refs are regenerated observation handles and expose neither backendDOMNodeId nor a documented cross-snapshot stable identity contract",
+    "selenium": "the cross-engine Selenium/WebDriver route has no standard AX node identity API to compare across mutations"
+  }
+}

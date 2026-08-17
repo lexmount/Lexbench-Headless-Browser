@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c23 scope</title></head>
+<body><div id="root"><p>SCOPE_C23</p><div><p>nested</p></div></div><div id="out"></div>
+<script>try{
+ var root=document.getElementById('root');
+ var el=root.querySelector(':scope > p');
+ document.getElementById('out').textContent=el?('SCOPE_C23:'+el.textContent):'NOMATCH';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A same-document hash navigation drives Page.navigatedWithinDocument (no full document load). Asserts the event fires and its URL carries the new fragment.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.hash = '#abb-frag'; 'ok'"
+        }
+      },
+      {
+        "save_result_as": "nwd",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.navigatedWithinDocument"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigated_within_document"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.navigatedWithinDocument",
+        "name": "nwd"
+      },
+      {
+        "expected": "#abb-frag",
+        "kind": "saved_path_contains",
+        "name": "nwd",
+        "path": "url"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_navigated_within_document",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.navigatedWithinDocument on same-doc nav"
+}

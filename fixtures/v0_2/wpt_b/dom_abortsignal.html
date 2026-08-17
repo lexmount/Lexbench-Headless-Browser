@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b AbortController/AbortSignal</title></head>
+<body>
+<div id="t">x</div>
+<div id="out"></div>
+<script>
+try{
+  var t=document.getElementById('t');
+  var c=new AbortController();
+  var count=0;
+  t.addEventListener('tick',function(){count++;},{signal:c.signal});
+  t.dispatchEvent(new CustomEvent('tick'));
+  c.abort('done');
+  t.dispatchEvent(new CustomEvent('tick'));
+  var reason=c.signal.reason;
+  document.getElementById('out').textContent='ABORT:count='+count+';aborted='+c.signal.aborted+';reason='+reason;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

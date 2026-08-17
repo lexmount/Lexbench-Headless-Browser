@@ -1,0 +1,92 @@
+{
+  "_generated_from": "tasks/scenarios/net_auth_challenge_then_pass.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fetches the protected endpoint without credentials (observes 401), then arms the Authorization header and fetches again; the page accumulates the two-phase trace.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "two_phase_done",
+        "step": 6
+      },
+      {
+        "expected": "401>ok-61",
+        "kind": "saved_equals",
+        "label": "challenge_then_pass",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-secure"
+      },
+      {
+        "expression": "document.getElementById('net-out').textContent.indexOf('401') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "headers": {
+          "authorization": "Bearer tok-53"
+        },
+        "op": "set_extra_headers"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-secure"
+      },
+      {
+        "expression": "document.getElementById('net-out').textContent.indexOf('401>ok-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#net-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.click",
+    "fw.puppeteer.op.wait_for_function",
+    "fw.puppeteer.op.set_extra_headers",
+    "fw.puppeteer.op.text_content",
+    "cdp.network.set_extra_http_headers",
+    "cdp.network.response_received"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.network_interception",
+    "version.v0_4"
+  ],
+  "task_id": "sc_net_auth_challenge_then_pass__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "An unauthenticated 401 followed by an authenticated retry succeeds (puppeteer)"
+}

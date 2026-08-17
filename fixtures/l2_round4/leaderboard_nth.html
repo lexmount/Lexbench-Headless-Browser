@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>周榜 · 创作排行榜</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #fffbeb; color: #2a2a2a; }
+  header { background: #b45309; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 640px; margin: 20px auto; padding: 0 16px; }
+  ol.board { list-style: none; padding: 0; margin: 0; counter-reset: rank; }
+  li.player {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  li.player .nm { font-size: 16px; font-weight: 600; }
+  li.player .score { color: #b45309; font-weight: 700; }
+  /* 前三名经 :nth-child(of S) 选中并由 ::before 生成奖牌文字 */
+  li.player:nth-child(-n+3 of .player) .nm::before {
+    margin-right: 8px; font-weight: 700;
+  }
+  li.player:nth-child(1 of .player) .nm::before { content: "金牌 "; color: #d4af37; }
+  li.player:nth-child(2 of .player) .nm::before { content: "银牌 "; color: #9ca3af; }
+  li.player:nth-child(3 of .player) .nm::before { content: "铜牌 "; color: #b87333; }
+  .answer {
+    margin-top: 20px; background: #fff; border: 1px dashed #b45309;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.9;
+  }
+  .empty { color: #b45309; }
+</style>
+</head>
+<body>
+<header><h1>本周创作排行榜</h1></header>
+<main>
+  <ol class="board" id="board">
+    <li class="player" data-name="林深"><span class="nm">林深</span><span class="score">9820</span></li>
+    <li class="player" data-name="苏晓"><span class="nm">苏晓</span><span class="score">9344</span></li>
+    <li class="player" data-name="陈屿"><span class="nm">陈屿</span><span class="score">9011</span></li>
+    <li class="player" data-name="周禾"><span class="nm">周禾</span><span class="score">8567</span></li>
+    <li class="player" data-name="叶岚"><span class="nm">叶岚</span><span class="score">8120</span></li>
+  </ol>
+
+  <div class="answer" id="answer">（正在评定前三名…）</div>
+</main>
+
+<script>
+(function () {
+  var answerEl = document.getElementById("answer");
+  var MEDALS = ["金牌", "银牌", "铜牌"];
+  var top3 = null;
+  try {
+    // 用 :nth-child(-n+3 of .player) 选出前三 —— 关键判别机制
+    top3 = document.querySelectorAll("li.player:nth-child(-n+3 of .player)");
+  } catch (e) {
+    top3 = null;
+  }
+
+  if (top3 === null) {
+    answerEl.innerHTML = '<span class="empty">（无法评定前三名：浏览器不支持 :nth-child(of S) 选择器）</span>';
+    return;
+  }
+  if (top3.length !== 3) {
+    answerEl.innerHTML = '<span class="empty">（前三名识别异常：选中 ' + top3.length + ' 项，奖牌缺失）</span>';
+    return;
+  }
+
+  var lines = [];
+  for (var i = 0; i < 3; i++) {
+    lines.push("第 " + (i + 1) + " 名 " + top3[i].dataset.name + "：" + MEDALS[i]);
+  }
+  answerEl.innerHTML = "<b>前三名</b><br>" + lines.join("<br>");
+})();
+</script>
+</body>
+</html>

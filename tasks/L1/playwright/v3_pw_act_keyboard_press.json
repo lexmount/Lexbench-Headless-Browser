@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright focuses #keys, types 'abc' through the keyboard API, then presses Enter. The fixture counts keydown events and flags Enter. Passes when the keydown count is 4 and the enter flag reads 'yes', proving Input.dispatchKeyEvent delivers trusted key events the page can observe.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "4",
+        "kind": "saved_equals",
+        "label": "four_keydowns",
+        "name": "keydowns"
+      },
+      {
+        "expected": "yes",
+        "kind": "saved_equals",
+        "label": "enter_observed",
+        "name": "enter_flag"
+      },
+      {
+        "expected": "abc",
+        "kind": "saved_equals",
+        "label": "typed_text_in_value",
+        "name": "typed_value"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "focus",
+        "selector": "#keys"
+      },
+      {
+        "op": "keyboard_type",
+        "text": "abc"
+      },
+      {
+        "key": "Enter",
+        "op": "press"
+      },
+      {
+        "op": "text_content",
+        "save_as": "keydowns",
+        "selector": "#keydown-count"
+      },
+      {
+        "op": "text_content",
+        "save_as": "enter_flag",
+        "selector": "#enter-flag"
+      },
+      {
+        "op": "input_value",
+        "save_as": "typed_value",
+        "selector": "#keys"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.focus",
+    "fw.playwright.keyboard.type",
+    "fw.playwright.keyboard.press",
+    "cdp.input.dispatch_key_event",
+    "cdp.input.insert_text"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_act_keyboard_press",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "keyboard.type + press Enter counted by page keydown listener"
+}

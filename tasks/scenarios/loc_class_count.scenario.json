@@ -1,0 +1,60 @@
+{
+  "scenario_id": "loc_class_count",
+  "family": "locator",
+  "title": "Count elements matching a class selector",
+  "description": "Counts .card elements through the driver's count surface.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "count",
+      "selector": ".card",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "count_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "four_cards",
+      "name": "answer",
+      "expected": "4"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector_all"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "4"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

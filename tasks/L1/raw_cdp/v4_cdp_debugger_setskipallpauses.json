@@ -1,0 +1,56 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Skips then re-honours all pauses; exercises Debugger.setSkipAllPauses.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Debugger.enable"
+      },
+      {
+        "method": "Debugger.setSkipAllPauses",
+        "params": {
+          "skip": true
+        }
+      },
+      {
+        "method": "Debugger.setSkipAllPauses",
+        "params": {
+          "skip": false
+        }
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.set_skip_all_pauses"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_setskipallpauses",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Debugger.setSkipAllPauses toggle"
+}

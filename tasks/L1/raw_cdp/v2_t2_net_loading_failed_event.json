@@ -1,0 +1,79 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With the network emulated offline, a fetch is issued and the driver waits for Network.loadingFailed. Asserts the failure event arrives and carries a non-empty errorText (real failure semantics, not a timeout artifact).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Network.emulateNetworkConditions",
+        "params": {
+          "downloadThroughput": -1,
+          "latency": 0,
+          "offline": true,
+          "uploadThroughput": -1
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?lf='+Date.now()).catch(function(){}); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "failed",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Network.loadingFailed"
+      },
+      {
+        "method": "Network.emulateNetworkConditions",
+        "optional": true,
+        "params": {
+          "downloadThroughput": -1,
+          "latency": 0,
+          "offline": false,
+          "uploadThroughput": -1
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.loading_failed"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.loadingFailed",
+        "name": "failed"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "failed",
+        "path": "errorText"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_loading_failed_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.loadingFailed fires on a severed request"
+}

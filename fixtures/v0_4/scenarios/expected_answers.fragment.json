@@ -1,0 +1,4935 @@
+{
+  "_comment": "GENERATED from tasks/scenarios/*.scenario.json by `python3 -m runner.run scenarios` — do not edit; the fixture server merges this into its server-side expected-answer registry.",
+  "sc_agentloop_ax_id_stable_across_mutation__cdpu": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__chromedp": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__cri": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__fr": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__mcp": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__oxide": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__pp": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__pw": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__pyd": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__rod": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_id_stable_across_mutation__sh": {
+    "expected": "stable|role=button|name=ax-stable-63|",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__cdpu": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__chromedp": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__cri": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__fr": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__oxide": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__pp": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__pw": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__pyd": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__rod": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_agentloop_ax_role_name_ids__sh": {
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId=",
+    "mode": "contains"
+  },
+  "sc_app_add_single_item__ab": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__cdpu": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__chromedp": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__cri": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__fr": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__mcp": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__oxide": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__pp": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__pw": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__pyd": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__rod": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__se": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_add_single_item__sh": {
+    "expected": "total-3",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__ab": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__cdpu": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__chromedp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__cri": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__fr": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__mcp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__oxide": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__pp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__pw": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__pyd": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__rod": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__se": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_persists_reload__sh": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__ab": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__cdpu": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__chromedp": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__cri": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__fr": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__mcp": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__oxide": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__pp": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__pw": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__pyd": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__rod": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__se": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_cart_total_two_items__sh": {
+    "expected": "total-14",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__ab": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__cdpu": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__chromedp": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__cri": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__fr": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__mcp": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__oxide": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__pp": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__pw": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__pyd": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__rod": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__se": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_checkout_receipt__sh": {
+    "expected": "ord-13-1",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__ab": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__cdpu": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__chromedp": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__cri": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__fr": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__mcp": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__oxide": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__pp": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__pw": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__pyd": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__rod": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__se": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_narrows__sh": {
+    "expected": "wid:3",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__ab": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__cdpu": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__chromedp": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__cri": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__fr": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__mcp": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__oxide": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__pp": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__pw": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__pyd": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__rod": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__se": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_filter_then_add__sh": {
+    "expected": "gizmo-x:1",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__ab": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__cdpu": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__chromedp": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__cri": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__fr": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__mcp": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__oxide": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__pp": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__pw": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__pyd": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__rod": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__se": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_full_flow_aggregate__sh": {
+    "expected": "hi-eve-7|ord-14-2",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__ab": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__cdpu": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__chromedp": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__cri": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__fr": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__mcp": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__oxide": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__pp": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__pw": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__pyd": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__rod": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__se": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_locked_without_login__sh": {
+    "expected": "locked",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__ab": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__cdpu": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__chromedp": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__cri": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__fr": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__mcp": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__oxide": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__pp": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__pw": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__pyd": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__rod": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__se": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_login_greets__sh": {
+    "expected": "hi-eve-7",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__ab": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__cdpu": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__chromedp": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__cri": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__fr": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__mcp": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__oxide": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__pp": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__pw": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__pyd": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__rod": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__se": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_logout_locks__sh": {
+    "expected": "bye-eve-7:locked",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__ab": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__cdpu": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__chromedp": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__cri": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__fr": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__mcp": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__oxide": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__pp": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__pw": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__pyd": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__rod": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__se": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_qty_accumulates__sh": {
+    "expected": "widget-b:2:total-10",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__ab": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__cdpu": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__chromedp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__cri": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__fr": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__mcp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__oxide": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__pp": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__pw": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__pyd": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__rod": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__se": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_app_remove_item__sh": {
+    "expected": "total-7",
+    "mode": "equals"
+  },
+  "sc_computed_style_breadth__cdpu": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__chromedp": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__cri": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__fr": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__oxide": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__pp": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__pw": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__pyd": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__rod": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_computed_style_breadth__sh": {
+    "expected": "breadth-ok|count=",
+    "mode": "contains"
+  },
+  "sc_cs_eval_context_persists__ab": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__cdpu": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__chromedp": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__cri": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__fr": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__mcp": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__oxide": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__pp": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__pw": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__pyd": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__rod": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__se": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_eval_context_persists__sh": {
+    "expected": "42",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__ab": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__cdpu": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__chromedp": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__cri": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__fr": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__mcp": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__oxide": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__pp": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__pw": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__pyd": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__rod": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__se": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_fresh_page_no_stale_globals__sh": {
+    "expected": "fresh",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__ab": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__cdpu": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__chromedp": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__cri": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__fr": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__mcp": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__oxide": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__pp": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__pw": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__pyd": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__rod": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__se": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_ready_state_complete__sh": {
+    "expected": "complete",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__ab": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__cdpu": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__chromedp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__cri": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__fr": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__mcp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__oxide": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__pp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__pw": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__pyd": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__rod": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__se": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_second_page_independent_nav__sh": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__ab": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__cdpu": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__chromedp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__cri": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__fr": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__mcp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__oxide": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__pp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__pw": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__pyd": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__rod": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__se": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_session_survives_three_pages__sh": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__ab": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__cdpu": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__chromedp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__cri": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__fr": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__mcp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__oxide": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__pp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__pw": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__pyd": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__rod": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__se": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_two_pages_isolated__sh": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_cs_ua_surface__ab": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__cdpu": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__chromedp": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__cri": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__fr": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__mcp": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__oxide": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__pp": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__pw": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__pyd": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__rod": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__se": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_ua_surface__sh": {
+    "expected": "Mozilla/",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__ab": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__cdpu": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__chromedp": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__cri": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__fr": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__mcp": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__oxide": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__pp": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__pw": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__pyd": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__rod": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__se": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_cs_url_surface__sh": {
+    "expected": "/l1/core",
+    "mode": "contains"
+  },
+  "sc_dl_download_checksum__pp": {
+    "expected": "2902f066860b:21",
+    "mode": "equals"
+  },
+  "sc_dl_download_checksum__pw": {
+    "expected": "2902f066860b:21",
+    "mode": "equals"
+  },
+  "sc_dlg_alert_message__pp": {
+    "expected": "dlg-alert-42",
+    "mode": "contains"
+  },
+  "sc_dlg_alert_message__pw": {
+    "expected": "dlg-alert-42",
+    "mode": "contains"
+  },
+  "sc_dlg_confirm_accept__pp": {
+    "expected": "confirm-yes-33",
+    "mode": "equals"
+  },
+  "sc_dlg_confirm_accept__pw": {
+    "expected": "confirm-yes-33",
+    "mode": "equals"
+  },
+  "sc_dlg_confirm_dismiss__pp": {
+    "expected": "confirm-no-33",
+    "mode": "equals"
+  },
+  "sc_dlg_confirm_dismiss__pw": {
+    "expected": "confirm-no-33",
+    "mode": "equals"
+  },
+  "sc_dlg_prompt_text__pp": {
+    "expected": "prompt-typed-19",
+    "mode": "equals"
+  },
+  "sc_dlg_prompt_text__pw": {
+    "expected": "prompt-typed-19",
+    "mode": "equals"
+  },
+  "sc_dlg_sequence_two_dialogs__pp": {
+    "expected": "seq-y-4",
+    "mode": "equals"
+  },
+  "sc_dlg_sequence_two_dialogs__pw": {
+    "expected": "seq-y-4",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__ab": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__cdpu": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__chromedp": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__cri": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__fr": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__mcp": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__oxide": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__pp": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__pw": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__pyd": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__rod": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__se": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_counter_clicks__sh": {
+    "expected": "3",
+    "mode": "equals"
+  },
+  "sc_dyn_paging_final__ab": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__cdpu": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__chromedp": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__cri": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__fr": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__mcp": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__oxide": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__pp": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__pw": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__pyd": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__rod": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__se": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_dyn_paging_final__sh": {
+    "expected": "P3-FINAL-73",
+    "mode": "contains"
+  },
+  "sc_form_checkbox_check__ab": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__cdpu": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__chromedp": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__cri": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__fr": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__mcp": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__oxide": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__pp": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__pw": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__pyd": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__rod": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__se": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_check__sh": {
+    "expected": "true",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__ab": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__cdpu": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__chromedp": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__cri": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__fr": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__mcp": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__oxide": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__pp": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__pw": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__pyd": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__rod": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__se": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_checkbox_event__sh": {
+    "expected": "checked",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__ab": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__cdpu": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__chromedp": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__cri": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__fr": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__mcp": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__oxide": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__pp": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__pw": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__pyd": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__rod": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__se": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_overwrites__sh": {
+    "expected": "second-77",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__ab": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__cdpu": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__chromedp": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__cri": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__fr": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__mcp": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__oxide": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__pp": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__pw": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__pyd": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__rod": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__se": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_fill_readback__sh": {
+    "expected": "bench-fill-7q",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__ab": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__cdpu": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__chromedp": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__cri": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__fr": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__mcp": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__oxide": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__pp": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__pw": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__pyd": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__rod": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__se": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_focus_active_element__sh": {
+    "expected": "field",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__ab": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__cdpu": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__chromedp": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__cri": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__fr": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__oxide": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__pp": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__pw": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__pyd": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__rod": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__se": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_label_click_toggles__sh": {
+    "expected": "via-label-on",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__ab": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__cdpu": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__chromedp": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__cri": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__fr": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__mcp": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__oxide": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__pp": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__pw": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__pyd": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__rod": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__se": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_press_enter_handler__sh": {
+    "expected": "enter-65",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__ab": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__cdpu": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__chromedp": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__cri": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__fr": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__mcp": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__oxide": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__pp": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__pw": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__pyd": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__rod": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__se": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_radio_pick__sh": {
+    "expected": "opt-b",
+    "mode": "equals"
+  },
+  "sc_form_select_option__ab": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__cdpu": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__chromedp": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__cri": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__fr": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__mcp": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__oxide": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__pp": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__pw": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__pyd": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__rod": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__se": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_select_option__sh": {
+    "expected": "picked:eng",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__ab": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__cdpu": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__chromedp": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__cri": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__fr": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__mcp": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__oxide": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__pp": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__pw": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__pyd": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__rod": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__se": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_submit_roundtrip__sh": {
+    "expected": "submitted:probe-624",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__ab": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__cdpu": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__chromedp": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__cri": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__fr": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__mcp": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__oxide": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__pp": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__pw": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__pyd": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__rod": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__se": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_form_textarea_fill__sh": {
+    "expected": "ta-line-9",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__ab": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__cdpu": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__chromedp": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__cri": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__fr": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__mcp": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__oxide": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__pp": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__pw": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__pyd": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__rod": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__se": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_posts_parent__sh": {
+    "expected": "hello-a|hello-b",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__ab": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__cdpu": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__chromedp": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__cri": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__fr": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__mcp": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__oxide": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__pp": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__pw": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__pyd": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__rod": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__se": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_child_self_navigation__sh": {
+    "expected": "child-nav2-42:top-alive",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__ab": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__cdpu": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__chromedp": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__cri": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__fr": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__mcp": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__oxide": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__pp": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__pw": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__pyd": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__rod": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__se": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_blocked__sh": {
+    "expected": "blocked:SecurityError",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_frame_evaluate__pp": {
+    "expected": "child-xo-42",
+    "mode": "equals"
+  },
+  "sc_fr_cross_origin_frame_evaluate__pw": {
+    "expected": "child-xo-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__ab": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__cdpu": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__chromedp": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__cri": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__fr": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__mcp": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__oxide": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__pp": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__pw": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__pyd": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__rod": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__se": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_dynamic_iframe_attach__sh": {
+    "expected": "child-dyn-42",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__ab": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__cdpu": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__chromedp": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__cri": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__fr": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__mcp": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__oxide": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__pp": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__pw": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__pyd": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__rod": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__se": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_frame_tree_shape__sh": {
+    "expected": "2>3>4",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__ab": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__cdpu": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__chromedp": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__cri": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__fr": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__mcp": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__oxide": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__pp": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__pw": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__pyd": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__rod": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__se": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_iframe_detach__sh": {
+    "expected": "2:1",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__ab": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__cdpu": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__chromedp": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__cri": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__fr": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__mcp": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__oxide": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__pp": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__pw": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__pyd": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__rod": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__se": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_nested_two_levels__sh": {
+    "expected": "child-leaf-42",
+    "mode": "equals"
+  },
+  "sc_fr_oopif_attach_read_detach__pp": {
+    "expected": "child-oopif-42",
+    "mode": "equals"
+  },
+  "sc_fr_oopif_attach_read_detach__pw": {
+    "expected": "child-oopif-42",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__ab": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__cdpu": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__chromedp": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__cri": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__fr": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__mcp": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__oxide": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__pp": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__pw": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__pyd": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__rod": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__se": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_sibling_isolation__sh": {
+    "expected": "poked-25:idle",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__ab": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__cdpu": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__chromedp": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__cri": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__fr": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__mcp": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__oxide": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__pp": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__pw": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__pyd": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__rod": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__se": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_fr_static_child_read__sh": {
+    "expected": "child-a-42",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__ab": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__cdpu": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__chromedp": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__cri": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__fr": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__mcp": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__oxide": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__pp": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__pw": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__pyd": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__rod": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__se": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_adjacent_sibling__sh": {
+    "expected": "adjacent-33",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__ab": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__cdpu": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__chromedp": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__cri": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__fr": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__mcp": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__oxide": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__pp": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__pw": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__pyd": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__rod": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__se": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_attribute_selector_click__sh": {
+    "expected": "attr-hit-go-7",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__ab": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__cdpu": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__chromedp": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__cri": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__fr": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__mcp": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__oxide": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__pp": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__pw": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__pyd": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__rod": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__se": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_class_count__sh": {
+    "expected": "4",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__ab": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__cdpu": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__chromedp": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__cri": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__fr": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__mcp": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__oxide": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__pp": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__pw": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__pyd": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__rod": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__se": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_descendant_scope__sh": {
+    "expected": "zone-val-21",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__ab": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__cdpu": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__chromedp": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__cri": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__fr": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__mcp": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__oxide": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__pp": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__pyd": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__rod": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__se": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_first_match_semantics__sh": {
+    "expected": "clicked-first",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__ab": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__cdpu": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__chromedp": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__cri": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__fr": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__mcp": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__oxide": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__pp": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__pw": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__pyd": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__rod": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__se": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_same_origin_read__sh": {
+    "expected": "frame-msg-55",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__ab": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__cdpu": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__chromedp": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__cri": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__fr": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__mcp": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__oxide": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__pp": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__pw": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__pyd": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__rod": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__se": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_iframe_scope_top_document__sh": {
+    "expected": "main-dup",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__ab": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__cdpu": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__chromedp": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__cri": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__fr": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__mcp": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__oxide": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__pp": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__pw": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__pyd": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__rod": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__se": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_missing_element_fails_cleanly__sh": {
+    "expected": "clean-miss",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__ab": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__cdpu": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__chromedp": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__cri": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__fr": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__mcp": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__oxide": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__pp": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__pw": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__pyd": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__rod": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__se": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_nth_child_text__sh": {
+    "expected": "bravo",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__ab": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__cdpu": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__chromedp": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__cri": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__fr": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__mcp": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__oxide": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__pp": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__pw": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__pyd": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__rod": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__se": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_closed_hidden__sh": {
+    "expected": "closed-hidden",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__ab": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__cdpu": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__chromedp": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__cri": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__fr": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__mcp": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__oxide": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__pp": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__pw": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__pyd": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__rod": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__se": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_loc_shadow_open_pierce__sh": {
+    "expected": "shadow-open-42",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__ab": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__cdpu": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__chromedp": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__cri": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__fr": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__mcp": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__oxide": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__pp": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__pw": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__pyd": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__rod": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__se": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_locator_textbox_len__sh": {
+    "expected": "5",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__ab": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__cdpu": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__chromedp": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__cri": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__fr": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__mcp": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__oxide": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__pp": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__pw": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__pyd": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__rod": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__se": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_multi_tab_collect__sh": {
+    "expected": "CDP Core Fixture|Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__ab": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__cdpu": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__chromedp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__cri": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__fr": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__mcp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__oxide": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__pp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__pw": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__pyd": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__rod": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__se": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_back_restores__sh": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__ab": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__cdpu": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__chromedp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__cri": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__fr": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__mcp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__oxide": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__pp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__pw": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__pyd": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__rod": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__se": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_cross_page__sh": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__ab": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__cdpu": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__chromedp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__cri": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__fr": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__mcp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__oxide": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__pp": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__pw": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__pyd": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__rod": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__se": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_forward_after_back__sh": {
+    "expected": "Page Two",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__ab": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__cdpu": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__chromedp": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__cri": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__fr": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__mcp": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__oxide": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__pp": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__pw": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__pyd": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__rod": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__se": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_hash_change__sh": {
+    "expected": "#sec-2:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__ab": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__cdpu": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__chromedp": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__cri": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__fr": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__mcp": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__oxide": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__pp": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__pw": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__pyd": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__rod": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__se": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state__sh": {
+    "expected": "?spa=1:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__ab": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__cdpu": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__chromedp": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__cri": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__fr": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__mcp": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__oxide": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__pp": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__pw": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__pyd": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__rod": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__se": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_push_state_back__sh": {
+    "expected": "/l1/core:no-reload",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__ab": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__cdpu": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__chromedp": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__cri": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__fr": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__mcp": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__oxide": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__pp": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__pw": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__pyd": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__rod": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__se": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_redirect_chain__sh": {
+    "expected": "landed-after-redirects",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__ab": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__cdpu": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__chromedp": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__cri": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__fr": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__mcp": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__oxide": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__pp": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__pw": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__pyd": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__rod": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__se": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_resets_dom__sh": {
+    "expected": "reset-after-reload",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__ab": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__cdpu": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__chromedp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__cri": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__fr": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__mcp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__oxide": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__pp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__pw": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__pyd": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__rod": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__se": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_reload_title__sh": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__ab": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__cdpu": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__chromedp": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__cri": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__fr": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__mcp": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__oxide": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__pp": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__pw": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__pyd": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__rod": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__se": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_replace_state_collapses_entry__sh": {
+    "expected": "entry-collapsed",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__ab": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__cdpu": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__chromedp": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__cri": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__fr": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__mcp": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__oxide": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__pp": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__pw": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__pyd": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__rod": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__se": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_slow_document__sh": {
+    "expected": "slow-99",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__ab": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__cdpu": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__chromedp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__cri": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__fr": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__mcp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__oxide": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__pp": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__pw": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__pyd": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__rod": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__se": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_nav_title_read__sh": {
+    "expected": "CDP Core Fixture",
+    "mode": "equals"
+  },
+  "sc_net_abort_subresource_image__pp": {
+    "expected": "img-error",
+    "mode": "equals"
+  },
+  "sc_net_abort_subresource_image__pw": {
+    "expected": "img-error",
+    "mode": "equals"
+  },
+  "sc_net_auth_challenge_then_pass__pp": {
+    "expected": "401>ok-61",
+    "mode": "equals"
+  },
+  "sc_net_auth_challenge_then_pass__pw": {
+    "expected": "401>ok-61",
+    "mode": "equals"
+  },
+  "sc_net_auth_header_roundtrip__pp": {
+    "expected": "ok-61",
+    "mode": "equals"
+  },
+  "sc_net_auth_header_roundtrip__pw": {
+    "expected": "ok-61",
+    "mode": "equals"
+  },
+  "sc_net_document_fulfill__pp": {
+    "expected": "virtual-page-56",
+    "mode": "equals"
+  },
+  "sc_net_document_fulfill__pw": {
+    "expected": "virtual-page-56",
+    "mode": "equals"
+  },
+  "sc_net_extra_headers_echo__pp": {
+    "expected": "x-abb-probe=h-41",
+    "mode": "equals"
+  },
+  "sc_net_extra_headers_echo__pw": {
+    "expected": "x-abb-probe=h-41",
+    "mode": "equals"
+  },
+  "sc_net_mock_only_matching__pp": {
+    "expected": "mock:99|server-other:27",
+    "mode": "equals"
+  },
+  "sc_net_mock_only_matching__pw": {
+    "expected": "mock:99|server-other:27",
+    "mode": "equals"
+  },
+  "sc_net_request_recorded__pp": {
+    "expected": "/v0_4/net/data",
+    "mode": "contains"
+  },
+  "sc_net_request_recorded__pw": {
+    "expected": "/v0_4/net/data",
+    "mode": "contains"
+  },
+  "sc_net_route_abort_handled__pp": {
+    "expected": "fetch-failed:TypeError",
+    "mode": "equals"
+  },
+  "sc_net_route_abort_handled__pw": {
+    "expected": "fetch-failed:TypeError",
+    "mode": "equals"
+  },
+  "sc_net_route_content_type__pp": {
+    "expected": "ctype:text/csv",
+    "mode": "equals"
+  },
+  "sc_net_route_content_type__pw": {
+    "expected": "ctype:text/csv",
+    "mode": "equals"
+  },
+  "sc_net_route_mock_json__pp": {
+    "expected": "mock:99",
+    "mode": "equals"
+  },
+  "sc_net_route_mock_json__pw": {
+    "expected": "mock:99",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__ab": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__cdpu": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__chromedp": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__cri": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__fr": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__mcp": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__oxide": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__pp": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__pw": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__pyd": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__rod": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__se": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_passthrough__sh": {
+    "expected": "server:72",
+    "mode": "equals"
+  },
+  "sc_net_route_rewrite_status__pp": {
+    "expected": "status:503",
+    "mode": "equals"
+  },
+  "sc_net_route_rewrite_status__pw": {
+    "expected": "status:503",
+    "mode": "equals"
+  },
+  "sc_obs_aria_snapshot_structure__ab": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_aria_snapshot_structure__mcp": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_aria_snapshot_structure__pp": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_aria_snapshot_structure__pw": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__ab": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__cdpu": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__chromedp": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__cri": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__fr": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__mcp": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__oxide": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__pp": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__pw": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__pyd": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__rod": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_heading__sh": {
+    "expected": "ax-heading-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__ab": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__cdpu": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__chromedp": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__cri": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__fr": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__mcp": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__oxide": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__pp": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__pw": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__pyd": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__rod": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_ax_snapshot_label__sh": {
+    "expected": "ax-name-63",
+    "mode": "contains"
+  },
+  "sc_obs_box_model_geometry__ab": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__cdpu": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__chromedp": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__cri": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__fr": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__mcp": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__oxide": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__pp": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__pw": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__pyd": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__rod": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__se": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_box_model_geometry__sh": {
+    "expected": "w120:h48",
+    "mode": "equals"
+  },
+  "sc_obs_console_error_captured__pp": {
+    "expected": "console-error-32",
+    "mode": "contains"
+  },
+  "sc_obs_console_error_captured__pw": {
+    "expected": "console-error-32",
+    "mode": "contains"
+  },
+  "sc_obs_console_log_captured__pp": {
+    "expected": "console-probe-32",
+    "mode": "contains"
+  },
+  "sc_obs_console_log_captured__pw": {
+    "expected": "console-probe-32",
+    "mode": "contains"
+  },
+  "sc_obs_title_url_surface__ab": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__cdpu": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__chromedp": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__cri": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__fr": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__mcp": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__oxide": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__pp": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__pw": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__pyd": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__rod": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__se": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_title_url_surface__sh": {
+    "expected": "Observation Fixture|/v0_4/obs",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__ab": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__cdpu": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__chromedp": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__cri": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__fr": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__mcp": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__oxide": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__pp": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__pw": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__pyd": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__rod": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__se": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_obs_visibility_matrix__sh": {
+    "expected": "vis:1|hid:0",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__ab": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__cdpu": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__chromedp": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__cri": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__fr": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__mcp": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__oxide": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__pp": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__pw": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__pyd": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__rod": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__se": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_document_roundtrip__sh": {
+    "expected": "c-71",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__ab": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__cdpu": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__chromedp": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__cri": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__fr": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__mcp": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__oxide": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__pp": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__pw": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__pyd": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__rod": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__se": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_cookie_survives_reload__sh": {
+    "expected": "c-88",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__ab": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__cdpu": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__chromedp": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__cri": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__fr": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__mcp": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__oxide": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__pp": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__pw": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__pyd": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__rod": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__se": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_roundtrip__sh": {
+    "expected": "v-37",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__ab": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__cdpu": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__chromedp": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__cri": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__fr": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__mcp": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__oxide": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__pp": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__pw": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__pyd": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__rod": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__se": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_shared_same_origin__sh": {
+    "expected": "shared-63",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__ab": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__cdpu": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__chromedp": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__cri": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__fr": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__mcp": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__oxide": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__pp": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__pw": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__pyd": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__rod": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__se": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_local_survives_reload__sh": {
+    "expected": "keep-52",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__cdpu": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__chromedp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__cri": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__fr": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__mcp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__oxide": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__pp": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__pw": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__pyd": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__rod": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__se": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_isolated_new_page__sh": {
+    "expected": "isolated",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__ab": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__cdpu": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__chromedp": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__cri": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__fr": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__mcp": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__oxide": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__pp": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__pw": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__pyd": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__rod": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__se": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_session_storage_roundtrip__sh": {
+    "expected": "s-44",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__ab": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__cdpu": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__chromedp": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__cri": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__fr": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__mcp": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__oxide": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__pp": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__pw": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__pyd": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__rod": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__se": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_st_storage_remove__sh": {
+    "expected": "left:gone+only-b",
+    "mode": "equals"
+  },
+  "sc_up_upload_filereader__pp": {
+    "expected": "read:24:abb",
+    "mode": "equals"
+  },
+  "sc_up_upload_filereader__pw": {
+    "expected": "read:24:abb",
+    "mode": "equals"
+  },
+  "sc_up_upload_server_checksum__pp": {
+    "expected": "uploaded:probe-upload.txt:24:165120975175",
+    "mode": "equals"
+  },
+  "sc_up_upload_server_checksum__pw": {
+    "expected": "uploaded:probe-upload.txt:24:165120975175",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__ab": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__cdpu": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__chromedp": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__cri": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__fr": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__mcp": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__oxide": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__pp": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__pw": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__pyd": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__rod": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__se": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_attribute_set__sh": {
+    "expected": "ok-58",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__ab": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__cdpu": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__chromedp": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__cri": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__fr": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__mcp": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__oxide": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__pp": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__pw": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__pyd": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__rod": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__se": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_element_hidden__sh": {
+    "expected": "hidden-ok",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__ab": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__cdpu": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__chromedp": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__cri": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__fr": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__mcp": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__oxide": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__pp": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__pw": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__pyd": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__rod": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__se": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_enabled_then_click__sh": {
+    "expected": "clicked-late-33",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__ab": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__cdpu": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__chromedp": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__cri": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__fr": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__mcp": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__oxide": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__pp": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__pw": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__pyd": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__rod": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__se": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_late_item__sh": {
+    "expected": "late-28",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__ab": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__cdpu": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__chromedp": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__cri": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__fr": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__mcp": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__oxide": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__pp": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__pw": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__pyd": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__rod": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__se": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_list_progressive_fill__sh": {
+    "expected": "item-a,item-b,item-c",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__ab": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__cdpu": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__chromedp": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__cri": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__fr": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__mcp": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__oxide": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__pp": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__pw": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__pyd": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__rod": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__se": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_slow_badge__sh": {
+    "expected": "badge-91",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__ab": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__cdpu": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__chromedp": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__cri": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__fr": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__mcp": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__oxide": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__pp": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__pw": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__pyd": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__rod": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__se": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_spinner_replaced__sh": {
+    "expected": "content-77",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__ab": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__cdpu": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__chromedp": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__cri": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__fr": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__mcp": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__oxide": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__pp": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__pw": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__pyd": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__rod": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__se": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  },
+  "sc_wait_two_phase_settle__sh": {
+    "expected": "phase:2:W7",
+    "mode": "equals"
+  }
+}

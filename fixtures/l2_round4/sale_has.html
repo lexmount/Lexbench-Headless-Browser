@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>精选好物 · 促销专区</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #fdf2f8; color: #2a2a2a; }
+  header { background: #be185d; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 720px; margin: 20px auto; padding: 0 16px; }
+  ul.products { list-style: none; padding: 0; margin: 0; }
+  li.product {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .nm { font-size: 15px; font-weight: 600; }
+  .price { color: #be185d; font-weight: 700; }
+  .sale-badge {
+    display: inline-block; background: #be185d; color: #fff; font-size: 12px;
+    padding: 2px 8px; border-radius: 6px; margin-left: 10px;
+  }
+  /* 用 :has() + 子组合器给含促销标的行高亮（同一机制也用于汇总） */
+  li.product:has(> .sale-badge) { box-shadow: 0 0 0 2px #be185d; }
+  .nm { margin-right: auto; }
+  .answer {
+    margin-top: 20px; background: #fff; border: 1px dashed #be185d;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.8;
+  }
+  .empty { color: #b45309; }
+</style>
+</head>
+<body>
+<header><h1>促销专区</h1></header>
+<main>
+  <ul class="products" id="list">
+    <li class="product" data-name="春季新茶 250g">
+      <span class="nm">春季新茶 250g</span>
+      <span class="price">￥88</span>
+      <span class="sale-badge">促销中</span>
+    </li>
+    <li class="product" data-name="普通挂耳咖啡">
+      <span class="nm">普通挂耳咖啡</span>
+      <span class="price">￥39</span>
+    </li>
+    <li class="product" data-name="手冲咖啡礼盒">
+      <span class="nm">手冲咖啡礼盒</span>
+      <span class="price">￥168</span>
+      <span class="sale-badge">促销中</span>
+    </li>
+    <li class="product" data-name="玻璃保温杯">
+      <span class="nm">玻璃保温杯</span>
+      <span class="price">￥59</span>
+    </li>
+    <li class="product" data-name="进口巧克力 12 颗装">
+      <span class="nm">进口巧克力 12 颗装</span>
+      <span class="price">￥128</span>
+      <span class="sale-badge">促销中</span>
+    </li>
+  </ul>
+
+  <div class="answer" id="answer">（正在汇总促销商品…）</div>
+</main>
+
+<script>
+(function () {
+  var answerEl = document.getElementById("answer");
+  var matched = null;
+  try {
+    // 用 :has() + 子组合器选出含促销标的商品 —— 关键判别机制
+    // ( :has(> .sale-badge) — LP 的选择器引擎不支持 :has() 内的子组合器，会抛错 )
+    matched = document.querySelectorAll("li.product:has(> .sale-badge)");
+  } catch (e) {
+    matched = null;
+  }
+
+  if (matched === null) {
+    answerEl.innerHTML = '<span class="empty">（无法汇总促销商品：浏览器不支持 :has() 选择器）</span>';
+    return;
+  }
+  if (matched.length === 0) {
+    // 选择器“支持但选不中”也视作降级（LP 上 :has() 返回空集）
+    answerEl.innerHTML = '<span class="empty">（未识别到任何促销商品）</span>';
+    return;
+  }
+  var names = [];
+  matched.forEach(function (li) { names.push(li.dataset.name); });
+  answerEl.innerHTML = "<b>促销中的商品（共 " + names.length + " 件）</b><br>" + names.join("<br>");
+})();
+</script>
+</body>
+</html>

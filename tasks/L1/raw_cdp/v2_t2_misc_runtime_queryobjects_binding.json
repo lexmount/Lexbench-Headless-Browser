@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.queryObjects enumerates live instances of a custom prototype (returning an array handle), and Runtime.addBinding/removeBinding install then tear down a page binding. Asserts queryObjects returned an object handle.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){function T(){} window.__t2bInsts=[new T(), new T()]; return T.prototype;})()"
+        },
+        "save_result_as": "proto"
+      },
+      {
+        "method": "Runtime.queryObjects",
+        "params": {
+          "prototypeObjectId": "{saved:proto.result.objectId}"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "Runtime.addBinding",
+        "params": {
+          "name": "__t2bRemovable"
+        }
+      },
+      {
+        "method": "Runtime.removeBinding",
+        "params": {
+          "name": "__t2bRemovable"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.query_objects",
+    "cdp.runtime.remove_binding",
+    "cdp.runtime.add_binding"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "q",
+        "path": "objects.objectId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_runtime_queryobjects_binding",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.queryObjects + Runtime.removeBinding"
+}

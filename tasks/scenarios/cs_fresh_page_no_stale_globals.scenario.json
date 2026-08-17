@@ -1,0 +1,72 @@
+{
+  "scenario_id": "cs_fresh_page_no_stale_globals",
+  "family": "connect_session",
+  "title": "A newly created page starts with a fresh JS world",
+  "description": "Sets a window global on the first page, then creates a new page on the same URL and confirms the global is absent. Exercises that new targets get fresh execution contexts rather than reusing the old page's world.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__abb_marker = 41, 'marked'"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "typeof window.__abb_marker === 'undefined' ? 'fresh' : 'stale'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "recreate_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "world_is_fresh",
+      "name": "answer",
+      "expected": "fresh"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "fresh"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Observation Fixture</title>
+<h1 id="obs-title">obs-fixture</h1>
+<main>
+  <button id="ax-btn">plain label</button>
+  <h2 id="ax-heading">heading-placeholder</h2>
+  <button id="ax-stable" aria-label="ax-stable-63">stable target</button>
+  <div
+    id="computed-style-target"
+    style="display: block; visibility: visible; opacity: 0.75; pointer-events: auto;"
+  >computed style target</div>
+  <div id="box" style="width: 120px; height: 48px; background: #ddd;">box</div>
+  <div id="hidden-one" style="display: none;">you cannot see me</div>
+  <div id="visible-one">seen</div>
+  <button id="log-btn">log</button>
+  <button id="err-btn">err</button>
+</main>
+<script>
+  document.getElementById('ax-btn').setAttribute('aria-label', 'ax-name-' + (7 * 9));
+  document.getElementById('ax-heading').textContent = 'ax-heading-' + (7 * 9);
+  document.getElementById('log-btn').addEventListener('click', function () {
+    console.log('console-probe-' + (4 * 8));
+  });
+  document.getElementById('err-btn').addEventListener('click', function () {
+    console.error('console-error-' + (4 * 8));
+  });
+</script>

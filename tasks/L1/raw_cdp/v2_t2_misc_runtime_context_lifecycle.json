@@ -1,0 +1,70 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With Runtime enabled, navigating the page to a new document tears down the old execution context group; Chrome emits Runtime.executionContextsCleared (required) and may also emit executionContextDestroyed (optional).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "params": {}
+      },
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "session": "page"
+      },
+      {
+        "save_result_as": "cleared",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Runtime.executionContextsCleared"
+      },
+      {
+        "optional": true,
+        "save_result_as": "destroyed",
+        "session": "page",
+        "timeout_ms": 2000,
+        "wait_for_event": "Runtime.executionContextDestroyed"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.execution_contexts_cleared",
+    "cdp.runtime.execution_context_destroyed"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.executionContextsCleared",
+        "name": "cleared"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_runtime_context_lifecycle",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Runtime.executionContextsCleared / executionContextDestroyed on navigation"
+}

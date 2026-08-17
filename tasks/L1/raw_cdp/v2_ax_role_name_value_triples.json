@@ -1,0 +1,121 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "getFullAXTree over a self-built labeled form: assert the (role, name, value) triples are computed correctly - a heading named from its text, a textbox whose accessible name comes from its <label for> and whose AXValue carries the field value 'ada@example.com', a button, and a link. Exercises the core agent-observation primitive shared by agent-browser/browser-use/Puppeteer/Stagehand.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.enable",
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.role",
+    "web.ax.name",
+    "web.ax.value"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 10,
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Account Registration"
+          },
+          "role": {
+            "value": "heading"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Email address"
+          },
+          "role": {
+            "value": "textbox"
+          },
+          "value": {
+            "value": "ada@example.com"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Create account"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Need help?"
+          },
+          "role": {
+            "value": "link"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/form"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_role_name_value_triples",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "getFullAXTree role/name/value triples on a labeled form"
+}

@@ -1,0 +1,112 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "At requestStage Response, the driver reads the true origin body via Fetch.getResponseBody (contains the ORIG token), then fulfillRequest replaces it with a TAMPERED/INJECTED body. The page renders the tampered text. Proves the original was observed and then rewritten. It passes when the `Fetch.requestPaused` event is observed; the decoded body in `orig` equals `original-document-body-token-ORIG`, regardless of CDP base64 representation; the saved value `ans` contains `TAMPERED`; the saved value `ans` contains `INJECTED`.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Response",
+              "urlPattern": "*ifx/doc*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbText(location.origin+'/v0_2/ifx/doc')"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.getResponseBody",
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        },
+        "save_result_as": "orig"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "VEFNUEVSRUQtZG9jLWJvZHktSU5KRUNURUQ=",
+          "requestId": "{saved:paused.requestId}",
+          "responseCode": 200,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain"
+            }
+          ]
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__answer",
+          "returnByValue": true
+        },
+        "save_as": "ans"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.get_response_body",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "original-document-body-token-ORIG",
+        "kind": "saved_body_text_equals",
+        "name": "orig"
+      },
+      {
+        "expected": "TAMPERED",
+        "kind": "value_contains",
+        "name": "ans"
+      },
+      {
+        "expected": "INJECTED",
+        "kind": "value_contains",
+        "name": "ans"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch_intercept",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ifx_response_body_tamper",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Response-body tamper after reading the origin body"
+}

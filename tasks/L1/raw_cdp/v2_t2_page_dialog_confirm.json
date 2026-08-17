@@ -1,0 +1,90 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A deferred confirm() opens a dialog; the driver waits for Page.javascriptDialogOpening (asserting type/message) then accepts it via Page.handleJavaScriptDialog. Asserts the page received true from the accepted confirm.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){ window.__c = confirm('proceed-t2a?'); }, 0); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "dlg",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.javascriptDialogOpening"
+      },
+      {
+        "method": "Page.handleJavaScriptDialog",
+        "params": {
+          "accept": true
+        }
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__c",
+          "returnByValue": true
+        },
+        "save_as": "cres"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_javascript_dialog"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.javascriptDialogOpening",
+        "name": "dlg"
+      },
+      {
+        "expected": "confirm",
+        "kind": "saved_path_equals",
+        "name": "dlg",
+        "path": "type"
+      },
+      {
+        "expected": "proceed-t2a?",
+        "kind": "saved_path_equals",
+        "name": "dlg",
+        "path": "message"
+      },
+      {
+        "expected": true,
+        "kind": "value_equals",
+        "name": "cres"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_dialog_confirm",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.javascriptDialogOpening + handleJavaScriptDialog accept"
+}

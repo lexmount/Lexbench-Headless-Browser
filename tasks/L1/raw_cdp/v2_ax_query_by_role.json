@@ -1,0 +1,101 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "queryAXTree rooted at the document backendNodeId with role='checkbox' returns exactly the two checkbox AX nodes and no other controls. Verifies the role-scoped AX query (Puppeteer's queryAXTree path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "Accessibility.queryAXTree",
+        "params": {
+          "backendNodeId": "{saved:doc.root.backendNodeId}",
+          "role": "checkbox"
+        },
+        "save_result_as": "q"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.query_ax_tree",
+    "cdp.dom.get_document",
+    "web.ax.role"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 2,
+        "kind": "array_length",
+        "name": "q",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Wifi enabled"
+          },
+          "role": {
+            "value": "checkbox"
+          }
+        },
+        "kind": "array_contains",
+        "name": "q",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Bluetooth enabled"
+          },
+          "role": {
+            "value": "checkbox"
+          }
+        },
+        "kind": "array_contains",
+        "name": "q",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/checkbox"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_query_by_role",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "queryAXTree filters nodes by role"
+}

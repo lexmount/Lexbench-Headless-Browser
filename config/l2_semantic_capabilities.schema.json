@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lexmount/Lexbench-Headless-Browser/config/l2_semantic_capabilities.schema.json",
+  "title": "Agent Browser Bench L2 semantic capability map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "layer",
+    "evaluation_axis",
+    "score_unit",
+    "aggregation",
+    "probe_roles",
+    "capabilities"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "layer": {
+      "const": "L2"
+    },
+    "evaluation_axis": {
+      "const": "web_platform_workflow_semantic_correctness"
+    },
+    "score_unit": {
+      "const": "semantic_capability_attempt"
+    },
+    "aggregation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "probe_roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semantic_probe",
+        "driver_cross_check",
+        "diagnostic"
+      ],
+      "properties": {
+        "semantic_probe": {
+          "type": "string",
+          "minLength": 1
+        },
+        "driver_cross_check": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diagnostic": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "capability_id",
+          "title",
+          "category",
+          "description",
+          "observable",
+          "probes"
+        ],
+        "properties": {
+          "capability_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observable": {
+            "enum": [
+              "dom_state",
+              "storage_state",
+              "network_server_state",
+              "workflow_result"
+            ]
+          },
+          "probes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "task_id",
+                "role",
+                "claim"
+              ],
+              "properties": {
+                "task_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "role": {
+                  "enum": [
+                    "semantic_probe",
+                    "driver_cross_check",
+                    "diagnostic"
+                  ]
+                },
+                "claim": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

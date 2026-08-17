@@ -1,0 +1,122 @@
+{
+  "v2_wpt_css_at_property": {
+    "expected": "ATPROP:INITIAL_USED:rgb(5, 5, 5)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_cascade_important": {
+    "expected": "CASCADE:IMPORTANT_WINS:rgb(7, 8, 9)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_constructable": {
+    "expected": "CONSTRUCT:SHADOW_ADOPTED_OK:rgb(6, 6, 6)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_focus_within": {
+    "expected": "FOCUS_WITHIN:ACTIVE:rgb(4, 4, 4)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_has_forgiving": {
+    "expected": "HAS_FORGIVING:A_CARD",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_is_specificity": {
+    "expected": "IS_SPEC:IS_WINS:rgb(2, 2, 2)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_nth_child_of": {
+    "expected": "NTHOF:2,4",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_property_inherits": {
+    "expected": "INHERITS:pi=5px;pn=1px",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_register_syntax": {
+    "expected": "REGSYNTAX:a=30px;b=10px",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_css_where_zero": {
+    "expected": "WHERE_ZERO:TYPE_WINS:rgb(3, 3, 3)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_abortsignal": {
+    "expected": "ABORT:count=1;aborted=true;reason=done",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_adoptnode": {
+    "expected": "ADOPT:before=true;owner=true;removedFromSrc=true;import=true",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_clonenode": {
+    "expected": "CLONE:deep=1;shallow=0;deepText=CHILD;attr=v;connected=false",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_domparser": {
+    "expected": "DOMPARSE:xmlerr=true;html=hi;htmlerr=N",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_event_order": {
+    "expected": "EVT:OC,IC,IB,OB",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_event_stopprop": {
+    "expected": "STOP:B1,B2",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_mo_attributes": {
+    "expected": "MO_ATTR:data-x=one,data-x=two",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_mo_chardata": {
+    "expected": "MO_CD:characterData:first,characterData:second",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_mo_childlist": {
+    "expected": "MO_CL:records=3;added=2;removed=1",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_nodeiterator": {
+    "expected": "NI:Alpha,Beta,Gamma,Delta",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_range_extract": {
+    "expected": "EXTRACT:CDEFGH|ABIJ|collapsed=true",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_range_surround": {
+    "expected": "SURROUND:B:MID:PreMIDPost",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_template_content": {
+    "expected": "TEMPLATE:frag=true;connected=false;scriptRan=N",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "v2_wpt_dom_treewalker_filter": {
+    "expected": "TW:S1,A1",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  }
+}

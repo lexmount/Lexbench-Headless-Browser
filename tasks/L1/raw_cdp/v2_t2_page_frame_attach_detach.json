@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "An iframe is appended (Page.frameAttached) then removed (Page.frameDetached). Asserts both structural frame-tree events fire and each carries a frameId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbAddFrame('/v2/t2a/child'); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "fatt",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.frameAttached"
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbRemoveFrame(); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "fdet",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.frameDetached"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.frame_attached",
+    "cdp.page.frame_detached"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.frameAttached",
+        "name": "fatt"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "fatt",
+        "path": "frameId"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Page.frameDetached",
+        "name": "fdet"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "fdet",
+        "path": "frameId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_frame_attach_detach",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.frameAttached + frameDetached"
+}

@@ -1,0 +1,73 @@
+{
+  "scenario_id": "cs_two_pages_isolated",
+  "family": "connect_session",
+  "title": "State set in one page must not leak into a second page",
+  "description": "Fills an input on the first page, then creates a second page on the same fixture and confirms its input is untouched. Exercises multi-target isolation within one driver session.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#field",
+      "value": "leak-probe"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('field').value === '' ? 'isolated' : 'leaked:' + document.getElementById('field').value",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_page_created",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "no_state_leak",
+      "name": "answer",
+      "expected": "isolated"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "isolated"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

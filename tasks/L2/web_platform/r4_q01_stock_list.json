@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for Computed-style stock filtering. The driver reads output from the self-hosted fixture `/fixtures/l2_round4/stock_list.html`, and the server-side grader compares it with the checked-in expected answer.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "read": "textContent",
+        "selector": "#answer",
+        "settle": "nonempty",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 400
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.css.cascade"
+  ],
+  "grader": {
+    "checks": [
+      "answer_contains_all_keywords"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "human_query": "这个「今日特价」页面里,哪些商品现在是有货的?把有货的商品名称和价格列给我。",
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "q01_stock_list",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/l2_round4/stock_list.html"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "r4_q01_stock_list",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Computed-style stock filtering"
+}

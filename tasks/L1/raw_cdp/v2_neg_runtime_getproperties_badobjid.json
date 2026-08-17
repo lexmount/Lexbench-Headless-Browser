@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative (bad param type): Runtime.getProperties.objectId must be a string RemoteObjectId; passing an integer must yield a clean synchronous InvalidParams rejection rather than a hang. Declared expect_unsupported (a rejected/InvalidParams outcome passes).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Runtime.getProperties",
+        "params": {
+          "objectId": 12345
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.get_properties"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Runtime.getProperties"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_runtime_getproperties_badobjid",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "runtime_getproperties_badobjid"
+}

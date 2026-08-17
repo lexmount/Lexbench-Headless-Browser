@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c2 template</title></head>
+<body>
+<template id="tpl"><div class="row">TEMPLATE_ROW_C2</div></template>
+<div id="mount"></div>
+<script>
+try {
+  var t = document.getElementById('tpl');
+  var clone = t.content.cloneNode(true);
+  document.getElementById('mount').appendChild(clone);
+} catch(e){ document.getElementById('mount').textContent='ERR:'+e.message; }
+</script>
+</body></html>

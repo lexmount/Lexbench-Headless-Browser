@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser main: open through the agent-browser tool API. It passes when `agent-browser open {fixture_url}` succeeds; at least one of these holds: `agent-browser open {fixture_url}` returns data containing `CDP Core Fixture` or `agent-browser open {fixture_url}` returns data containing `{fixture_host}`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 0
+        },
+        {
+          "checks": [
+            {
+              "expected": "CDP Core Fixture",
+              "kind": "ab_data_contains",
+              "step": 0
+            },
+            {
+              "expected": "{fixture_host}",
+              "kind": "ab_data_contains",
+              "step": 0
+            }
+          ],
+          "kind": "any_of"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.open"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_main_open",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser main: open"
+}

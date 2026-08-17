@@ -1,0 +1,111 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With Target.setDiscoverTargets enabled, a new target is created (targetCreated), brought to front (activateTarget), observed changing info as it loads (targetInfoChanged), then closed (targetDestroyed). Asserts the created and destroyed lifecycle events were observed for that specific targetId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setDiscoverTargets",
+        "params": {
+          "discover": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "tc",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.targetCreated"
+      },
+      {
+        "method": "Target.activateTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "optional": true,
+        "save_result_as": "tic",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.targetInfoChanged"
+      },
+      {
+        "method": "Target.closeTarget",
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "save_result_as": "td",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.targetDestroyed"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.set_discover_targets",
+    "cdp.target.target_created",
+    "cdp.target.target_info_changed",
+    "cdp.target.target_destroyed",
+    "cdp.target.activate_target",
+    "cdp.target.close_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Target.targetCreated",
+        "name": "tc"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Target.targetDestroyed",
+        "name": "td"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_target_lifecycle_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Target.targetCreated / targetInfoChanged / targetDestroyed + activateTarget"
+}

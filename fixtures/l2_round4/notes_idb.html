@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>速记 · 标签笔记</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #f7f5f0; color: #2a2a2a; }
+  header { background: #166534; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 680px; margin: 20px auto; padding: 0 16px; }
+  .tags { margin-bottom: 16px; }
+  .tag {
+    display: inline-block; background: #dcfce7; color: #166534; border-radius: 999px;
+    padding: 4px 12px; font-size: 13px; margin-right: 8px;
+  }
+  .tag.active { background: #166534; color: #fff; }
+  .note {
+    background: #fff; border-radius: 10px; padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .note .h { font-size: 13px; color: #888; margin-bottom: 8px; }
+  .note .body { font-size: 16px; line-height: 1.8; }
+  .empty { color: #b45309; }
+  .answer {
+    margin-top: 18px; background: #fff; border: 1px dashed #166534;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<header><h1>速记</h1></header>
+<main>
+  <div class="tags">
+    <span class="tag">日程</span>
+    <span class="tag active">报销</span>
+    <span class="tag">想法</span>
+  </div>
+  <div class="note" id="note"><div class="body">正在打开标签「报销」的笔记…</div></div>
+  <div class="answer" id="answer">（正在读取「报销」笔记内容…）</div>
+</main>
+
+<script>
+(function () {
+  var SEED = [
+    { id: 1, tag: "日程", body: "周三下午三点产品评审会，会议室 B201，带上原型链接。" },
+    { id: 2, tag: "报销", body: "差旅发票贴在 A4 纸上，登录 OA 走差旅报销流程，11 月 30 日前提交，审批人填王敏。" },
+    { id: 3, tag: "想法", body: "做一个把网页正文转成播客的小工具，先验证 TTS 时长。" }
+  ];
+  var noteEl = document.getElementById("note");
+  var answerEl = document.getElementById("answer");
+
+  function degrade(msg) {
+    noteEl.innerHTML = '<div class="body empty">' + msg + "</div>";
+    answerEl.innerHTML = '<span class="empty">（无法读取笔记：离线存储不可用）</span>';
+  }
+
+  function render(rec) {
+    if (!rec) { degrade("未找到标签「报销」的笔记"); return; }
+    noteEl.innerHTML = '<div class="h">标签：报销</div><div class="body">' + rec.body + "</div>";
+    answerEl.innerHTML = "<b>「报销」笔记内容</b><br>" + rec.body;
+  }
+
+  if (typeof indexedDB === "undefined" || !indexedDB) { degrade("离线存储不可用"); return; }
+  try {
+    var rq = indexedDB.open("notes_app", 1);
+    rq.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      var os = db.createObjectStore("notes", { keyPath: "id" });
+      os.createIndex("tag", "tag", { unique: false });
+      SEED.forEach(function (n) { os.put(n); });
+    };
+    rq.onerror = function () { degrade("离线存储打开失败"); };
+    rq.onsuccess = function (e) {
+      var db = e.target.result;
+      var tx = db.transaction("notes", "readonly");
+      // 用 tag 索引取「报销」笔记 —— 关键判别机制
+      var idx = tx.objectStore("notes").index("tag");
+      var g = idx.get("报销");
+      g.onsuccess = function () { render(g.result); };
+      g.onerror = function () { degrade("索引查询失败"); };
+    };
+  } catch (e) {
+    degrade("离线存储不可用");
+  }
+})();
+</script>
+</body>
+</html>

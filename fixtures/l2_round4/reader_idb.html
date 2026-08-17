@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>我的收藏夹 · 离线阅读器</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #fafafa; color: #1a1a1a; }
+  header { background: #2563eb; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  .sub { font-size: 13px; opacity: .85; margin-top: 4px; }
+  main { max-width: 680px; margin: 20px auto; padding: 0 16px; }
+  .article {
+    background: #fff; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .article .t { font-size: 16px; font-weight: 600; }
+  .article .m { color: #888; font-size: 12px; margin-top: 6px; }
+  .answer {
+    margin-top: 20px; background: #fff; border: 1px dashed #2563eb;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.8;
+  }
+  .empty { color: #b45309; }
+</style>
+</head>
+<body>
+<header>
+  <h1>我的收藏夹</h1>
+  <div class="sub">离线优先 · 文章保存在本地，无网也能读</div>
+</header>
+<main>
+  <div id="list"><div class="article"><div class="t">正在从本地存储加载…</div></div></div>
+  <div class="answer" id="answer">（正在读取收藏的文章…）</div>
+</main>
+
+<script>
+(function () {
+  var SEED = [
+    { id: 1, title: "Rust 异步运行时对比", author: "tokio-fan", saved: "2026-05-30" },
+    { id: 2, title: "WebAssembly 在边缘计算的实践", author: "edge-dev", saved: "2026-05-28" },
+    { id: 3, title: "从零实现一个 CSS 引擎", author: "layout-nerd", saved: "2026-05-22" },
+    { id: 4, title: "HTTP/3 与 QUIC 入门", author: "net-stack", saved: "2026-05-18" }
+  ];
+  var listEl = document.getElementById("list");
+  var answerEl = document.getElementById("answer");
+
+  function degrade(msg) {
+    listEl.innerHTML = '<div class="article"><div class="t empty">' + msg + '</div></div>';
+    answerEl.innerHTML = '<span class="empty">（无法加载收藏列表：离线存储不可用）</span>';
+  }
+
+  function render(articles) {
+    if (!articles || !articles.length) { degrade("收藏夹为空"); return; }
+    listEl.innerHTML = articles.map(function (a) {
+      return '<div class="article"><div class="t">' + a.title +
+             '</div><div class="m">' + a.author + " · 收藏于 " + a.saved + "</div></div>";
+    }).join("");
+    var titles = articles.map(function (a) { return a.title; });
+    answerEl.innerHTML = "<b>收藏的文章（共 " + titles.length + " 篇）</b><br>" + titles.join("<br>");
+  }
+
+  if (typeof indexedDB === "undefined" || !indexedDB) {
+    degrade("离线存储不可用"); return;
+  }
+  try {
+    var rq = indexedDB.open("reader_fav", 1);
+    rq.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      var os = db.createObjectStore("articles", { keyPath: "id" });
+      SEED.forEach(function (a) { os.put(a); });
+    };
+    rq.onerror = function () { degrade("离线存储打开失败"); };
+    rq.onsuccess = function (e) {
+      var db = e.target.result;
+      var tx = db.transaction("articles", "readonly");
+      // getAll 取全部收藏 —— 关键判别机制
+      var g = tx.objectStore("articles").getAll();
+      g.onsuccess = function () {
+        var rows = (g.result || []).slice().sort(function (a, b) { return a.id - b.id; });
+        render(rows);
+      };
+      g.onerror = function () { degrade("读取收藏失败"); };
+    };
+  } catch (e) {
+    degrade("离线存储不可用");
+  }
+})();
+</script>
+</body>
+</html>

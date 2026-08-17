@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Network.setCookies writes a cookie scoped to the fixture origin, then Network.getCookies for that URL reads it back. Asserts the returned cookies array contains the exact name/value that was written (cookie store round-trip semantics, not just call success).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.setCookies",
+        "params": {
+          "cookies": [
+            {
+              "name": "abb_t2a",
+              "url": "{fixture_url}",
+              "value": "val42"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Network.getCookies",
+        "params": {
+          "urls": [
+            "{fixture_url}"
+          ]
+        },
+        "save_result_as": "got"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.set_cookies",
+    "cdp.network.get_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": "abb_t2a",
+          "value": "val42"
+        },
+        "kind": "array_contains",
+        "name": "got",
+        "path": "cookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_cookie_set_get",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.setCookies then getCookies round-trip"
+}

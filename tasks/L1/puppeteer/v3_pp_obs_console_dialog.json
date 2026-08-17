@@ -1,0 +1,98 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Observability probe: console listener attaches at page creation (must capture the fixture's load-time log AND a probe-emitted computed log), a dialog handler accepts window.confirm — the accepted confirm must return true into the page (Moli A5 target: Page.handleJavaScriptDialog result write-back) and the recorded dialog must carry the confirm type and message.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "fixture-console-ready",
+        "kind": "saved_contains",
+        "label": "loadtime_log_captured",
+        "name": "console_log"
+      },
+      {
+        "expected": "probe-console-42",
+        "kind": "saved_contains",
+        "label": "probe_log_captured",
+        "name": "console_log"
+      },
+      {
+        "expected": "confirm:true",
+        "kind": "saved_equals",
+        "label": "confirm_writeback_true",
+        "name": "confirm_result"
+      },
+      {
+        "expected": "confirm",
+        "kind": "saved_contains",
+        "label": "dialog_type_confirm",
+        "name": "dialog_log"
+      },
+      {
+        "expected": "proceed-check",
+        "kind": "saved_contains",
+        "label": "dialog_message_captured",
+        "name": "dialog_log"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "action": "accept",
+        "op": "on_dialog"
+      },
+      {
+        "expression": "console.log('probe-console-' + (6 * 7))",
+        "op": "evaluate"
+      },
+      {
+        "expression": "'confirm:' + window.confirm('proceed-check')",
+        "op": "evaluate",
+        "save_as": "confirm_result"
+      },
+      {
+        "op": "get_console",
+        "save_as": "console_log"
+      },
+      {
+        "op": "get_dialogs",
+        "save_as": "dialog_log"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.on_console",
+    "fw.puppeteer.page.on_dialog",
+    "cdp.runtime.console_api_called",
+    "cdp.log.entry_added",
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_javascript_dialog"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_observation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_obs_console_dialog",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer observes console messages and accepts a confirm dialog"
+}

@@ -1,0 +1,104 @@
+{
+  "_generated_from": "tasks/scenarios/app_cart_persists_reload.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Logs in, adds an item, reloads the document, and answers with the total restored from server state.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "restored",
+        "step": 8
+      },
+      {
+        "expected": "total-7",
+        "kind": "saved_equals",
+        "label": "total_after_reload",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_pydoll",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user-in",
+        "value": "eve-7"
+      },
+      {
+        "op": "click",
+        "selector": "#login-btn"
+      },
+      {
+        "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "!!document.getElementById('add-widget-c')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-widget-c"
+      },
+      {
+        "expression": "!!document.getElementById('cart-widget-c')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "reload"
+      },
+      {
+        "expression": "document.getElementById('cart-total').textContent === 'total-7'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#cart-total"
+      }
+    ]
+  },
+  "features": [
+    "fw.pydoll.op.new_page",
+    "fw.pydoll.op.goto",
+    "fw.pydoll.op.fill",
+    "fw.pydoll.op.click",
+    "fw.pydoll.op.wait_for_function",
+    "fw.pydoll.op.reload",
+    "fw.pydoll.op.text_content",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.pydoll",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_cart_persists_reload__pyd",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The cart survives a page reload via the session cookie (pydoll)"
+}

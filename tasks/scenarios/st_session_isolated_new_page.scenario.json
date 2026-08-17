@@ -1,0 +1,73 @@
+{
+  "scenario_id": "st_session_isolated_new_page",
+  "family": "state",
+  "title": "sessionStorage does not leak into a new page",
+  "description": "Writes sessionStorage in the first page, creates a fresh page on the same origin, and confirms the key is absent there - sessionStorage is per top-level browsing context.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "sessionStorage.setItem('abb_iso', 'leak-' + 9), 'set'"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "sessionStorage.getItem('abb_iso') === null ? 'isolated' : 'leaked'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "second_page_ok",
+      "step": 5
+    },
+    {
+      "kind": "saved_equals",
+      "label": "session_isolated",
+      "name": "answer",
+      "expected": "isolated"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "isolated"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "selenium"
+  ],
+  "driver_skips": {
+    "agent_browser": "agent-browser sessions are single-tab: the new_page surface is a same-tab navigation, so sessionStorage lawfully persists and an isolated second page cannot be expressed through the tool surface"
+  }
+}

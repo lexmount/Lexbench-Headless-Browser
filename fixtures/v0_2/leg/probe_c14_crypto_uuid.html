@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c14 uuid</title></head>
+<body><div id="out"></div>
+<script>try{
+ var u=crypto.randomUUID();
+ document.getElementById('out').textContent=/^[0-9a-f-]{36}$/.test(u)?('UUID_C14:'+u):'BADUUID';
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

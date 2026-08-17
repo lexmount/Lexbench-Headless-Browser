@@ -1,0 +1,76 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "DOM.focus is applied to the #field text input, then Runtime.evaluate reads document.activeElement.id and confirms focus moved to the targeted element (browser-use pre-typing focus strategy).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#field"
+        },
+        "save_result_as": "found"
+      },
+      {
+        "method": "DOM.focus",
+        "params": {
+          "nodeId": "{saved:found.nodeId}"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(document.activeElement && document.activeElement.id) || ''",
+          "returnByValue": true
+        },
+        "save_as": "active"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.focus",
+    "cdp.dom.query_selector",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "field",
+        "kind": "value_equals",
+        "name": "active"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_dom_focus_activeelement",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.focus changes document.activeElement"
+}

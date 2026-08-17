@@ -1,0 +1,21 @@
+{
+  "scenario_id": "form_select_option",
+  "family": "forms",
+  "title": "Select a dropdown option and observe the change event",
+  "description": "Selects the Engineering option in the #dept dropdown on the probe controls page; the page's change handler writes 'picked:eng' into #dept-out. Reads it back. Exercises select_option and confirms the driver triggers the change event rather than only setting value.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/v0_3/probe/controls"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "select_option", "selector": "#dept", "value": "eng"},
+    {"op": "text_content", "selector": "#dept-out", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "select_ok", "step": 2},
+    {"kind": "saved_equals", "label": "dept_picked_eng", "name": "answer", "expected": "picked:eng"}
+  ],
+  "cdp_anchors": ["cdp.dom.set_attribute_value"],
+  "expected_answer": {"mode": "equals", "expected": "picked:eng"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

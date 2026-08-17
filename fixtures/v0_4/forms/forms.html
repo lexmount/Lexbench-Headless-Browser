@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>v0.4 forms flow</title></head>
+<body>
+<h1 id="title">Forms Flow Fixture</h1>
+<form id="query-form" method="GET" action="/v0_4/forms">
+  <input id="q" name="q" type="text">
+  <button id="q-submit" type="submit">Search</button>
+</form>
+<div id="q-echo"></div>
+<input id="overwrite" type="text">
+<textarea id="notes"></textarea>
+<div id="radio-zone">
+  <input type="radio" name="opt" id="opt-a" value="a">
+  <input type="radio" name="opt" id="opt-b" value="b">
+</div>
+<input type="checkbox" id="via-label-cb">
+<label id="via-label" for="via-label-cb">Toggle me</label>
+<div id="label-out">off</div>
+<input id="enter-field" type="text">
+<div id="enter-out">none</div>
+<script>
+  // Echo the submitted query back so the submit round-trip is observable
+  // in the reloaded document (value emerges from the interaction).
+  var params = new URLSearchParams(location.search);
+  if (params.has("q")) {
+    document.getElementById("q-echo").textContent = "submitted:" + params.get("q");
+  }
+  document.getElementById("via-label-cb").addEventListener("change", function () {
+    document.getElementById("label-out").textContent = this.checked ? "via-label-on" : "via-label-off";
+  });
+  document.getElementById("enter-field").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      document.getElementById("enter-out").textContent = "enter-" + (13 * 5);
+    }
+  });
+</script>
+</body>
+</html>

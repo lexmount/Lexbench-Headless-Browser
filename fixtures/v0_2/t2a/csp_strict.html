@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>CSP Locked</title></head>
+<body>
+<h1 id="state">csp-locked</h1>
+<script>
+/* Served with Content-Security-Policy: script-src 'none'. Under a normal
+   context this inline script is blocked and never runs. With Page.setBypassCSP
+   enabled the CSP is ignored and this script executes. */
+window.__cspRan = true;
+document.title = 'CSP Bypassed';
+document.getElementById('state').textContent = 'csp-bypassed';
+</script>
+</body>
+</html>

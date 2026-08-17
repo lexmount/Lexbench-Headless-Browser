@@ -1,0 +1,80 @@
+{
+  "_generated_from": "tasks/scenarios/cs_two_pages_isolated.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fills an input on the first page, then creates a second page on the same fixture and confirms its input is untouched. Exercises multi-target isolation within one driver session.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "second_page_created",
+        "step": 3
+      },
+      {
+        "expected": "isolated",
+        "kind": "saved_equals",
+        "label": "no_state_leak",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#field",
+        "value": "leak-probe"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('field').value === '' ? 'isolated' : 'leaked:' + document.getElementById('field').value",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.fill",
+    "fw.chrome_remote_interface.op.evaluate",
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.connect_session",
+    "version.v0_4"
+  ],
+  "task_id": "sc_cs_two_pages_isolated__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "State set in one page must not leak into a second page (chrome_remote_interface)"
+}

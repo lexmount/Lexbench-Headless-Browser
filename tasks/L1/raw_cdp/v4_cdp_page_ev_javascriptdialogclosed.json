@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Opens an alert, accepts it via handleJavaScriptDialog, and asserts Page.javascriptDialogClosed(result=true).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "setTimeout(function(){alert('v4');},10)"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "Page.javascriptDialogOpening"
+      },
+      {
+        "method": "Page.handleJavaScriptDialog",
+        "params": {
+          "accept": true
+        }
+      },
+      {
+        "save_result_as": "dc",
+        "timeout_ms": 3000,
+        "wait_for_event": "Page.javascriptDialogClosed"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.javascript_dialog_closed"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "dialog_closed_event",
+        "method": "Page.javascriptDialogClosed"
+      },
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "label": "dialog_accepted",
+        "name": "dc",
+        "path": "result"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.navigation",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_page_ev_javascriptdialogclosed",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.javascriptDialogClosed after handling an alert"
+}

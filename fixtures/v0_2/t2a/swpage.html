@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>T2A Service Worker Page</title></head>
+<body>
+<h1 id="state">sw-registering</h1>
+<script>
+window.__swReady = false;
+window.__swError = null;
+window.__abbProbe = function () {
+  return fetch('/v2/t2a/sw-probe', {cache: 'no-store'}).then(function (r) { return r.text(); });
+};
+(function () {
+  if (!('serviceWorker' in navigator)) { window.__swError = 'no-sw'; return; }
+  navigator.serviceWorker.register('/v2/t2a/sw.js', {scope: '/v2/t2a/'})
+    .then(function () { return navigator.serviceWorker.ready; })
+    .then(function () {
+      // Wait until this page is actually controlled by the worker.
+      function check() {
+        if (navigator.serviceWorker.controller) {
+          window.__swReady = true;
+          document.getElementById('state').textContent = 'sw-active';
+        } else {
+          setTimeout(check, 50);
+        }
+      }
+      check();
+    })
+    .catch(function (e) { window.__swError = String(e); });
+})();
+</script>
+</body>
+</html>

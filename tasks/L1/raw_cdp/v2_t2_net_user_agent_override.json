@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Network.setUserAgentOverride sets a custom UA string, then the page is navigated so the override takes effect and navigator.userAgent is read back. Asserts the page-visible userAgent reflects the override (semantic effect, not just command success).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.setUserAgentOverride",
+        "params": {
+          "userAgent": "AbbUA/9.9 (t2a-probe)"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/netpage'",
+          "returnByValue": true
+        },
+        "save_result_as": "url"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:url.result.value}"
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "navigator.userAgent",
+          "returnByValue": true
+        },
+        "save_as": "ua"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.set_user_agent_override"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "AbbUA/9.9",
+        "kind": "value_contains",
+        "name": "ua"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_user_agent_override",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.setUserAgentOverride changes navigator.userAgent"
+}

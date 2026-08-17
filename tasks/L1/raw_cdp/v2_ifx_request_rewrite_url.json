@@ -1,0 +1,95 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "The app fetches /api-answer (origin: SERVER_DECOY_SECRET); Fetch.continueRequest rewrites the url to /api-truth, so the origin actually serves REWRITTEN_TRUTH_ROUTE and the page renders it. Proves URL rewriting changes which origin resource the server delivers.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin+'/v0_2/ifx/api-truth'",
+          "returnByValue": true
+        },
+        "save_as": "truthurl"
+      },
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*ifx/api-answer*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbApiField(location.origin+'/v0_2/ifx/api-answer')"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused.requestId}",
+          "url": "{saved:truthurl.result.value}"
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__answer",
+          "returnByValue": true
+        },
+        "save_as": "ans"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.continue_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "REWRITTEN_TRUTH_ROUTE",
+        "kind": "value_equals",
+        "name": "ans"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch_intercept",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ifx_request_rewrite_url",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Request URL rewrite redirects to a different origin route"
+}

@@ -1,0 +1,90 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Action probe: focus #keys, keyboard.type('hi'), then keyboard.press('Enter') — all through Input.dispatchKeyEvent. The fixture counts keydowns (must be 3), flags Enter (must be yes), and the typed text must land in the field.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "hi",
+        "kind": "saved_equals",
+        "label": "typed_text",
+        "name": "typed"
+      },
+      {
+        "expected": "3",
+        "kind": "saved_equals",
+        "label": "keydown_count_3",
+        "name": "keydowns"
+      },
+      {
+        "expected": "yes",
+        "kind": "saved_equals",
+        "label": "enter_seen",
+        "name": "enter_flag"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "focus",
+        "selector": "#keys"
+      },
+      {
+        "op": "keyboard_type",
+        "text": "hi"
+      },
+      {
+        "key": "Enter",
+        "op": "press"
+      },
+      {
+        "op": "input_value",
+        "save_as": "typed",
+        "selector": "#keys"
+      },
+      {
+        "op": "text_content",
+        "save_as": "keydowns",
+        "selector": "#keydown-count"
+      },
+      {
+        "op": "text_content",
+        "save_as": "enter_flag",
+        "selector": "#enter-flag"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.focus",
+    "fw.puppeteer.keyboard.type",
+    "fw.puppeteer.keyboard.press",
+    "cdp.input.dispatch_key_event"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_act_keyboard_press",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer keyboard.type + press Enter register real keydowns"
+}

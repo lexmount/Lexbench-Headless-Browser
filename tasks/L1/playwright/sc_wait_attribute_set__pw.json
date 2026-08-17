@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/wait_attribute_set.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "An attribute is set 300ms after load. Waits for it via predicate, then reads it through the driver's attribute surface (not page JS).",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "attr_read_ok",
+        "step": 3
+      },
+      {
+        "expected": "ok-58",
+        "kind": "saved_equals",
+        "label": "attr_value",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.getElementById('attr-target').getAttribute('data-ready') !== null",
+        "op": "wait_for_function"
+      },
+      {
+        "name": "data-ready",
+        "op": "get_attribute",
+        "save_as": "answer",
+        "selector": "#attr-target"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.op.new_page",
+    "fw.playwright.op.goto",
+    "fw.playwright.op.wait_for_function",
+    "fw.playwright.op.get_attribute",
+    "cdp.dom.get_attributes"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_attribute_set__pw",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a late attribute and read it through the driver (playwright)"
+}

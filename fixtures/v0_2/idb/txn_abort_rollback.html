@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb transaction abort rollback</title></head><body><div id="out">PENDING</div><script>
+// Transaction abort must roll back ALL writes in that transaction. tx1 commits
+// id1=KEEP. tx2 mutates id1 and inserts id2, then calls abort(): both changes
+// must vanish, leaving exactly {id1:KEEP}. An engine without rollback would
+// show id1=CHANGED and/or id2 present.
+var DB='v2idb_abort_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;
+    var tx1=db.transaction('s','readwrite');tx1.objectStore('s').put({id:1,v:'KEEP'});
+    tx1.oncomplete=function(){
+      var tx2=db.transaction('s','readwrite');var st2=tx2.objectStore('s');
+      st2.put({id:1,v:'CHANGED'});st2.put({id:2,v:'GONE'});
+      tx2.onabort=function(){
+        var rt=db.transaction('s').objectStore('s');var g=rt.getAll();
+        g.onsuccess=function(){var rows=g.result;var r1=rows.filter(function(x){return x.id===1;})[0];set('AFTER_ABORT='+rows.length+':'+(r1&&r1.v));};
+        g.onerror=function(){fail(g.error);};
+      };
+      try{st2.transaction.abort();}catch(ae){tx2.abort();}
+    };
+    tx1.onerror=function(){fail(tx1.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

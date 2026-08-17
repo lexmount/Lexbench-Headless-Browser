@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "End-to-end multi-step flow with real Puppeteer: on the paged shop fixture, add gamma on page 1, click next, add keyboard on page 2, click next, add lamp on page 3, then read #cart-total. All clicks ride the real pointer path (on_framework_main_path) and the page re-renders its catalog on every page turn, so stale element handling matters. The expected total '17.40' emerges from cents accumulation (450+990+300)/100 and exists nowhere as a literal in the fixture.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#add-gamma"
+      },
+      {
+        "op": "click",
+        "selector": "#next-page"
+      },
+      {
+        "op": "click",
+        "selector": "#add-keyboard"
+      },
+      {
+        "op": "click",
+        "selector": "#next-page"
+      },
+      {
+        "op": "click",
+        "selector": "#add-lamp"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#cart-total"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.click",
+    "fw.puppeteer.page.$eval",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.dom.get_content_quads",
+    "cdp.dom.scroll_into_view_if_needed",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/flow/shop"
+  },
+  "subset_id": "l2.puppeteer",
+  "tags": [
+    "family.flow",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_flow_shop_cart",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer paged shop add-to-cart across three pages"
+}

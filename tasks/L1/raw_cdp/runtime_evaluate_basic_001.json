@@ -1,0 +1,47 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies evaluate a basic arithmetic expression through Runtime.evaluate by issuing raw CDP command(s) Runtime.enable, Runtime.evaluate against an about:blank page. The task passes when inline assertions confirm the expected protocol result.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "1 + 2",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "value_equals_3",
+      "result_type_number"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.core",
+    "purpose.smoke",
+    "version.v0_1"
+  ],
+  "task_id": "runtime_evaluate_basic_001",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 20000,
+    "task_ms": 10000
+  },
+  "title": "Evaluate a basic arithmetic expression through Runtime.evaluate"
+}

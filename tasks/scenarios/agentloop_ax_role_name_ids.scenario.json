@@ -1,0 +1,71 @@
+{
+  "scenario_id": "agentloop_ax_role_name_ids",
+  "family": "observation",
+  "title": "An agent-facing AX query preserves role, name, and backend DOM identity",
+  "description": "Fetches the full accessibility tree through each driver's own CDP route, finds a deterministic button, and requires its role, computed accessible name, and backendDOMNodeId to survive the adapter boundary.",
+  "layer": "L1",
+  "diagnostic": true,
+  "extra_tags": [
+    "purpose.issue_106"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('ax-stable').getAttribute('aria-label') === 'ax-stable-63'"
+    },
+    {
+      "op": "ax_node_identity",
+      "role": "button",
+      "name": "ax-stable-63",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "ax_identity_read",
+      "step": 3
+    },
+    {
+      "kind": "saved_contains",
+      "label": "role_name_backend_id_complete",
+      "name": "answer",
+      "expected": "role=button|name=ax-stable-63|backendDOMNodeId="
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "role=button|name=ax-stable-63|backendDOMNodeId="
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum"
+  ],
+  "driver_skips": {
+    "chrome_devtools_mcp": "take_snapshot exposes stable opaque uid references but intentionally does not reveal the raw backendDOMNodeId",
+    "agent_browser": "agent-browser snapshot exposes agent refs and role/name text but omits the raw backendDOMNodeId",
+    "selenium": "the cross-engine Selenium/WebDriver route has no standard accessibility-tree command that returns backendDOMNodeId"
+  }
+}

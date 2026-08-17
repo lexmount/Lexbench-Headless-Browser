@@ -1,0 +1,44 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Dialog / Upload / Download Fixture</title>
+<h1 id="dlg-title">dialog-fixture</h1>
+<button id="btn-alert">alert</button>
+<button id="btn-confirm">confirm</button>
+<button id="btn-prompt">prompt</button>
+<button id="btn-two">two dialogs</button>
+<div id="dlg-out">idle</div>
+<form id="up-form" action="/v0_4/upload" method="post" enctype="multipart/form-data">
+  <input type="file" id="up-file" name="f">
+  <input type="submit" id="up-submit" value="upload">
+</form>
+<input type="file" id="fr-file">
+<div id="fr-out">idle</div>
+<a id="dl-link" href="/download.txt">download</a>
+<script>
+  var out = document.getElementById('dlg-out');
+  document.getElementById('btn-alert').addEventListener('click', function () {
+    alert('dlg-alert-' + (6 * 7));
+    out.textContent = 'alert-done-' + (6 * 7);
+  });
+  document.getElementById('btn-confirm').addEventListener('click', function () {
+    out.textContent = 'confirm-' + (confirm('sure-' + (3 * 11)) ? 'yes' : 'no') + '-' + (3 * 11);
+  });
+  document.getElementById('btn-prompt').addEventListener('click', function () {
+    var got = prompt('give a value', 'default-ignored');
+    out.textContent = 'prompt-' + (got === null ? 'null' : got);
+  });
+  document.getElementById('btn-two').addEventListener('click', function () {
+    alert('first-' + (2 * 2));
+    out.textContent = 'seq-' + (confirm('second-' + (2 * 2)) ? 'y' : 'n') + '-' + (2 * 2);
+  });
+  document.getElementById('fr-file').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) { document.getElementById('fr-out').textContent = 'no-file'; return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var text = String(reader.result);
+      document.getElementById('fr-out').textContent = 'read:' + text.length + ':' + text.split('-')[0];
+    };
+    reader.readAsText(file);
+  });
+</script>

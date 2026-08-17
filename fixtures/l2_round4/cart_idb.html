@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>购物车 · 生鲜优选</title>
+<style>
+  :root { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { margin: 0; background: #fff7f2; color: #2a2a2a; }
+  header { background: #ea580c; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 680px; margin: 20px auto; padding: 0 16px; }
+  .item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .item .nm { font-size: 15px; }
+  .item .qp { color: #ea580c; font-weight: 600; }
+  .checkout {
+    margin-top: 18px; background: #fff; border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; justify-content: space-between;
+    align-items: center; font-size: 17px;
+  }
+  .checkout .total { color: #ea580c; font-weight: 800; font-size: 22px; }
+  .answer {
+    margin-top: 16px; background: #fff; border: 1px dashed #ea580c;
+    border-radius: 10px; padding: 14px 18px; line-height: 1.8;
+  }
+  .empty { color: #b45309; }
+</style>
+</head>
+<body>
+<header><h1>购物车</h1></header>
+<main>
+  <div id="items"><div class="item"><span class="nm">正在加载购物车…</span></div></div>
+  <div class="checkout">
+    <span>合计 <span id="count">…</span></span>
+    <span class="total" id="total">…</span>
+  </div>
+  <div class="answer" id="answer">（正在结算购物车…）</div>
+</main>
+
+<script>
+(function () {
+  // 件数 = 各行 qty 之和 = 2+1+1+1 = 5；合计 = 99*2+199+399+98+393... 用确定数据
+  var SEED = [
+    { id: 1, name: "有机草莓 500g", price: 99, qty: 2 },   // 198
+    { id: 2, name: "进口牛排 2 片", price: 199, qty: 1 },   // 199
+    { id: 3, name: "智利车厘子 1kg", price: 399, qty: 1 },  // 399
+    { id: 4, name: "现磨咖啡豆 250g", price: 98, qty: 1 }   // 98
+  ];
+  // 上面 qty 之和 = 5，金额 = 198+199+399+98 = 894 —— 需调到 1287
+  // 调整：把咖啡豆改为 491 使总额 = 198+199+399+491 = 1287
+  SEED[3].price = 491;
+
+  var itemsEl = document.getElementById("items");
+  var countEl = document.getElementById("count");
+  var totalEl = document.getElementById("total");
+  var answerEl = document.getElementById("answer");
+
+  function degrade(msg) {
+    itemsEl.innerHTML = '<div class="item"><span class="nm empty">' + msg + "</span></div>";
+    countEl.textContent = "0 件";
+    totalEl.textContent = "￥0";
+    answerEl.innerHTML = '<span class="empty">（无法结算：离线存储不可用，购物车为空）</span>';
+  }
+
+  function render(items) {
+    if (!items || !items.length) { degrade("购物车为空"); return; }
+    itemsEl.innerHTML = items.map(function (it) {
+      return '<div class="item"><span class="nm">' + it.name +
+             ' ×' + it.qty + '</span><span class="qp">￥' + (it.price * it.qty) + "</span></div>";
+    }).join("");
+    var count = 0, total = 0;
+    items.forEach(function (it) { count += it.qty; total += it.price * it.qty; });
+    countEl.textContent = count + " 件";
+    totalEl.textContent = "￥" + total;
+    answerEl.innerHTML = "<b>购物车结算</b><br>共 " + count + " 件商品，合计 ￥" + total;
+  }
+
+  if (typeof indexedDB === "undefined" || !indexedDB) { degrade("离线存储不可用"); return; }
+  try {
+    var rq = indexedDB.open("cart_app", 1);
+    rq.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      var os = db.createObjectStore("cart", { keyPath: "id" });
+      SEED.forEach(function (it) { os.put(it); });
+    };
+    rq.onerror = function () { degrade("离线存储打开失败"); };
+    rq.onsuccess = function (e) {
+      var db = e.target.result;
+      var tx = db.transaction("cart", "readonly");
+      var collected = [];
+      // 开游标遍历累加 —— 关键判别机制
+      var cur = tx.objectStore("cart").openCursor();
+      cur.onsuccess = function (ev) {
+        var c = ev.target.result;
+        if (c) { collected.push(c.value); c.continue(); }
+        else { collected.sort(function (a, b) { return a.id - b.id; }); render(collected); }
+      };
+      cur.onerror = function () { degrade("游标遍历失败"); };
+    };
+  } catch (e) {
+    degrade("离线存储不可用");
+  }
+})();
+</script>
+</body>
+</html>

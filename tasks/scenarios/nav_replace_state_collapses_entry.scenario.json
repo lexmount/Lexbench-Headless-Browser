@@ -1,0 +1,68 @@
+{
+  "scenario_id": "nav_replace_state_collapses_entry",
+  "family": "navigation_lifecycle",
+  "title": "history.replaceState rewrites the current entry instead of adding one",
+  "description": "Pushes one history entry, replaces it in place, then navigates back once. If replaceState correctly rewrote the pushed entry, a single back lands on the original URL with no query string. A driver or engine that materialises replaceState as an extra entry lands on the intermediate URL instead.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "history.pushState({}, '', '?step=push'); history.replaceState({}, '', '?step=replace'); location.search"
+    },
+    {
+      "op": "go_back"
+    },
+    {
+      "op": "evaluate",
+      "expression": "location.search === '' ? 'entry-collapsed' : 'extra-entry:' + location.search",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "back_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "single_entry_semantics",
+      "name": "answer",
+      "expected": "entry-collapsed"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.get_navigation_history",
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "entry-collapsed"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

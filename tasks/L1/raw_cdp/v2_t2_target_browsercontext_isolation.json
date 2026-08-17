@@ -1,0 +1,121 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Creates an isolated browser context, opens a page target in it (flat auto-attach), sets localStorage['isoKey'] there, and confirms the default-context page cannot see that key -- proving per-context storage partitioning. Tears down with closeTarget + disposeBrowserContext.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": false
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createBrowserContext",
+        "params": {},
+        "save_result_as": "ctx",
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "browserContextId": "{saved:ctx.browserContextId}",
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "ctxpage",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "sleep_ms": 600
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){try{localStorage.setItem('isoKey','ctxB');return localStorage.getItem('isoKey');}catch(e){return 'ERR:'+e;}})()",
+          "returnByValue": true
+        },
+        "save_as": "ctxset",
+        "session": "ctxpage"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){try{return localStorage.getItem('isoKey');}catch(e){return 'ERR:'+e;}})()",
+          "returnByValue": true
+        },
+        "save_as": "defval",
+        "session": "page"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.disposeBrowserContext",
+        "optional": true,
+        "params": {
+          "browserContextId": "{saved:ctx.browserContextId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.create_browser_context",
+    "cdp.target.dispose_browser_context",
+    "cdp.target.create_target",
+    "cdp.target.attached_to_target",
+    "cdp.target.close_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "ctxB",
+        "kind": "value_equals",
+        "name": "ctxset"
+      },
+      {
+        "expected": null,
+        "kind": "value_equals",
+        "name": "defval"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_target_browsercontext_isolation",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Target.createBrowserContext localStorage isolation"
+}

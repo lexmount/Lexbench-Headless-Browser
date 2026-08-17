@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "After Network.enable a fresh fetch drives the request lifecycle; the driver waits for Network.requestWillBeSent, Network.responseReceived and Network.loadingFinished in order. Asserts each event arrives and carries the expected URL / 200 status.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/v2/t2a/cacheable.txt?rl='+Date.now()).then(function(r){return r.text();}); 'ok'"
+        }
+      },
+      {
+        "save_result_as": "rws",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.requestWillBeSent"
+      },
+      {
+        "save_result_as": "rr",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.responseReceived"
+      },
+      {
+        "save_result_as": "lf",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Network.loadingFinished"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.request_will_be_sent",
+    "cdp.network.response_received",
+    "cdp.network.loading_finished"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Network.requestWillBeSent",
+        "name": "rws"
+      },
+      {
+        "expected": "cacheable.txt",
+        "kind": "saved_path_contains",
+        "name": "rws",
+        "path": "request.url"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.responseReceived",
+        "name": "rr"
+      },
+      {
+        "expected": 200,
+        "kind": "saved_path_equals",
+        "name": "rr",
+        "path": "response.status"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Network.loadingFinished",
+        "name": "lf"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_request_lifecycle_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network request/response/loadingFinished events"
+}

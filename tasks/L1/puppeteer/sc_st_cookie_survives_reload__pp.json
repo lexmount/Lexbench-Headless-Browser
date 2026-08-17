@@ -1,0 +1,74 @@
+{
+  "_generated_from": "tasks/scenarios/st_cookie_survives_reload.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Sets a cookie, reloads, and parses the cookie back. Exercises cookie-jar persistence across navigation.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "reload_ok",
+        "step": 3
+      },
+      {
+        "expected": "c-88",
+        "kind": "saved_equals",
+        "label": "cookie_survives",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.cookie = 'abbr=c-' + (44 * 2), 'set'",
+        "op": "evaluate"
+      },
+      {
+        "op": "reload"
+      },
+      {
+        "expression": "(document.cookie.match(/abbr=([^;]+)/) || [])[1] || 'missing'",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.evaluate",
+    "fw.puppeteer.op.reload",
+    "cdp.page.reload"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.state",
+    "version.v0_4"
+  ],
+  "task_id": "sc_st_cookie_survives_reload__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A cookie survives a reload (puppeteer)"
+}

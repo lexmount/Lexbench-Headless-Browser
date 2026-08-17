@@ -1,0 +1,98 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: storage local/session through the agent-browser tool API. It passes when `agent-browser storage local get lk` succeeds; `agent-browser storage local get lk` returns data containing `lval`; `agent-browser storage session get sk` succeeds; `agent-browser storage session get sk` returns data containing `sval`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 2
+        },
+        {
+          "expected": "lval",
+          "kind": "ab_data_contains",
+          "step": 2
+        },
+        {
+          "kind": "ab_ok",
+          "step": 4
+        },
+        {
+          "expected": "sval",
+          "kind": "ab_data_contains",
+          "step": 4
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "storage",
+            "local",
+            "set",
+            "lk",
+            "lval"
+          ]
+        },
+        {
+          "ab": [
+            "storage",
+            "local",
+            "get",
+            "lk"
+          ]
+        },
+        {
+          "ab": [
+            "storage",
+            "session",
+            "set",
+            "sk",
+            "sval"
+          ]
+        },
+        {
+          "ab": [
+            "storage",
+            "session",
+            "get",
+            "sk"
+          ]
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.storage.local.session"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_storage_local_session",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: storage local/session"
+}

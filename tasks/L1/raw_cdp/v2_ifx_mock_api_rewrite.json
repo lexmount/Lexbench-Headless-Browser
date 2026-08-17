@@ -1,0 +1,95 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "End-to-end mock: the app fetches /api-answer (origin serves {\"answer\":\"SERVER_DECOY_SECRET\"}); the driver intercepts at Request stage and fulfillRequest returns {\"answer\":\"MOCKED_LIVE_ANSWER\"}. The page renders the mocked answer, which does not exist on the origin route, proving the interception superseded the server value. Mechanism trace: Fetch.requestPaused observed.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*ifx/api-answer*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbApiField(location.origin+'/v0_2/ifx/api-answer')"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "eyJhbnN3ZXIiOiJNT0NLRURfTElWRV9BTlNXRVIifQ==",
+          "requestId": "{saved:paused.requestId}",
+          "responseCode": 200,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__answer",
+          "returnByValue": true
+        },
+        "save_as": "ans"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.request_paused",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "MOCKED_LIVE_ANSWER",
+        "kind": "value_equals",
+        "name": "ans"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch_intercept",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ifx_mock_api_rewrite",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Mock API rewrite: fulfilled JSON supersedes origin"
+}

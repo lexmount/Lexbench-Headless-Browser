@@ -1,0 +1,65 @@
+{
+  "scenario_id": "wait_attribute_set",
+  "family": "waiting_dynamic",
+  "title": "Wait for a late attribute and read it through the driver",
+  "description": "An attribute is set 300ms after load. Waits for it via predicate, then reads it through the driver's attribute surface (not page JS).",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('attr-target').getAttribute('data-ready') !== null"
+    },
+    {
+      "op": "get_attribute",
+      "selector": "#attr-target",
+      "name": "data-ready",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "attr_read_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "attr_value",
+      "name": "answer",
+      "expected": "ok-58"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.get_attributes"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "ok-58"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "loc_nth_child_text",
+  "family": "locator",
+  "title": "Read the second list item via :nth-child",
+  "description": "Reads li:nth-child(2) from a three-item list through the driver's text surface.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "text_content",
+      "selector": "#fruits li:nth-child(2)",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "read_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "second_item",
+      "name": "answer",
+      "expected": "bravo"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "bravo"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

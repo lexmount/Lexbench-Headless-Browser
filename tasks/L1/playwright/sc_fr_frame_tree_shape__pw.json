@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/fr_frame_tree_shape.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Counts frames before and after inserting a child that itself embeds a grandchild, answering with the observed growth of the reachable same-origin tree.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "tree_settled",
+        "step": 3
+      },
+      {
+        "expected": "2>3>4",
+        "kind": "saved_equals",
+        "label": "tree_shape",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__c0 = window.frames.length; var f = document.createElement('iframe'); f.src = '/v0_4/frames/child?tag=shape&deep=1'; document.getElementById('slot').appendChild(f); 'inserted'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "window.frames.length === 3 && frames[2].frames.length === 1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "window.__c0 + '>' + window.frames.length + '>' + (window.frames.length + frames[2].frames.length)",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.op.new_page",
+    "fw.playwright.op.goto",
+    "fw.playwright.op.evaluate",
+    "fw.playwright.op.wait_for_function",
+    "cdp.page.get_frame_tree",
+    "cdp.page.frame_attached"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_frame_tree_shape__pw",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The live frame tree reflects static plus dynamic children (playwright)"
+}

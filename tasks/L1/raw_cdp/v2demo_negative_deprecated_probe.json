@@ -1,0 +1,48 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "v0.2 demo: negative probe for the deprecated, removed Page.getCookies command (superseded by Network.getCookies / Storage.getCookies). The step is declared expect_unsupported, so a clean synchronous 'not found' rejection is the expected, passing outcome; a hang or crash would fail. Demonstrates the negative/deprecated probe primitive.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "expect_unsupported": true,
+        "method": "Page.getCookies",
+        "params": {}
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.get_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Page.getCookies"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "purpose.demo",
+    "purpose.deprecated_api",
+    "purpose.negative"
+  ],
+  "task_id": "v2demo_negative_deprecated_probe",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Negative probe: deprecated Page.getCookies"
+}

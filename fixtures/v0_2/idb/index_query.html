@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb index query</title></head><body><div id="out">PENDING</div><script>
+// createIndex on a non-key property + index.getAll(key) query. Results are
+// returned in ascending primary-key order. Only real index execution yields
+// the answer; the filtered set is not present statically.
+var DB='v2idb_index_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){
+    var st=e.target.result.createObjectStore('people',{keyPath:'id'});
+    st.createIndex('byCity','city',{unique:false});
+  };
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('people','readwrite');var st=tx.objectStore('people');
+    st.put({id:1,name:'ANN',city:'BJ'});st.put({id:2,name:'BOB',city:'SH'});
+    st.put({id:3,name:'CAM',city:'BJ'});st.put({id:4,name:'DAN',city:'SH'});
+    tx.oncomplete=function(){
+      var idx=db.transaction('people').objectStore('people').index('byCity');
+      var g=idx.getAll('BJ');
+      g.onsuccess=function(){var names=g.result.map(function(x){return x.name;});set('CITY_BJ='+names.length+':'+names.join(','));};
+      g.onerror=function(){fail(g.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

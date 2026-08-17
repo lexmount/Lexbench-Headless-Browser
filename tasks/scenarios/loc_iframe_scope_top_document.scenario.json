@@ -1,0 +1,60 @@
+{
+  "scenario_id": "loc_iframe_scope_top_document",
+  "family": "locator",
+  "title": "Selectors resolve in the top document, not the iframe",
+  "description": "Both the top document and the iframe contain #dup. The driver's selector surface must return the TOP document's element.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "text_content",
+      "selector": "#dup",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "read_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "top_document_wins",
+      "name": "answer",
+      "expected": "main-dup"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "main-dup"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

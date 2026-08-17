@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "getFullAXTree over a page with an aria-hidden decoy subtree: the visible 'Real Action' button is an exposed node, while every node under aria-hidden=true is collapsed to role 'none' and flagged ignored=true with ignoredReasons=[ariaHiddenSubtree]. Verifies the ignored/hidden semantics that agent frameworks rely on to prune non-interactive nodes.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.ignored",
+    "web.ax.aria_hidden"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "Real Action"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "ariaHiddenSubtree"
+            }
+          ]
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/hidden"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_aria_hidden_ignored",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "aria-hidden subtree is marked ignored in the AX tree"
+}

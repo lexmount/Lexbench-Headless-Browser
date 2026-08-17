@@ -1,0 +1,93 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "At requestStage Request, asserts the Fetch.requestPaused event carries requestId, frameId, request.method GET and request.url, and that responseStatusCode is absent (null) because the response has not been received yet. The request is released with continueRequest.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.request_paused"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "paused",
+        "path": "requestId"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "paused",
+        "path": "frameId"
+      },
+      {
+        "expected": "GET",
+        "kind": "saved_path_equals",
+        "name": "paused",
+        "path": "request.method"
+      },
+      {
+        "expected": "abbfetch-real",
+        "kind": "saved_path_contains",
+        "name": "paused",
+        "path": "request.url"
+      },
+      {
+        "expected": null,
+        "kind": "saved_path_equals",
+        "name": "paused",
+        "path": "responseStatusCode"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_request_paused_request_stage_fields",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.requestPaused field semantics at Request stage"
+}

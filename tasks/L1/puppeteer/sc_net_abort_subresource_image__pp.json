@@ -1,0 +1,83 @@
+{
+  "_generated_from": "tasks/scenarios/net_abort_subresource_image.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Arms an abort route on the pixel image, then triggers an image load; the page's onerror handler must fire.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "img_result",
+        "step": 4
+      },
+      {
+        "expected": "img-error",
+        "kind": "saved_equals",
+        "label": "error_path",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "route_abort",
+        "pattern": "**/l1/pixel.png*"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-img"
+      },
+      {
+        "expression": "document.getElementById('net-out').textContent.indexOf('img-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#net-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.route_abort",
+    "fw.puppeteer.op.click",
+    "fw.puppeteer.op.wait_for_function",
+    "fw.puppeteer.op.text_content",
+    "cdp.fetch.fail_request",
+    "cdp.network.loading_failed"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "launch_profile": "all_resources",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.network_interception",
+    "version.v0_4"
+  ],
+  "task_id": "sc_net_abort_subresource_image__pp",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Aborting a subresource load fires the element's error path (puppeteer)"
+}

@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Resolves #inc (which has a click listener) and asserts DOMDebugger.getEventListeners reports it.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('inc')",
+          "returnByValue": false
+        },
+        "save_result_as": "el"
+      },
+      {
+        "method": "DOMDebugger.getEventListeners",
+        "params": {
+          "objectId": "{saved:el.result.objectId}"
+        },
+        "save_result_as": "l"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_debugger.get_event_listeners"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "label": "click_listener_found",
+        "min": 1,
+        "name": "l",
+        "path": "listeners"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_domdebugger_geteventlisteners",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMDebugger.getEventListeners on a bound element"
+}

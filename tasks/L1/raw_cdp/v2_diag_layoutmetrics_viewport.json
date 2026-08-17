@@ -1,0 +1,59 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. Page.getLayoutMetrics viewport consistency: cssLayoutViewport.clientWidth, cssContentSize.width and the (deprecated) layoutViewport.clientWidth must all agree (780 under the pinned Chrome headless viewport).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.getLayoutMetrics",
+        "save_result_as": "lm"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.get_layout_metrics",
+    "web.layout.viewport"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 780,
+        "kind": "saved_path_equals",
+        "name": "lm",
+        "path": "cssLayoutViewport.clientWidth"
+      },
+      {
+        "expected": 780,
+        "kind": "saved_path_equals",
+        "name": "lm",
+        "path": "cssContentSize.width"
+      },
+      {
+        "expected": 780,
+        "kind": "saved_path_equals",
+        "name": "lm",
+        "path": "layoutViewport.clientWidth"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/diag/geom"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "purpose.diagnostic",
+    "version.v0_2"
+  ],
+  "task_id": "v2_diag_layoutmetrics_viewport",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.getLayoutMetrics viewport consistency"
+}

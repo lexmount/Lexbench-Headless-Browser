@@ -1,0 +1,64 @@
+{
+  "scenario_id": "loc_iframe_same_origin_read",
+  "family": "locator",
+  "title": "Read content inside a same-origin iframe",
+  "description": "Waits for a srcdoc iframe's document and reads a value computed inside it via contentDocument traversal.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "(function(){var f=document.getElementById('child-frame');return !!(f && f.contentDocument && f.contentDocument.getElementById('frame-msg') && f.contentDocument.getElementById('frame-msg').textContent)})()"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('child-frame').contentDocument.getElementById('frame-msg').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "frame_read_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "frame_content",
+      "name": "answer",
+      "expected": "frame-msg-55"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "frame-msg-55"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

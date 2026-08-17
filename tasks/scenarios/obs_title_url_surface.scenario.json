@@ -1,0 +1,66 @@
+{
+  "scenario_id": "obs_title_url_surface",
+  "family": "observation",
+  "title": "Document title and URL observation surfaces agree with the page",
+  "description": "Answers with the live document title joined with the pathname — the most basic observation pair every driver must expose.",
+  "layer": "L1",
+  "diagnostic": true,
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.title.length > 0"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.title + '|' + location.pathname",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "surface_read",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "title_url_pair",
+      "name": "answer",
+      "expected": "Observation Fixture|/v0_4/obs"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.page.navigate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "Observation Fixture|/v0_4/obs"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "scenario_id": "nav_reload_title",
+  "family": "navigation_lifecycle",
+  "title": "Reload the page and re-read the heading",
+  "description": "Navigates to the core fixture, reloads it, and re-reads #title. Exercises the reload lifecycle: the driver must drive a fresh document load and still resolve the selector against the reloaded page.",
+  "layer": "L1",
+  "scene": {"kind": "self_hosted_fixture", "url": "/l1/core"},
+  "steps": [
+    {"op": "new_page"},
+    {"op": "goto", "url": "{fixture_url}"},
+    {"op": "reload"},
+    {"op": "text_content", "selector": "#title", "save_as": "answer"}
+  ],
+  "checks": [
+    {"kind": "step_ok", "label": "reload_ok", "step": 2},
+    {"kind": "saved_equals", "label": "heading_after_reload", "name": "answer", "expected": "CDP Core Fixture"}
+  ],
+  "cdp_anchors": ["cdp.page.reload"],
+  "expected_answer": {"mode": "equals", "expected": "CDP Core Fixture"},
+  "drivers": ["playwright", "puppeteer", "chrome_remote_interface", "cdp_use", "pydoll", "stagehand", "chrome_devtools_mcp", "chromedp", "rod", "chromiumoxide", "ferrum", "agent_browser", "selenium"]
+}

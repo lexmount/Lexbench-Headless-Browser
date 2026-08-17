@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>b1 localStorage</title></head>
+<body>
+<div id="out"></div>
+<script>
+try {
+  localStorage.setItem('r3key','LOCALSTORAGE_VAL_B1');
+  document.getElementById('out').textContent = localStorage.getItem('r3key') || 'NULL';
+} catch(e){ document.getElementById('out').textContent = 'ERR:'+e.message; }
+</script>
+</body></html>

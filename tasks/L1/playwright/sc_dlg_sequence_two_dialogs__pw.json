@@ -1,0 +1,99 @@
+{
+  "_generated_from": "tasks/scenarios/dlg_sequence_two_dialogs.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "One click raises an alert then a confirm; the armed handler must resolve both so the page reaches its computed end state, and the dialog log must show both entries.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "sequence_resolved",
+        "step": 4
+      },
+      {
+        "expected": "seq-y-4",
+        "kind": "saved_equals",
+        "label": "end_state",
+        "name": "answer"
+      },
+      {
+        "expected": "first-4",
+        "kind": "saved_contains",
+        "label": "alert_logged",
+        "name": "dialog_log"
+      },
+      {
+        "expected": "second-4",
+        "kind": "saved_contains",
+        "label": "confirm_logged",
+        "name": "dialog_log"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "action": "accept",
+        "op": "on_dialog"
+      },
+      {
+        "op": "click",
+        "selector": "#btn-two"
+      },
+      {
+        "expression": "document.getElementById('dlg-out').textContent.indexOf('seq-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#dlg-out"
+      },
+      {
+        "op": "get_dialogs",
+        "save_as": "dialog_log"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.op.new_page",
+    "fw.playwright.op.goto",
+    "fw.playwright.op.on_dialog",
+    "fw.playwright.op.click",
+    "fw.playwright.op.wait_for_function",
+    "fw.playwright.op.text_content",
+    "fw.playwright.op.get_dialogs",
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_java_script_dialog"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.dialog_download_upload",
+    "version.v0_4"
+  ],
+  "task_id": "sc_dlg_sequence_two_dialogs__pw",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Two dialogs raised back-to-back are both handled (playwright)"
+}

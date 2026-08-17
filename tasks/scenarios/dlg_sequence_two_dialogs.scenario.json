@@ -1,0 +1,91 @@
+{
+  "scenario_id": "dlg_sequence_two_dialogs",
+  "family": "dialog_download_upload",
+  "title": "Two dialogs raised back-to-back are both handled",
+  "description": "One click raises an alert then a confirm; the armed handler must resolve both so the page reaches its computed end state, and the dialog log must show both entries.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "on_dialog",
+      "action": "accept"
+    },
+    {
+      "op": "click",
+      "selector": "#btn-two"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('dlg-out').textContent.indexOf('seq-') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#dlg-out",
+      "save_as": "answer"
+    },
+    {
+      "op": "get_dialogs",
+      "save_as": "dialog_log"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "sequence_resolved",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "end_state",
+      "name": "answer",
+      "expected": "seq-y-4"
+    },
+    {
+      "kind": "saved_contains",
+      "label": "alert_logged",
+      "name": "dialog_log",
+      "expected": "first-4"
+    },
+    {
+      "kind": "saved_contains",
+      "label": "confirm_logged",
+      "name": "dialog_log",
+      "expected": "second-4"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_java_script_dialog"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "seq-y-4"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "cdp_use": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "pydoll": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "stagehand": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chrome_devtools_mcp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromedp": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "rod": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "chromiumoxide": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "ferrum": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "agent_browser": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page",
+    "selenium": "adapter op vocabulary has no dialog-handling surface (Page.javascriptDialogOpening is not exposed as an op), so an armed dialog would hang the page"
+  }
+}

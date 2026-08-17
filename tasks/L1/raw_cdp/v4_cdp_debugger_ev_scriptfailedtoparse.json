@@ -1,0 +1,59 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Compiles a syntactically invalid script and asserts Debugger.scriptFailedToParse is emitted.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "try{new Function('//# sourceURL=bad.js\\nfunction(){');}catch(e){}"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "Debugger.scriptFailedToParse"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.script_failed_to_parse"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "failed_parse_event",
+        "method": "Debugger.scriptFailedToParse"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_ev_scriptfailedtoparse",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.scriptFailedToParse on a syntax error"
+}

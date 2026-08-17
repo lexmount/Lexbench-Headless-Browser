@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.network.cookies by issuing raw CDP command(s) Network.enable, Network.setCookie, Network.getCookies against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Network.setCookie",
+        "optional": false,
+        "params": {
+          "name": "cdp_probe",
+          "url": "{fixture_url}",
+          "value": "raw-cdp"
+        }
+      },
+      {
+        "method": "Network.getCookies",
+        "optional": false,
+        "params": {
+          "urls": [
+            "{fixture_url}"
+          ]
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.enable",
+    "cdp.network.set_cookie",
+    "cdp.network.get_cookies"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_network_cookies",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.network.cookies"
+}

@@ -1,0 +1,116 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "The app issues two concurrent fetches (/api-answer and /api-second), both matched by patterns. The driver fulfills the first paused request with FULFILLED_ONE and continues the second to the origin. Verifies independent handling of multiple paused requests by requestId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*ifx/api-answer*"
+            },
+            {
+              "requestStage": "Request",
+              "urlPattern": "*ifx/api-second*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbTwo(location.origin+'/v0_2/ifx/api-answer', location.origin+'/v0_2/ifx/api-second')"
+        }
+      },
+      {
+        "save_result_as": "p1",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "eyJhbnN3ZXIiOiJGVUxGSUxMRURfT05FIn0=",
+          "requestId": "{saved:p1.requestId}",
+          "responseCode": 200,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      {
+        "save_result_as": "p2",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:p2.requestId}"
+        }
+      },
+      {
+        "sleep_ms": 600
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "String(window.__a)+'|'+String(window.__b)",
+          "returnByValue": true
+        },
+        "save_as": "combo"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.fulfill_request",
+    "cdp.fetch.continue_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "p1"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "p2",
+        "path": "requestId"
+      },
+      {
+        "expected": "FULFILLED_ONE",
+        "kind": "value_contains",
+        "name": "combo"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch_intercept",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ifx_multi_intercept",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Two concurrent requests: one fulfilled, one continued"
+}

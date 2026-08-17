@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Calibration against v2_h_form_checksum (same fixture, same input string): real Puppeteer fills #name with the exact string 'abz' that the raw-CDP replay typed via Input.insertText, clicks #compute through the real pointer path (on_framework_main_path), and reads the page-computed checksum (sum of char codes mod 1000 = 317). Same input, same expected output keeps the Stage D comparison apples-to-apples; divergence isolates the framework fill/click channel versus raw insertText.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "317",
+        "kind": "saved_equals",
+        "label": "checksum_equals_317",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#name",
+        "value": "abz"
+      },
+      {
+        "op": "click",
+        "selector": "#compute"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#out"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.locator.fill",
+    "fw.puppeteer.page.click",
+    "fw.puppeteer.page.$eval",
+    "cdp.input.dispatch_key_event",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/form"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.calibration",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_cal_form_checksum",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer fill + click on the v0.2 checksum form"
+}

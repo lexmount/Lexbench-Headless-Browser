@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AX Fixture: Name Computation Priority</title>
+</head>
+<body>
+<h1>Name Computation</h1>
+<!-- aria-label wins over inner text -->
+<button id="labelled">Inner Text Ignored</button>
+<script>
+  document.getElementById('labelled').setAttribute('aria-label', 'Submit Order');
+</script>
+<!-- name comes purely from inner text -->
+<button id="textonly">Cancel Order</button>
+<!-- aria-labelledby wins over both -->
+<span id="lbl">Referenced Label</span>
+<button id="byref" aria-labelledby="lbl">Should Not Win</button>
+</body>
+</html>

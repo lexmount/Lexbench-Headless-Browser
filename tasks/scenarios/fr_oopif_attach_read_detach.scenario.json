@@ -1,0 +1,91 @@
+{
+  "scenario_id": "fr_oopif_attach_read_detach",
+  "family": "frames_oopif",
+  "title": "An out-of-process iframe attaches, is readable frame-scoped, and detaches cleanly",
+  "description": "Under site isolation a cross-origin iframe runs out-of-process; the driver must still enumerate it, evaluate inside it, and observe the frame tree shrink after removal.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "var f = document.createElement('iframe'); f.src = 'http://localhost:' + location.port + '/v0_4/frames/child?tag=oopif'; f.id = 'xo'; f.onload = function () { window.__xo_loaded = true; }; document.getElementById('slot').appendChild(f); 'inserted'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.__xo_loaded === true"
+    },
+    {
+      "op": "frame_evaluate",
+      "url_contains": "tag=oopif",
+      "expression": "document.getElementById('msg').textContent",
+      "save_as": "answer"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('xo').remove(); 'removed'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.frames.length === 2"
+    },
+    {
+      "op": "evaluate",
+      "expression": "String(window.frames.length)",
+      "save_as": "after_detach"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "oopif_eval_ok",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "oopif_text",
+      "name": "answer",
+      "expected": "child-oopif-42"
+    },
+    {
+      "kind": "saved_equals",
+      "label": "detached",
+      "name": "after_detach",
+      "expected": "2"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.attach_to_target",
+    "cdp.page.frame_detached"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "child-oopif-42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "cdp_use": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "pydoll": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "stagehand": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "chrome_devtools_mcp": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "chromedp": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "rod": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "chromiumoxide": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "ferrum": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "agent_browser": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op",
+    "selenium": "adapter op vocabulary has no cross-origin frame-scoped evaluate surface; top-document JS cannot legally reach a cross-origin frame, so the scenario cannot bind without a frame_evaluate op"
+  }
+}

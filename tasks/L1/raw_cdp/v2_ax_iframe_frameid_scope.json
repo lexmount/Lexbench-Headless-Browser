@@ -1,0 +1,118 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The parent document's getFullAXTree contains an 'Iframe' container node and the parent button but NOT the child frame's contents. Fetching the child frame id via Page.getFrameTree and passing it as getFullAXTree.frameId returns the child document's own AX tree ('Child Frame Heading', 'Child Button'). Verifies frameId scoping that browser-use uses to pull AX per-frame.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "axdefault"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "save_result_as": "ft"
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "params": {
+          "frameId": "{saved:ft.frameTree.childFrames.0.frame.id}"
+        },
+        "save_result_as": "axchild"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "cdp.page.get_frame_tree",
+    "web.ax.iframe_scope"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "Parent Button"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "axdefault",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "role": {
+            "value": "Iframe"
+          }
+        },
+        "kind": "array_contains",
+        "name": "axdefault",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Child Button"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "axchild",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Child Frame Heading"
+          },
+          "role": {
+            "value": "heading"
+          }
+        },
+        "kind": "array_contains",
+        "name": "axchild",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/iframe_parent"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_iframe_frameid_scope",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "getFullAXTree frameId scopes into the child iframe document"
+}

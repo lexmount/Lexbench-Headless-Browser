@@ -1,0 +1,55 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Fetches a resource and asserts Network.dataReceived reports transferred bytes.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "fetch('/app.js?v4='+Date.now()).then(function(r){return r.text();})"
+        }
+      },
+      {
+        "timeout_ms": 4000,
+        "wait_for_event": "Network.dataReceived"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.data_received"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "data_received_event",
+        "method": "Network.dataReceived"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_network_ev_datareceived",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Network.dataReceived on a fetch"
+}

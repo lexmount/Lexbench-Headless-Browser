@@ -1,0 +1,71 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.callFunctionOn exception reporting: a function that throws a TypeError returns a normal CDP result carrying exceptionDetails (not a protocol error). Verifies the exceptionDetails structure — the thrown exception's className is Typeable as TypeError and its description carries the thrown message. Anchors the exceptionDetails shape agents rely on to detect action failures.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "({})"
+        },
+        "save_result_as": "obj"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ throw new TypeError('boom-42'); }",
+          "objectId": "{saved:obj.result.objectId}",
+          "returnByValue": true
+        },
+        "save_result_as": "thrown"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "eval_has_exception"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "thrown",
+        "path": "exceptionDetails.exceptionId"
+      },
+      {
+        "expected": "TypeError",
+        "kind": "saved_path_equals",
+        "name": "thrown",
+        "path": "exceptionDetails.exception.className"
+      },
+      {
+        "expected": "boom-42",
+        "kind": "saved_path_contains",
+        "name": "thrown",
+        "path": "exceptionDetails.exception.description"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_callfn_exception",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "callFunctionOn surfaces exceptionDetails on throw"
+}

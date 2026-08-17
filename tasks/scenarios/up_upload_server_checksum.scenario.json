@@ -1,0 +1,81 @@
+{
+  "scenario_id": "up_upload_server_checksum",
+  "family": "dialog_download_upload",
+  "title": "An uploaded file round-trips and the server reports its checksum",
+  "description": "Writes a payload file, attaches it to the form input, submits, and answers with the server-rendered upload receipt (name, size, sha256 prefix) — graded server-side against the known payload.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "write_file",
+      "path": "{artifact_dir}/probe-upload.txt",
+      "content": "abb-upload-payload-2026\n"
+    },
+    {
+      "op": "set_input_files",
+      "selector": "#up-file",
+      "path": "{artifact_dir}/probe-upload.txt"
+    },
+    {
+      "op": "click",
+      "selector": "#up-submit"
+    },
+    {
+      "op": "wait_for_selector",
+      "selector": "#up-result"
+    },
+    {
+      "op": "text_content",
+      "selector": "#up-result",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "upload_submitted",
+      "step": 5
+    },
+    {
+      "kind": "saved_equals",
+      "label": "server_receipt",
+      "name": "answer",
+      "expected": "uploaded:probe-upload.txt:24:165120975175"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.set_file_input_files",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "uploaded:probe-upload.txt:24:165120975175"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "cdp_use": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "pydoll": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "stagehand": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chrome_devtools_mcp": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chromedp": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "rod": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chromiumoxide": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "ferrum": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "agent_browser": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "selenium": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached"
+  }
+}

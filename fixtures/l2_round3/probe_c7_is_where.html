@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c7 is</title></head>
+<body>
+<div class="a"><p>A_TEXT</p></div><div class="b"><p>B_TEXT_C7</p></div>
+<div id="out"></div>
+<script>
+try{
+ var els=document.querySelectorAll(':is(.b) > p'); var t=[].map.call(els,function(e){return e.textContent;}).join(',');
+ document.getElementById('out').textContent='ISWHERE:'+t;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

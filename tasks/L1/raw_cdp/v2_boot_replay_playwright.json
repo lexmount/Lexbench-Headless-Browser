@@ -1,0 +1,198 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Replays the Playwright chromium bootstrap in dialect order: browser-session Browser.getVersion + flat auto-attach with waitForDebuggerOnStart, then the full page-session setup sequence (Page.enable, getFrameTree, Log.enable, setLifecycleEventsEnabled, Runtime.enable, addScriptToEvaluateOnNewDocument, createIsolatedWorld [best-effort], Network.enable, page-level setAutoAttach) on the debugger-paused child session, and finally Runtime.runIfWaitingForDebugger to release it. Asserts the target arrived paused and that Runtime.evaluate computes on the fully-configured page session. Fatality per playwright.bootstrap.json (getWindowForTarget + createIsolatedWorld are best-effort/optional).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.getVersion",
+        "params": {},
+        "save_result_as": "ver",
+        "session": "browser"
+      },
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "pw_page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Browser.getWindowForTarget",
+        "optional": true,
+        "params": {},
+        "session": "pw_page"
+      },
+      {
+        "method": "Page.enable",
+        "session": "pw_page"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "params": {},
+        "save_result_as": "tree",
+        "session": "pw_page"
+      },
+      {
+        "method": "Log.enable",
+        "session": "pw_page"
+      },
+      {
+        "method": "Page.setLifecycleEventsEnabled",
+        "params": {
+          "enabled": true
+        },
+        "session": "pw_page"
+      },
+      {
+        "method": "Runtime.enable",
+        "session": "pw_page"
+      },
+      {
+        "method": "Page.addScriptToEvaluateOnNewDocument",
+        "params": {
+          "source": "",
+          "worldName": "__abb_pw_utility__"
+        },
+        "save_result_as": "script",
+        "session": "pw_page"
+      },
+      {
+        "method": "Page.createIsolatedWorld",
+        "optional": true,
+        "params": {
+          "frameId": "{saved:tree.frameTree.frame.id}",
+          "grantUniveralAccess": true,
+          "worldName": "__abb_pw_utility__"
+        },
+        "session": "pw_page"
+      },
+      {
+        "method": "Network.enable",
+        "session": "pw_page"
+      },
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "pw_page"
+      },
+      {
+        "method": "Runtime.runIfWaitingForDebugger",
+        "session": "pw_page"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "6 * 7",
+          "returnByValue": true
+        },
+        "save_as": "answer",
+        "session": "pw_page"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.get_version",
+    "cdp.target.set_auto_attach",
+    "cdp.target.attached_to_target",
+    "cdp.page.enable",
+    "cdp.page.get_frame_tree",
+    "cdp.log.enable",
+    "cdp.page.set_lifecycle_events_enabled",
+    "cdp.runtime.enable",
+    "cdp.page.add_script_to_evaluate_on_new_document",
+    "cdp.page.create_isolated_world",
+    "cdp.network.enable",
+    "cdp.runtime.run_if_waiting_for_debugger"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "Chrome",
+        "kind": "saved_path_contains",
+        "name": "ver",
+        "path": "product"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Target.attachedToTarget",
+        "name": "attached"
+      },
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "name": "attached",
+        "path": "waitingForDebugger"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "tree",
+        "path": "frameTree.frame.id"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "script",
+        "path": "identifier"
+      },
+      {
+        "expected": 42,
+        "kind": "value_equals",
+        "name": "answer"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "family.handwritten",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_replay_playwright",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 40000,
+    "task_ms": 25000
+  },
+  "title": "Playwright dialect bootstrap replay (browser -> page)"
+}

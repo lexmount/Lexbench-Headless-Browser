@@ -1,0 +1,111 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "First proves interception is active (a fetch pauses and is continued). Then Fetch.disable is issued; a second fetch to the same pattern is NOT paused (the optional wait times out and no paused event is captured) and completes normally with the real origin body. Verifies Fetch.disable tears down interception.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused1",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused1.requestId}"
+        }
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Fetch.disable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "optional": true,
+        "save_result_as": "paused2",
+        "session": "page",
+        "timeout_ms": 1500,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbBody",
+          "returnByValue": true
+        },
+        "save_as": "body2"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.disable"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused1"
+      },
+      {
+        "expected": null,
+        "kind": "saved_path_equals",
+        "name": "paused2",
+        "path": null
+      },
+      {
+        "expected": "REAL-SERVER-BODY",
+        "kind": "value_contains",
+        "name": "body2"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_disable_stops_pausing",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.disable stops further requestPaused events"
+}

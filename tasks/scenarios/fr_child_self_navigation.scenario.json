@@ -1,0 +1,69 @@
+{
+  "scenario_id": "fr_child_self_navigation",
+  "family": "frames_oopif",
+  "title": "A child frame navigates itself while the parent document survives",
+  "description": "Sets a marker on the parent, navigates the first child frame to a new URL, and answers with the child's new message plus proof the parent was not reloaded.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__top_alive = 9; frames[0].location.href = '/v0_4/frames/child?tag=nav2'; 'navigating'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!frames[0].document.getElementById('msg') && frames[0].document.getElementById('msg').textContent.indexOf('nav2') !== -1"
+    },
+    {
+      "op": "evaluate",
+      "expression": "frames[0].document.getElementById('msg').textContent + ':' + (window.__top_alive === 9 ? 'top-alive' : 'top-reloaded')",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "child_navigated",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "parent_survived",
+      "name": "answer",
+      "expected": "child-nav2-42:top-alive"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.frame_navigated",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "child-nav2-42:top-alive"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,1848 @@
+{
+  "schema_version": 1,
+  "browser_ids": [
+    "chrome",
+    "moli",
+    "lightpanda",
+    "obscura"
+  ],
+  "driver_ids": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "agent_browser",
+    "ferrum",
+    "selenium",
+    "chromiumoxide"
+  ],
+  "references": [
+    {
+      "ref_id": "browser.chrome",
+      "source": "runner.run.ENGINE_DEFS",
+      "key": "chrome"
+    },
+    {
+      "ref_id": "browser.moli",
+      "source": "runner.run.ENGINE_DEFS",
+      "key": "moli"
+    },
+    {
+      "ref_id": "browser.lightpanda",
+      "source": "runner.run.ENGINE_DEFS",
+      "key": "lightpanda"
+    },
+    {
+      "ref_id": "browser.obscura",
+      "source": "runner.run.ENGINE_DEFS",
+      "key": "obscura"
+    },
+    {
+      "ref_id": "driver.playwright",
+      "source": "harness_pins.json.drivers",
+      "key": "playwright-core"
+    },
+    {
+      "ref_id": "driver.puppeteer",
+      "source": "harness_pins.json.drivers",
+      "key": "puppeteer-core"
+    },
+    {
+      "ref_id": "driver.chrome_remote_interface",
+      "source": "harness_pins.json.drivers",
+      "key": "chrome-remote-interface"
+    },
+    {
+      "ref_id": "driver.cdp_use",
+      "source": "harness_pins.json.drivers",
+      "key": "cdp-use"
+    },
+    {
+      "ref_id": "driver.pydoll",
+      "source": "harness_pins.json.drivers",
+      "key": "pydoll-python"
+    },
+    {
+      "ref_id": "driver.stagehand",
+      "source": "harness_pins.json.drivers",
+      "key": "stagehand"
+    },
+    {
+      "ref_id": "driver.chrome_devtools_mcp",
+      "source": "harness_pins.json.drivers",
+      "key": "chrome-devtools-mcp"
+    },
+    {
+      "ref_id": "driver.chromedp",
+      "source": "harness_pins.json.drivers",
+      "key": "chromedp"
+    },
+    {
+      "ref_id": "driver.rod",
+      "source": "harness_pins.json.drivers",
+      "key": "rod"
+    },
+    {
+      "ref_id": "driver.agent_browser",
+      "source": "harness_pins.json.drivers",
+      "key": "agent-browser"
+    },
+    {
+      "ref_id": "driver.ferrum",
+      "source": "harness_pins.json.drivers",
+      "key": "ferrum"
+    },
+    {
+      "ref_id": "driver.selenium",
+      "source": "harness_pins.json.drivers",
+      "key": "selenium"
+    },
+    {
+      "ref_id": "driver.chromiumoxide",
+      "source": "harness_pins.json.drivers",
+      "key": "chromiumoxide"
+    },
+    {
+      "ref_id": "bridge.chrome_devtools_mcp",
+      "source": "harness_pins.json.drivers",
+      "key": "chrome-devtools-mcp"
+    },
+    {
+      "ref_id": "bridge.agent_browser_daemon",
+      "source": "harness_pins.json.drivers",
+      "key": "agent-browser"
+    },
+    {
+      "ref_id": "bridge.chromedriver",
+      "source": "harness_pins.json.drivers",
+      "key": "chromedriver"
+    }
+  ],
+  "routes": [
+    {
+      "route_id": "playwright_cdp",
+      "client_protocol": "playwright_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "connect_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "framework_probe",
+          "to": "playwright_core",
+          "protocol": "playwright_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "playwright_core",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always",
+            "fallback_actual_path": "framework.browser.version",
+            "fallback_operator": "is_contained_by"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "puppeteer_cdp",
+      "client_protocol": "puppeteer_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "connect_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "framework_probe",
+          "to": "puppeteer_core",
+          "protocol": "puppeteer_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "puppeteer_core",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "framework",
+            "actual_path": "browser.version",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "chrome_remote_interface_cdp",
+      "client_protocol": "cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "chrome_remote_interface",
+          "protocol": "library_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "chrome_remote_interface",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "cdp_use_cdp",
+      "client_protocol": "cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "cdp_use",
+          "protocol": "library_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "cdp_use",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "pydoll_cdp",
+      "client_protocol": "pydoll_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "pydoll",
+          "protocol": "pydoll_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "pydoll",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "browser.get_version.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "pydoll_obscura_cdp",
+      "client_protocol": "pydoll_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "pydoll",
+          "protocol": "pydoll_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "pydoll",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "Pydoll 2.23.1 connection handler then Target.createTarget and Target.attachToTarget(flatten=true)",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "browser.get_version.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "stagehand_cdp",
+      "client_protocol": "stagehand_deterministic_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "connect_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "stagehand_v3",
+          "protocol": "stagehand_deterministic_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "stagehand_v3",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "stagehand.page.sendCDP.Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always",
+            "fallback_actual_path": "stagehand.root_connection.Browser.getVersion.product",
+            "fallback_operator": "equals"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "chrome_devtools_mcp_cdp",
+      "client_protocol": "mcp_jsonrpc",
+      "client_endpoint_kind": "mcp_stdio",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "connect_existing",
+      "provider": "driver_managed_bridge",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "chrome_devtools_mcp_server",
+          "protocol": "mcp_jsonrpc",
+          "transport": "stdio",
+          "endpoint_kind": "mcp_stdio"
+        },
+        {
+          "from": "chrome_devtools_mcp_server",
+          "to": "chrome_devtools_mcp_bundled_puppeteer_core",
+          "protocol": "puppeteer_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "chrome_devtools_mcp_bundled_puppeteer_core",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "adapter_per_attempt_child",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "mcp_initialize",
+          "endpoint_kind": "mcp_stdio",
+          "probe": "spawn --wsEndpoint then MCP initialize over stdio",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "mcp",
+            "actual_path": "evaluate_script.navigator.userAgent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "chromedp_cdp",
+      "client_protocol": "chromedp_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "chromedp",
+          "protocol": "chromedp_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "chromedp",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "browser.GetVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "rod_cdp",
+      "client_protocol": "rod_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "rod",
+          "protocol": "rod_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "rod",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "browser.Version.Product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "agent_browser_cdp",
+      "client_protocol": "agent_browser_cli",
+      "client_endpoint_kind": "isolated_daemon_session",
+      "browser_endpoint_kind": "cdp_http_port",
+      "connect_mode": "attach_existing",
+      "provider": "driver_managed_session",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "agent_browser_cli_daemon",
+          "protocol": "agent_browser_cli",
+          "transport": "subprocess_and_local_socket",
+          "endpoint_kind": "isolated_daemon_session"
+        },
+        {
+          "from": "agent_browser_cli_daemon",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "connect_command_with_http_port",
+          "endpoint_kind": "cdp_http_port"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "adapter_per_attempt_session",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "agent_browser_connect",
+          "endpoint_kind": "isolated_daemon_session",
+          "probe": "agent-browser connect {cdp_port} in isolated session",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+      "live_transport_assertions": [
+        {
+          "mechanism": "agent_browser",
+          "actual_path": "get.cdp_url",
+          "operator": "equals",
+          "expected_ref": "browser_ws",
+          "condition": "always"
+        }
+      ]
+      }
+    },
+    {
+      "route_id": "ferrum_cdp",
+      "client_protocol": "ferrum_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "ferrum",
+          "protocol": "ferrum_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "ferrum",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "chromiumoxide_cdp",
+      "client_protocol": "chromiumoxide_api_over_cdp",
+      "client_endpoint_kind": "cdp_browser_websocket",
+      "browser_endpoint_kind": "cdp_browser_websocket",
+      "connect_mode": "attach_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "chromiumoxide",
+          "protocol": "chromiumoxide_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "chromiumoxide",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "websocket",
+          "endpoint_kind": "cdp_browser_websocket"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "direct_input",
+          "endpoint_kind": "cdp_browser_websocket",
+          "probe": "driver connect plus live identity assertion",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "cdp",
+            "actual_path": "browser.version.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "native_webdriver",
+      "client_protocol": "webdriver_classic",
+      "client_endpoint_kind": "webdriver_classic_http",
+      "browser_endpoint_kind": "webdriver_classic_http",
+      "connect_mode": "connect_existing",
+      "provider": "browser_native",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "selenium_client",
+          "protocol": "selenium_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "selenium_client",
+          "to": "browser",
+          "protocol": "webdriver_classic",
+          "transport": "http",
+          "endpoint_kind": "webdriver_classic_http"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "none",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "webdriver_session",
+          "endpoint_kind": "webdriver_classic_http",
+          "probe": "POST /session and validate returned capabilities",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "webdriver_capabilities",
+            "actual_path": "capabilities.browserName",
+            "operator": "equals",
+            "expected_literal": "moli",
+            "condition": "always"
+          },
+          {
+            "mechanism": "webdriver_capabilities",
+            "actual_path": "capabilities.browserVersion",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "chromedriver_cdp",
+      "client_protocol": "webdriver_classic",
+      "client_endpoint_kind": "chromedriver_http",
+      "browser_endpoint_kind": "cdp_http_port",
+      "connect_mode": "attach_existing",
+      "provider": "chromedriver",
+      "ordered_hops": [
+        {
+          "from": "scenario_adapter",
+          "to": "selenium_client",
+          "protocol": "selenium_api",
+          "transport": "in_process",
+          "endpoint_kind": "library_api"
+        },
+        {
+          "from": "selenium_client",
+          "to": "chromedriver",
+          "protocol": "webdriver_classic",
+          "transport": "http",
+          "endpoint_kind": "chromedriver_http"
+        },
+        {
+          "from": "chromedriver",
+          "to": "browser",
+          "protocol": "cdp",
+          "transport": "debugger_address",
+          "endpoint_kind": "cdp_http_port"
+        }
+      ],
+      "lifecycle": {
+        "browser_owner": "runner_browser_manager",
+        "bridge_owner": "adapter_per_attempt_child",
+        "adapter_owner": "runner_per_attempt_subprocess"
+      },
+      "discovery": {
+        "browser": {
+          "kind": "http_json_version",
+          "endpoint_kind": "cdp_http_discovery",
+          "probe": "GET /json/version",
+          "readiness_owner": "runner_browser_manager"
+        },
+        "client": {
+          "kind": "chromedriver_service",
+          "endpoint_kind": "chromedriver_http",
+          "probe": "start Selenium Service on temporary port then POST /session",
+          "readiness_owner": "adapter_per_attempt"
+        }
+      },
+      "identity": {
+        "http_assertions": [
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "Browser|Product",
+            "operator": "equals",
+            "expected_ref": "expect_product",
+            "condition": "always"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "User-Agent",
+            "operator": "equals",
+            "expected_ref": "expect_ua",
+            "condition": "expected_nonempty"
+          },
+          {
+            "mechanism": "http_json_version",
+            "actual_path": "webSocketDebuggerUrl",
+            "operator": "equals",
+            "expected_ref": "browser_ws",
+            "condition": "when_present"
+          }
+        ],
+        "live_transport_assertions": [
+          {
+            "mechanism": "selenium_cdp_extension",
+            "actual_path": "execute_cdp_cmd.Browser.getVersion.product",
+            "operator": "equals",
+            "expected_ref": "expect_product_live",
+            "condition": "always"
+          }
+        ]
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "binding_id": "chrome__playwright",
+      "browser_id": "chrome",
+      "driver_id": "playwright",
+      "route_ref": "playwright_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.playwright",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__puppeteer",
+      "browser_id": "chrome",
+      "driver_id": "puppeteer",
+      "route_ref": "puppeteer_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.puppeteer",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__chrome_remote_interface",
+      "browser_id": "chrome",
+      "driver_id": "chrome_remote_interface",
+      "route_ref": "chrome_remote_interface_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.chrome_remote_interface",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__cdp_use",
+      "browser_id": "chrome",
+      "driver_id": "cdp_use",
+      "route_ref": "cdp_use_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.cdp_use",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__pydoll",
+      "browser_id": "chrome",
+      "driver_id": "pydoll",
+      "route_ref": "pydoll_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.pydoll",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__stagehand",
+      "browser_id": "chrome",
+      "driver_id": "stagehand",
+      "route_ref": "stagehand_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.stagehand",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__chrome_devtools_mcp",
+      "browser_id": "chrome",
+      "driver_id": "chrome_devtools_mcp",
+      "route_ref": "chrome_devtools_mcp_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.chrome_devtools_mcp",
+      "bridge_pin_refs": [
+        "bridge.chrome_devtools_mcp"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__chromedp",
+      "browser_id": "chrome",
+      "driver_id": "chromedp",
+      "route_ref": "chromedp_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.chromedp",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__rod",
+      "browser_id": "chrome",
+      "driver_id": "rod",
+      "route_ref": "rod_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.rod",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__agent_browser",
+      "browser_id": "chrome",
+      "driver_id": "agent_browser",
+      "route_ref": "agent_browser_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.agent_browser",
+      "bridge_pin_refs": [
+        "bridge.agent_browser_daemon"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__ferrum",
+      "browser_id": "chrome",
+      "driver_id": "ferrum",
+      "route_ref": "ferrum_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.ferrum",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__selenium",
+      "browser_id": "chrome",
+      "driver_id": "selenium",
+      "route_ref": "chromedriver_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.selenium",
+      "bridge_pin_refs": [
+        "bridge.chromedriver"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "chrome__chromiumoxide",
+      "browser_id": "chrome",
+      "driver_id": "chromiumoxide",
+      "route_ref": "chromiumoxide_cdp",
+      "browser_pin_ref": "browser.chrome",
+      "driver_pin_ref": "driver.chromiumoxide",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__playwright",
+      "browser_id": "moli",
+      "driver_id": "playwright",
+      "route_ref": "playwright_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.playwright",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__puppeteer",
+      "browser_id": "moli",
+      "driver_id": "puppeteer",
+      "route_ref": "puppeteer_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.puppeteer",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__chrome_remote_interface",
+      "browser_id": "moli",
+      "driver_id": "chrome_remote_interface",
+      "route_ref": "chrome_remote_interface_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.chrome_remote_interface",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__cdp_use",
+      "browser_id": "moli",
+      "driver_id": "cdp_use",
+      "route_ref": "cdp_use_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.cdp_use",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__pydoll",
+      "browser_id": "moli",
+      "driver_id": "pydoll",
+      "route_ref": "pydoll_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.pydoll",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__stagehand",
+      "browser_id": "moli",
+      "driver_id": "stagehand",
+      "route_ref": "stagehand_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.stagehand",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__chrome_devtools_mcp",
+      "browser_id": "moli",
+      "driver_id": "chrome_devtools_mcp",
+      "route_ref": "chrome_devtools_mcp_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.chrome_devtools_mcp",
+      "bridge_pin_refs": [
+        "bridge.chrome_devtools_mcp"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__chromedp",
+      "browser_id": "moli",
+      "driver_id": "chromedp",
+      "route_ref": "chromedp_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.chromedp",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__rod",
+      "browser_id": "moli",
+      "driver_id": "rod",
+      "route_ref": "rod_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.rod",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__agent_browser",
+      "browser_id": "moli",
+      "driver_id": "agent_browser",
+      "route_ref": "agent_browser_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.agent_browser",
+      "bridge_pin_refs": [
+        "bridge.agent_browser_daemon"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__ferrum",
+      "browser_id": "moli",
+      "driver_id": "ferrum",
+      "route_ref": "ferrum_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.ferrum",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__selenium",
+      "browser_id": "moli",
+      "driver_id": "selenium",
+      "route_ref": "native_webdriver",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.selenium",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "moli__chromiumoxide",
+      "browser_id": "moli",
+      "driver_id": "chromiumoxide",
+      "route_ref": "chromiumoxide_cdp",
+      "browser_pin_ref": "browser.moli",
+      "driver_pin_ref": "driver.chromiumoxide",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__playwright",
+      "browser_id": "lightpanda",
+      "driver_id": "playwright",
+      "route_ref": "playwright_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.playwright",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__puppeteer",
+      "browser_id": "lightpanda",
+      "driver_id": "puppeteer",
+      "route_ref": "puppeteer_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.puppeteer",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__chrome_remote_interface",
+      "browser_id": "lightpanda",
+      "driver_id": "chrome_remote_interface",
+      "route_ref": "chrome_remote_interface_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.chrome_remote_interface",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__cdp_use",
+      "browser_id": "lightpanda",
+      "driver_id": "cdp_use",
+      "route_ref": "cdp_use_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.cdp_use",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__pydoll",
+      "browser_id": "lightpanda",
+      "driver_id": "pydoll",
+      "route_ref": "pydoll_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.pydoll",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__stagehand",
+      "browser_id": "lightpanda",
+      "driver_id": "stagehand",
+      "route_ref": "stagehand_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.stagehand",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__chrome_devtools_mcp",
+      "browser_id": "lightpanda",
+      "driver_id": "chrome_devtools_mcp",
+      "route_ref": "chrome_devtools_mcp_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.chrome_devtools_mcp",
+      "bridge_pin_refs": [
+        "bridge.chrome_devtools_mcp"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__chromedp",
+      "browser_id": "lightpanda",
+      "driver_id": "chromedp",
+      "route_ref": "chromedp_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.chromedp",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__rod",
+      "browser_id": "lightpanda",
+      "driver_id": "rod",
+      "route_ref": "rod_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.rod",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__agent_browser",
+      "browser_id": "lightpanda",
+      "driver_id": "agent_browser",
+      "route_ref": "agent_browser_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.agent_browser",
+      "bridge_pin_refs": [
+        "bridge.agent_browser_daemon"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__ferrum",
+      "browser_id": "lightpanda",
+      "driver_id": "ferrum",
+      "route_ref": "ferrum_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.ferrum",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__selenium",
+      "browser_id": "lightpanda",
+      "driver_id": "selenium",
+      "route_ref": "chromedriver_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.selenium",
+      "bridge_pin_refs": [
+        "bridge.chromedriver"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "lightpanda__chromiumoxide",
+      "browser_id": "lightpanda",
+      "driver_id": "chromiumoxide",
+      "route_ref": "chromiumoxide_cdp",
+      "browser_pin_ref": "browser.lightpanda",
+      "driver_pin_ref": "driver.chromiumoxide",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__playwright",
+      "browser_id": "obscura",
+      "driver_id": "playwright",
+      "route_ref": "playwright_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.playwright",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__puppeteer",
+      "browser_id": "obscura",
+      "driver_id": "puppeteer",
+      "route_ref": "puppeteer_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.puppeteer",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__chrome_remote_interface",
+      "browser_id": "obscura",
+      "driver_id": "chrome_remote_interface",
+      "route_ref": "chrome_remote_interface_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.chrome_remote_interface",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__cdp_use",
+      "browser_id": "obscura",
+      "driver_id": "cdp_use",
+      "route_ref": "cdp_use_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.cdp_use",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__pydoll",
+      "browser_id": "obscura",
+      "driver_id": "pydoll",
+      "route_ref": "pydoll_obscura_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.pydoll",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__stagehand",
+      "browser_id": "obscura",
+      "driver_id": "stagehand",
+      "route_ref": "stagehand_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.stagehand",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__chrome_devtools_mcp",
+      "browser_id": "obscura",
+      "driver_id": "chrome_devtools_mcp",
+      "unavailable_reason": "Obscura v0.1.11 lacks the Puppeteer-compatible auto-attach, navigation lifecycle, and execution-context semantics required by chrome-devtools-mcp 1.6.0",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.chrome_devtools_mcp",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__chromedp",
+      "browser_id": "obscura",
+      "driver_id": "chromedp",
+      "route_ref": "chromedp_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.chromedp",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__rod",
+      "browser_id": "obscura",
+      "driver_id": "rod",
+      "route_ref": "rod_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.rod",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__agent_browser",
+      "browser_id": "obscura",
+      "driver_id": "agent_browser",
+      "route_ref": "agent_browser_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.agent_browser",
+      "bridge_pin_refs": [
+        "bridge.agent_browser_daemon"
+      ],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__ferrum",
+      "browser_id": "obscura",
+      "driver_id": "ferrum",
+      "route_ref": "ferrum_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.ferrum",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__selenium",
+      "browser_id": "obscura",
+      "driver_id": "selenium",
+      "unavailable_reason": "Obscura v0.1.11 has no WebDriver server and ChromeDriver cannot complete its CDP session because discovery metadata, target lifecycle, and WebDriver deep serialization are incompatible",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.selenium",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    },
+    {
+      "binding_id": "obscura__chromiumoxide",
+      "browser_id": "obscura",
+      "driver_id": "chromiumoxide",
+      "route_ref": "chromiumoxide_cdp",
+      "browser_pin_ref": "browser.obscura",
+      "driver_pin_ref": "driver.chromiumoxide",
+      "bridge_pin_refs": [],
+      "fallback_allowed": false
+    }
+  ]
+}

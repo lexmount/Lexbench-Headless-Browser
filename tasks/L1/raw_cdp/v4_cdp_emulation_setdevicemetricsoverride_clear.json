@@ -1,0 +1,50 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Sets a device-metrics override then clears it; a conformant engine accepts both without a protocol error.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Emulation.setDeviceMetricsOverride",
+        "params": {
+          "deviceScaleFactor": 2,
+          "height": 700,
+          "mobile": true,
+          "width": 400
+        }
+      },
+      {
+        "method": "Emulation.clearDeviceMetricsOverride"
+      }
+    ]
+  },
+  "features": [
+    "cdp.emulation.clear_device_metrics_override"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.emulation",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_emulation_setdevicemetricsoverride_clear",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Emulation.clearDeviceMetricsOverride after an override"
+}

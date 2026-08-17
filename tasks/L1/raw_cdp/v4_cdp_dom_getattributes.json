@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Resolves #title and asserts DOM.getAttributes returns its attribute name/value list including 'id'.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 0
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "selector": "#title"
+        },
+        "save_result_as": "q"
+      },
+      {
+        "method": "DOM.getAttributes",
+        "params": {
+          "nodeId": "{saved:q.nodeId}"
+        },
+        "save_result_as": "a"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.get_attributes"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "id",
+        "kind": "array_contains",
+        "label": "has_id_attr",
+        "name": "a",
+        "path": "attributes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_getattributes",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.getAttributes lists an element's attributes"
+}

@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb cursor advance</title></head><body><div id="out">PENDING</div><script>
+// cursor.advance(n) vs continue(): collect the first record, then advance(2)
+// which skips the immediate next record, then continue() for the rest. With
+// keys A..F the expected trace is A,C,D,E,F (B skipped by advance).
+var DB='v2idb_curadv_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    [{id:1,c:'A'},{id:2,c:'B'},{id:3,c:'C'},{id:4,c:'D'},{id:5,c:'E'},{id:6,c:'F'}].forEach(function(x){st.put(x);});
+    tx.oncomplete=function(){
+      var acc=[];var first=true;var cur=db.transaction('s').objectStore('s').openCursor();
+      cur.onsuccess=function(ev){var c=ev.target.result;if(!c){set('ADV='+acc.join(','));return;}acc.push(c.value.c);if(first){first=false;c.advance(2);}else{c.continue();}};
+      cur.onerror=function(){fail(cur.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "loc_adjacent_sibling",
+  "family": "locator",
+  "title": "Resolve an adjacent-sibling combinator",
+  "description": "Reads #lead + .next through the driver's text surface.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "text_content",
+      "selector": "#lead + .next",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "read_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "adjacent_match",
+      "name": "answer",
+      "expected": "adjacent-33"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "adjacent-33"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

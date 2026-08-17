@@ -1,0 +1,103 @@
+{
+  "scenario_id": "app_full_flow_aggregate",
+  "family": "multi_step_flow",
+  "title": "The full login-add-add-checkout flow aggregates end to end",
+  "description": "Runs the entire flow and answers with greeting plus receipt, every part server-computed.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#user-in",
+      "value": "eve-7"
+    },
+    {
+      "op": "click",
+      "selector": "#login-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('add-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-widget-a"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-widget-a')"
+    },
+    {
+      "op": "click",
+      "selector": "#add-gizmo-x"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('cart-gizmo-x')"
+    },
+    {
+      "op": "click",
+      "selector": "#checkout-btn"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('receipt').textContent.indexOf('ord-') !== -1"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('greet').textContent + '|' + document.getElementById('receipt').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "flow_complete",
+      "step": 10
+    },
+    {
+      "kind": "saved_equals",
+      "label": "aggregate",
+      "name": "answer",
+      "expected": "hi-eve-7|ord-14-2"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "hi-eve-7|ord-14-2"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c13 intl</title></head>
+<body><div id="out"></div>
+<script>try{
+ var s=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(1234.5);
+ document.getElementById('out').textContent='INTL_C13:'+s;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

@@ -1,0 +1,104 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "Fetch.enable with a URL pattern at requestStage Request; a page fetch() triggers Fetch.requestPaused; the driver inspects the paused request fields and lets it through unchanged with Fetch.continueRequest, so the page receives the real origin body. Covers enable+patterns, Request stage, requestPaused field semantics, and plain continueRequest.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*abbfetch-real*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbGet(location.origin+'/v0_2/fetch/abbfetch-real?n='+Date.now())"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.continueRequest",
+        "params": {
+          "requestId": "{saved:paused.requestId}"
+        }
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbBody",
+          "returnByValue": true
+        },
+        "save_as": "body"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.request_paused",
+    "cdp.fetch.continue_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "paused",
+        "path": "requestId"
+      },
+      {
+        "expected": "abbfetch-real",
+        "kind": "saved_path_contains",
+        "name": "paused",
+        "path": "request.url"
+      },
+      {
+        "expected": "GET",
+        "kind": "saved_path_equals",
+        "name": "paused",
+        "path": "request.method"
+      },
+      {
+        "expected": "REAL-SERVER-BODY",
+        "kind": "value_contains",
+        "name": "body"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/fetch/page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch",
+    "version.v0_2"
+  ],
+  "task_id": "v2_fetch_enable_patterns_continue",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Fetch.enable(patterns, Request) + continueRequest passthrough"
+}

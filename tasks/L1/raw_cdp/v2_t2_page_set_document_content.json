@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Page.getFrameTree yields the main frameId; Page.setDocumentContent overwrites the frame's document with injected HTML; the page then reads the injected element's text. Asserts the DOM was actually replaced by the supplied markup.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "save_result_as": "tree"
+      },
+      {
+        "method": "Page.setDocumentContent",
+        "params": {
+          "frameId": "{saved:tree.frameTree.frame.id}",
+          "html": "<!doctype html><html><body><h1 id='x'>t2a-injected-doc</h1></body></html>"
+        }
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('x') ? document.getElementById('x').textContent : 'MISSING'",
+          "returnByValue": true
+        },
+        "save_as": "content"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.set_document_content"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "t2a-injected-doc",
+        "kind": "value_equals",
+        "name": "content"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_set_document_content",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.setDocumentContent replaces the document"
+}

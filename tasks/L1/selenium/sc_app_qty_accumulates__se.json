@@ -1,0 +1,105 @@
+{
+  "_generated_from": "tasks/scenarios/app_qty_accumulates.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Logs in, adds one item twice, and answers with the cart line plus total.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "second_add",
+        "step": 8
+      },
+      {
+        "expected": "widget-b:2:total-10",
+        "kind": "saved_equals",
+        "label": "qty_and_total",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user-in",
+        "value": "eve-7"
+      },
+      {
+        "op": "click",
+        "selector": "#login-btn"
+      },
+      {
+        "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "!!document.getElementById('add-widget-b')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-widget-b"
+      },
+      {
+        "expression": "!!document.getElementById('cart-widget-b')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-widget-b"
+      },
+      {
+        "expression": "document.getElementById('cart-total').textContent === 'total-10'",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.getElementById('cart-widget-b').textContent.trim().replace(/ rm$/, '') + ':' + document.getElementById('cart-total').textContent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.fill",
+    "fw.selenium.op.click",
+    "fw.selenium.op.wait_for_function",
+    "fw.selenium.op.evaluate",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_qty_accumulates__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Adding the same item twice accumulates quantity server-side (selenium)"
+}

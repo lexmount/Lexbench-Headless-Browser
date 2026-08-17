@@ -1,0 +1,58 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Sets a URL-pattern breakpoint via Debugger.setBreakpointByUrl and asserts a breakpointId.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Debugger.enable",
+        "save_result_as": "dbg"
+      },
+      {
+        "method": "Debugger.setBreakpointByUrl",
+        "params": {
+          "lineNumber": 1,
+          "urlRegex": "app\\.js"
+        },
+        "save_result_as": "bp"
+      },
+      {
+        "method": "Debugger.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.debugger.set_breakpoint_by_url"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "label": "url_breakpoint_set",
+        "name": "bp",
+        "path": "breakpointId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_debugger_setbreakpointbyurl",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Debugger.setBreakpointByUrl on app.js"
+}

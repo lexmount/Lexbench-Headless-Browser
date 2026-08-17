@@ -1,0 +1,69 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright registers a route that fulfills **/v0_3/api/probe with a mock JSON token, then the page fetches that URL and returns the parsed token (evaluate awaits the returned Promise). Passes when the token equals the injected mock value, proving the Fetch.enable/fulfillRequest interception path works.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "route_registered",
+        "step": 2
+      },
+      {
+        "expected": "abb-mock-91",
+        "kind": "saved_equals",
+        "label": "mock_token_read",
+        "name": "token"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "body": "{\"token\":\"abb-mock-91\"}",
+        "content_type": "application/json",
+        "op": "route_fulfill",
+        "pattern": "**/v0_3/api/probe",
+        "status": 200
+      },
+      {
+        "expression": "fetch('/v0_3/api/probe').then(r=>r.json()).then(d=>d.token).catch(e=>'ERR')",
+        "op": "evaluate",
+        "save_as": "token"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.route",
+    "fw.playwright.route.fulfill",
+    "cdp.fetch.enable",
+    "cdp.fetch.fulfill_request",
+    "cdp.fetch.request_paused"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_intercept",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_int_route_fulfill",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "page.route fulfills a fetch with a mocked JSON body"
+}

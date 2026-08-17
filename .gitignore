@@ -1,0 +1,61 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Node / JS dependencies and tool output
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+# JS/test coverage output at the repo root only — not docs/coverage/ (the
+# tracked CDP coverage matrix deliverable, WS-A/A1).
+/coverage/
+dist/
+build/
+
+# Local pinned engine binaries / build outputs
+build_artifacts/
+
+# Compiled scenario adapters. Built from the committed go.mod/go.sum and
+# Cargo.toml/Cargo.lock pins by `doctor`'s reported build commands; the runner
+# executes these directly rather than paying `go run` / `cargo run` build-tool
+# cost on every attempt.
+runner/scripts/adapters/chromedp_adapter/chromedp_adapter
+runner/scripts/adapters/rod_adapter/rod_adapter
+runner/scripts/adapters/chromiumoxide_adapter/target/
+
+# Local configuration and editor state
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+
+# Benchmark runtime output. Generated runs are never committed; published
+# evidence lives under docs/reports/ (script-generated, deterministic).
+runs/
+site/storage/
+
+# Scratch files
+.cache/
+tmp/
+temp/
+
+# Python build metadata
+*.egg-info/

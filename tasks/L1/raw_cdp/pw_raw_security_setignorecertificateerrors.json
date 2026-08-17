@@ -1,0 +1,43 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.security.setIgnoreCertificateErrors by issuing raw CDP command(s) Security.setIgnoreCertificateErrors against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. The Security-domain command is sent over the page-target transport.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Security.setIgnoreCertificateErrors",
+        "optional": false,
+        "params": {
+          "ignore": true
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.security.set_ignore_certificate_errors"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_security_setignorecertificateerrors",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.security.setIgnoreCertificateErrors"
+}

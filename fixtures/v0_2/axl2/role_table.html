@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AXL2 Fixture: role-structured table</title>
+</head>
+<body>
+<h1>Regional Totals</h1>
+<table>
+  <caption>Quarterly revenue</caption>
+  <thead>
+    <tr><th scope="col">Region</th><th scope="col">Total</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">North</th>
+      <!-- visible cell reads a placeholder; AX name is the real figure -->
+      <td aria-label="North total is 7420">see summary</td>
+    </tr>
+    <tr>
+      <th scope="row">South</th>
+      <td aria-label="South total is 3155">see summary</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

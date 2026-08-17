@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CDP Core Fixture</title>
+<script src="/app.js"></script>
+</head>
+<body>
+<h1 id="title">CDP Core Fixture</h1>
+<button id="inc">Increment</button><output id="count">0</output>
+<input id="field" type="text" value="" placeholder="type here">
+<input id="checkbox" type="checkbox">
+<select id="dropdown"><option value="a">Alpha</option><option value="b">Beta</option><option value="c">Gamma</option></select>
+<button id="dbl">DoubleMe</button><output id="dblcount">0</output>
+<button id="boom">Boom</button>
+<div id="hovertarget">hover-idle</div>
+<a id="link" href="/page2">go to page two</a>
+<img id="pixel" src="/pixel.png" alt="pixel">
+<p class="para">first paragraph</p>
+<p class="para">second paragraph</p>
+<div id="tall" style="height:3000px">tall spacer</div>
+<div id="bottom">bottom-marker</div>
+<script>
+window.__fixtureReady = true;
+document.getElementById('inc').addEventListener('click', function () {
+  var out = document.getElementById('count');
+  out.textContent = String(Number(out.textContent) + 1);
+});
+document.getElementById('dbl').addEventListener('dblclick', function () {
+  var out = document.getElementById('dblcount');
+  out.textContent = String(Number(out.textContent) + 1);
+});
+document.getElementById('boom').addEventListener('click', function () {
+  throw new Error('intentional-page-error');
+});
+document.getElementById('hovertarget').addEventListener('mouseover', function () {
+  this.textContent = 'hover-active';
+});
+console.log('fixture-console-ready');
+</script>
+</body>
+</html>

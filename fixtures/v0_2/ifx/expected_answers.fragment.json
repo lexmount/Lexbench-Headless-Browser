@@ -1,0 +1,11 @@
+{
+  "_comment": "Reference-only. F8 v2_ifx_* tasks are raw_cdp + inline_assertions (raw_cdp does not POST to /__grade__/expected_answer), so these entries are not consulted by the runner. They document, per task, the answer the page must render AFTER CDP interception and the origin-route decoy it must NOT equal.",
+  "v2_ifx_mock_api_rewrite": {"mode": "equals", "expected": "MOCKED_LIVE_ANSWER", "server_decoy": "SERVER_DECOY_SECRET"},
+  "v2_ifx_block_resource_fallback": {"mode": "equals", "expected": "FALLBACK_LOCAL_42"},
+  "v2_ifx_request_rewrite_url": {"mode": "equals", "expected": "REWRITTEN_TRUTH_ROUTE", "server_decoy": "SERVER_DECOY_SECRET"},
+  "v2_ifx_response_body_tamper": {"mode": "contains", "expected": "TAMPERED", "server_decoy": "original-document-body-token-ORIG"},
+  "v2_ifx_json_field_inject": {"mode": "equals", "expected": "INJECTED_FIELD_VALUE"},
+  "v2_ifx_status_override_branch": {"mode": "equals", "expected": "DEGRADED_MODE_503"},
+  "v2_ifx_multi_intercept": {"mode": "contains", "expected": "FULFILLED_ONE"},
+  "v2_ifx_header_rewrite_client": {"mode": "equals", "expected": "injected-token-xyz"}
+}

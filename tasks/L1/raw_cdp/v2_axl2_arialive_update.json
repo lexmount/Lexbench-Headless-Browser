@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "On load, script updates the role=status aria-live region's accessible name from 'INITIALIZING' to the computed 'READY-9307' (via aria-label). After the update settles, getFullAXTree reports the region with role 'status' and the new name. The final value is only observable from the refreshed AX tree.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Accessibility.getFullAXTree",
+        "save_result_as": "ax"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.get_full_ax_tree",
+    "web.ax.live_region",
+    "web.ax.name"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": {
+          "name": {
+            "value": "READY-9307"
+          },
+          "role": {
+            "value": "status"
+          }
+        },
+        "kind": "array_contains",
+        "name": "ax",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/axl2/arialive"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility_l2",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_axl2_arialive_update",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "aria-live region reflects the post-load computed value"
+}

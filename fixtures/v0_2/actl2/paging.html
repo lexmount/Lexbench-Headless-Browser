@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>actl2 paging</title></head>
+<body>
+<h1>paging</h1>
+<button id="next">next</button>
+<div id="status">page:1</div>
+<script>
+// Each "next" click advances a page counter and fetches that page's datum from
+// the server. The final datum only exists on page 3, so it can only be read
+// after two next-clicks, each of which is a real XHR to the fixture server.
+window.__page = 1;
+document.getElementById("next").addEventListener("click", function () {
+  window.__page += 1;
+  var n = window.__page;
+  fetch("/v2/actl2/page" + n + ".txt")
+    .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error("http " + r.status)); })
+    .then(function (t) { document.getElementById("status").textContent = "page:" + n + ":" + t.trim(); })
+    .catch(function (e) { document.getElementById("status").textContent = "ERR:" + String(e); });
+});
+</script>
+</body>
+</html>

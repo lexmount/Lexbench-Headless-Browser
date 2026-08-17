@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/locator_textbox_len.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Fills #textbox with a five-character value on the probe controls page; the input handler writes the live length into #textbox-len. Reads it back. Exercises selector resolution plus input-event-derived DOM observation.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "fill_ok",
+        "step": 2
+      },
+      {
+        "expected": "5",
+        "kind": "saved_equals",
+        "label": "len_is_five",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_cdp_use",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#textbox",
+        "value": "abcde"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#textbox-len"
+      }
+    ]
+  },
+  "features": [
+    "fw.cdp_use.op.new_page",
+    "fw.cdp_use.op.goto",
+    "fw.cdp_use.op.fill",
+    "fw.cdp_use.op.text_content",
+    "cdp.input.insert_text"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.cdp_use",
+  "tags": [
+    "family.locator",
+    "version.v0_4"
+  ],
+  "task_id": "sc_locator_textbox_len__cdpu",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Type into a textbox and read the derived length output (cdp_use)"
+}

@@ -1,0 +1,72 @@
+{
+  "scenario_id": "net_request_recorded",
+  "family": "network_interception",
+  "title": "The driver's request log captures a page-initiated fetch",
+  "description": "Starts request recording, triggers a fetch, and answers with the recorded request log filtered to the data endpoint.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/net"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "record_requests"
+    },
+    {
+      "op": "click",
+      "selector": "#btn-data"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('net-out').textContent.indexOf('server:') !== -1"
+    },
+    {
+      "op": "get_recorded_requests",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "log_read",
+      "step": 5
+    },
+    {
+      "kind": "saved_contains",
+      "label": "fetch_logged",
+      "name": "answer",
+      "expected": "/v0_4/net/data"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "/v0_4/net/data"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "cdp_use": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "pydoll": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "stagehand": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "chrome_devtools_mcp": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "chromedp": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "rod": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "chromiumoxide": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "ferrum": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "agent_browser": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)",
+    "selenium": "adapter op vocabulary has no network-interception surface (route_fulfill/route_abort/set_extra_headers/record_requests are probe-only ops)"
+  }
+}

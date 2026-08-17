@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/fr_sibling_isolation.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Pokes a computed value into child A's note element and answers with both children's notes, proving sibling frame documents are distinct.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "poke_ok",
+        "step": 3
+      },
+      {
+        "expected": "poked-25:idle",
+        "kind": "saved_equals",
+        "label": "sibling_untouched",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_stagehand",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.frames.length === 2 && !!frames[0].document.getElementById('note') && !!frames[1].document.getElementById('note')",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "frames[0].document.getElementById('note').textContent = 'poked-' + (5 * 5); 'poked'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "frames[0].document.getElementById('note').textContent + ':' + frames[1].document.getElementById('note').textContent",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.stagehand.op.new_page",
+    "fw.stagehand.op.goto",
+    "fw.stagehand.op.wait_for_function",
+    "fw.stagehand.op.evaluate",
+    "cdp.page.get_frame_tree",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.stagehand",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_sibling_isolation__sh",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Writing into one child frame leaves its sibling untouched (stagehand)"
+}

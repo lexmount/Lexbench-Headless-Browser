@@ -1,0 +1,103 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Auto-attaches with waitForDebuggerOnStart:true so the created page target arrives debugger-paused (asserts waitingForDebugger:true), enables Runtime on the child session, then releases it with Runtime.runIfWaitingForDebugger and observes the Runtime.executionContextCreated event. Real probe of the core bootstrap pause/release semantics.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "child",
+        "timeout_ms": 5000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Runtime.enable",
+        "session": "child"
+      },
+      {
+        "method": "Runtime.runIfWaitingForDebugger",
+        "session": "child"
+      },
+      {
+        "save_result_as": "ctx",
+        "session": "child",
+        "timeout_ms": 5000,
+        "wait_for_event": "Runtime.executionContextCreated"
+      },
+      {
+        "method": "Target.closeTarget",
+        "optional": true,
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.run_if_waiting_for_debugger",
+    "cdp.runtime.execution_context_created",
+    "cdp.target.set_auto_attach"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": true,
+        "kind": "saved_path_equals",
+        "name": "attached",
+        "path": "waitingForDebugger"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Runtime.executionContextCreated",
+        "name": "ctx"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "ctx",
+        "path": "context.id"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_run_if_waiting_for_debugger",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "paused target release via runIfWaitingForDebugger"
+}

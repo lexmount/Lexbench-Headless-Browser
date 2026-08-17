@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>actl2 form2</title></head>
+<body>
+<h1>two-field form</h1>
+<input id="first" type="text" value="">
+<input id="last" type="text" value="">
+<button id="submit">submit</button>
+<div id="status">idle</div>
+<script>
+document.getElementById("submit").addEventListener("click", function () {
+  var a = document.getElementById("first").value;
+  var b = document.getElementById("last").value;
+  fetch("/v2/actl2/token.txt")
+    .then(function (r) { return r.text(); })
+    .then(function (t) { document.getElementById("status").textContent = a + "/" + b + "/" + t.trim(); })
+    .catch(function (e) { document.getElementById("status").textContent = "ERR:" + String(e); });
+});
+</script>
+</body>
+</html>

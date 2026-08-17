@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate paging: the driver resolves the 'next' button objectId once, then callFunctionOn clicks it twice. Each click advances the page counter and fetches that page's datum from the server. The final datum lives only on page 3, so the answer can only be read after both clicks/XHRs — proving the paging navigation actually executed.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('next')"
+        },
+        "save_result_as": "next"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:next.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return true; }",
+          "objectId": "{saved:next.result.objectId}",
+          "returnByValue": true
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('status').textContent",
+          "returnByValue": true
+        },
+        "save_as": "status"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "P3-FINAL-73",
+        "kind": "value_contains",
+        "name": "status"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/paging"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_paging_fetch",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "callFunctionOn paging fetches page-3 datum"
+}

@@ -1,0 +1,84 @@
+{
+  "_generated_from": "tasks/scenarios/multi_tab_collect.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Opens two live targets, reads a distinct heading from each, and aggregates both values in the second tab through same-origin session state.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "first_value_collected",
+        "step": 2
+      },
+      {
+        "kind": "step_ok",
+        "label": "second_target_created",
+        "step": 3
+      },
+      {
+        "expected": "CDP Core Fixture|Page Two",
+        "kind": "saved_equals",
+        "label": "two_tab_values_aggregated",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "localStorage.setItem('abb-first-tab-heading', document.getElementById('title').textContent.trim()), localStorage.getItem('abb-first-tab-heading')",
+        "op": "evaluate"
+      },
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_base_url}/page2"
+      },
+      {
+        "expression": "localStorage.getItem('abb-first-tab-heading') + '|' + document.getElementById('title').textContent.trim()",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.evaluate",
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.connect_session",
+    "version.v0_4",
+    "purpose.issue_106"
+  ],
+  "task_id": "sc_multi_tab_collect__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Collect and aggregate values from two tabs in one driver session (puppeteer)"
+}

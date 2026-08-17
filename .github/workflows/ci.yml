@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install driver dependencies
+        run: |
+          npm ci
+          python3 -m pip install -e '.[drivers,dev]'
+      - name: Dataset integrity
+        run: python3 -m runner.run validate
+      - name: Scenario spec check
+        run: python3 -m runner.run scenarios --check
+      - name: Unit tests
+        run: python3 -m pytest test -q

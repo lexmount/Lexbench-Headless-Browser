@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Asserts DOM.childNodeInserted fires when a child is appended to a tracked subtree.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        }
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.body.appendChild(document.createElement('span'))"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.childNodeInserted"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.child_node_inserted"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "child_inserted_event",
+        "method": "DOM.childNodeInserted"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_ev_childnodeinserted",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.childNodeInserted fires on appendChild"
+}

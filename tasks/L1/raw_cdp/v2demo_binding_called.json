@@ -1,0 +1,77 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "v0.2 demo: Runtime.addBinding installs a page->driver bridge, the page invokes it, and the driver waits for the Runtime.bindingCalled event and asserts its payload. Demonstrates wait_for_event over a page-session event (T1_action addBinding/bindingCalled).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.addBinding",
+        "params": {
+          "name": "__abbBridge"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbBridge('hello-' + (6 * 7))"
+        }
+      },
+      {
+        "match": {
+          "name": "__abbBridge"
+        },
+        "save_result_as": "binding",
+        "session": "page",
+        "timeout_ms": 4000,
+        "wait_for_event": "Runtime.bindingCalled"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.add_binding",
+    "cdp.runtime.binding_called"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.bindingCalled",
+        "name": "binding"
+      },
+      {
+        "expected": "__abbBridge",
+        "kind": "saved_path_equals",
+        "name": "binding",
+        "path": "name"
+      },
+      {
+        "expected": "hello-42",
+        "kind": "saved_path_equals",
+        "name": "binding",
+        "path": "payload"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "purpose.demo"
+  ],
+  "task_id": "v2demo_binding_called",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.addBinding / bindingCalled event"
+}

@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb nested keypath</title></head><body><div id="out">PENDING</div><script>
+// Nested keyPath 'meta.id': the primary key is extracted from a nested property
+// path. getAllKeys() returns the nested key values (sorted) and get() resolves
+// records by the nested key.
+var DB='v2idb_nested_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:'meta.id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    st.put({meta:{id:'X7'},name:'ANN'});st.put({meta:{id:'X3'},name:'BOB'});st.put({meta:{id:'X5'},name:'CAM'});
+    tx.oncomplete=function(){
+      var rt=db.transaction('s').objectStore('s');
+      var gk=rt.getAllKeys();var g=db.transaction('s').objectStore('s').get('X7');
+      var done=0,keys=null,rec=null;
+      function fin(){if(done===2)set('KEYS='+keys.join(',')+'_GET_X7='+(rec&&rec.name));}
+      gk.onsuccess=function(){keys=gk.result;done++;fin();};gk.onerror=function(){fail(gk.error);};
+      g.onsuccess=function(){rec=g.result;done++;fin();};g.onerror=function(){fail(g.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

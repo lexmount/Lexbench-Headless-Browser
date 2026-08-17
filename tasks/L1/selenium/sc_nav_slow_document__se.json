@@ -1,0 +1,67 @@
+{
+  "_generated_from": "tasks/scenarios/nav_slow_document.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Navigates to an endpoint that holds the response for 1.2s before serving the document. A driver that gives up early or reads before the body arrives fails.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "slow_goto_ok",
+        "step": 1
+      },
+      {
+        "expected": "slow-99",
+        "kind": "saved_equals",
+        "label": "slow_doc_read",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_base_url}/v0_4/slow?ms=1200"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#slow-title"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.text_content",
+    "cdp.page.navigate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/slow?ms=1200"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.navigation_lifecycle",
+    "version.v0_4"
+  ],
+  "task_id": "sc_nav_slow_document__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "goto waits out a slow-responding document (selenium)"
+}

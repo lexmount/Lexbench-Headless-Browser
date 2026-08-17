@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b CSS.registerProperty typed syntax</title></head>
+<body>
+<div id="a" style="--len: 30px"></div>
+<div id="b" style="--len: banana"></div>
+<div id="out"></div>
+<script>
+try{
+  CSS.registerProperty({name:'--len',syntax:'<length>',inherits:false,initialValue:'10px'});
+  var aVal=getComputedStyle(document.getElementById('a')).getPropertyValue('--len').trim();
+  var bVal=getComputedStyle(document.getElementById('b')).getPropertyValue('--len').trim();
+  document.getElementById('out').textContent='REGSYNTAX:a='+aVal+';b='+bVal;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

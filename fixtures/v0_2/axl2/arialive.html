@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AXL2 Fixture: aria-live update</title>
+</head>
+<body>
+<h1>Live Status</h1>
+<!-- On load, JS replaces the accessible name with the computed status via aria-label. -->
+<div id="status" role="status" aria-live="polite" aria-label="INITIALIZING">pending</div>
+<script>
+  window.addEventListener('load', function () {
+    var el = document.getElementById('status');
+    el.setAttribute('aria-label', 'READY-9307');
+  });
+</script>
+</body>
+</html>

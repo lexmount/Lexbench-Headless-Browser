@@ -1,0 +1,76 @@
+{
+  "_generated_from": "tasks/scenarios/wait_enabled_then_click.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "A button starts disabled and is enabled 350ms after load; its click handler is attached at enable time. Waits for enablement, clicks, and reads the handler's output.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "click_ok",
+        "step": 3
+      },
+      {
+        "expected": "clicked-late-33",
+        "kind": "saved_equals",
+        "label": "handler_fired",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_cdp_use",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "!document.getElementById('late-btn').disabled",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#late-btn"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#late-btn-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.cdp_use.op.new_page",
+    "fw.cdp_use.op.goto",
+    "fw.cdp_use.op.wait_for_function",
+    "fw.cdp_use.op.click",
+    "fw.cdp_use.op.text_content",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.cdp_use",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_enabled_then_click__cdpu",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a disabled control to enable, then click it (cdp_use)"
+}

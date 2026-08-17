@@ -1,0 +1,52 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.runtime.awaitPromise by issuing raw CDP command(s) Runtime.enable, Runtime.evaluate against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "awaitPromise": true,
+          "expression": "Promise.resolve(42)",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.core",
+    "purpose.smoke",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_runtime_awaitpromise",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.runtime.awaitPromise"
+}

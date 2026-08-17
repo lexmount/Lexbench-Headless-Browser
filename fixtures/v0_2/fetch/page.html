@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>v0.2 Fetch interception fixture</title>
+</head>
+<body>
+<h1 id="title">Fetch fixture</h1>
+<div id="out">idle</div>
+<script>
+// Same-origin page used by the F2 v2_fetch_* raw_cdp probes. The driver drives
+// fetch() via Runtime.evaluate and reads results back from window globals.
+// A tiny helper keeps the task JSON expressions short and uniform.
+window.__abbReady = true;
+window.__abbGet = function (url) {
+  return fetch(url).then(function (r) {
+    return r.text().then(function (t) {
+      window.__abbStatus = r.status;
+      window.__abbCT = r.headers.get('content-type') || '';
+      window.__abbXTag = r.headers.get('x-abb-tag') || '';
+      window.__abbBody = t;
+      return t;
+    });
+  }).catch(function (e) {
+    window.__abbBody = 'ERR:' + String(e);
+    window.__abbStatus = -1;
+    return window.__abbBody;
+  });
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "_generated_from": "tasks/scenarios/dyn_counter_clicks.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Clicks #counter-btn three times on the probe controls page; each click increments the #press-count output via a JS handler. Reads the final tally. Exercises repeated pointer dispatch and observation of client-side state accumulation.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "third_click_ok",
+        "step": 4
+      },
+      {
+        "expected": "3",
+        "kind": "saved_equals",
+        "label": "count_is_three",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#counter-btn"
+      },
+      {
+        "op": "click",
+        "selector": "#counter-btn"
+      },
+      {
+        "op": "click",
+        "selector": "#counter-btn"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#press-count"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.click",
+    "fw.selenium.op.text_content",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_dyn_counter_clicks__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Click a counter button repeatedly and read the tally (selenium)"
+}

@@ -1,0 +1,402 @@
+{
+  "r3_dA_e_before_content": {
+    "expected": "LABEL:\"NEW_ARRIVAL \"",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_e_color_gate": {
+    "expected": "IN_STOCK_GREEN",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_e_fontsize_gate": {
+    "expected": "TIER_LARGE_32",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_e_target_reveal": {
+    "expected": "SHOWN:COUPON_CODE_SAVE20",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_h_color_table": {
+    "expected": "INSTOCK:Alpha,Gamma,Epsilon",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_h_priced_list": {
+    "expected": "HOT:P1,P4",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_h_tabs_target": {
+    "expected": "SPECS:SPEC_A,SPEC_B,SPEC_C",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_h_var_cascade": {
+    "expected": "SECTION_SCOPED_VAR",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_m_after_async": {
+    "expected": "STATUS:\" [VERIFIED]\"",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_m_bgcolor_toggle": {
+    "expected": "FLAGGED_URGENT",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_m_target_click": {
+    "expected": "OPEN:FREE_OVER_50",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dA_m_var_theme": {
+    "expected": "THEME_DARK_ACCENT",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_e_idb_record": {
+    "expected": "USER:PROFILE_NAME_ERIC",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_e_idb_two": {
+    "expected": "CART:CART_ITEM_BOOK,CART_ITEM_PEN",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_h_idb_cursor": {
+    "expected": "LARGE_ORDERS=3_TOTAL=95",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_h_idb_upgrade": {
+    "expected": "VIP_AFTER_UPGRADE=2:ANN,CAM",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_m_idb_getall": {
+    "expected": "ORDERS=5:ORD_A,ORD_B,ORD_C,ORD_D,ORD_E",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dB_m_idb_index": {
+    "expected": "BOOKS=2:T1,BOOKMATCH_T3",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_e_adopted_color": {
+    "expected": "ADOPTED_STYLE_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_e_has_child": {
+    "expected": "HAS_FLAGGED_CARD",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_e_nth_of": {
+    "expected": "NTH_SECOND_X",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_h_has_compound": {
+    "expected": "BOTH:R2,R4",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_h_has_nth_combo": {
+    "expected": "PROMO=L2,L3,L5|THIRD=L5",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_m_adopted_async": {
+    "expected": "ADOPTED_ASYNC_29",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_m_has_child_inject": {
+    "expected": "HAS_SALE_ITEM",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_dC_m_nthlast_of": {
+    "expected": "NTHLAST_TARGET",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_attr_content": {
+    "expected": "C:\"ATTR_LABEL_X\"",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_cache_api": {
+    "expected": "CACHE_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_checkvisibility": {
+    "expected": "CHECKVIS_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_clipboard_api": {
+    "expected": "CLIPBOARD_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_computedstylemap": {
+    "expected": "CSM:21px",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_css_registerproperty": {
+    "expected": "REGPROP_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_css_supports": {
+    "expected": "SUPPORTS_GRID",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_cssaware_innertext": {
+    "expected": "VISIBLE_PRICE_99",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_geom_gbcr": {
+    "expected": "GBCR_W_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_geom_offsetwidth": {
+    "expected": "OFFSET_W_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_geom_scrollheight": {
+    "expected": "SCROLLH_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_view_transitions": {
+    "expected": "VIEWTRANS_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_fv_web_animations": {
+    "expected": "ANIM_OK",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_g_dialog": {
+    "expected": "DIALOG_OPEN",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_g_durationformat": {
+    "expected": "DURFMT_OK:1 hour, 30 minutes",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_g_io": {
+    "expected": "IO_FIRED",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_g_segmenter": {
+    "expected": "SEG_OK:5",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_a11_cssaware_extract": {
+    "expected": "CSSAWARE_A11:PRICE_VISIBLE_A11_99|PRICE_VISIBLE_A11_42",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_a3_checked_reveal": {
+    "expected": "ANSWER_CHECKED_A3",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_b1_localstorage": {
+    "expected": "LOCALSTORAGE_VAL_B1",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_b2_sessionstorage": {
+    "expected": "SESSIONSTORAGE_VAL_B2",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_b3_cookie": {
+    "expected": "COOKIE_VAL_B3",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c11_domparser": {
+    "expected": "DOMPARSER_C11",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c12_treewalker": {
+    "expected": "TREEWALK_C12:SPAN,B",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c13_intl": {
+    "expected": "INTL_C13:$1,234.50",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c14_crypto_uuid": {
+    "expected": "UUID_C14:",
+    "mode": "contains",
+    "note": "volatile answer; matched on stable prefix from double-bake",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c17_textencoder": {
+    "expected": "TEXTENC_C17:2:AB",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c18_range_fragment": {
+    "expected": "RANGE_C18:RANGE_C18",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c19_ci_attr": {
+    "expected": "CIATTR_C19:CIATTR_C19",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c20_not_has": {
+    "expected": "NOTHAS_C20:NOTHAS_C20",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c21_matches_has": {
+    "expected": "MATCHESHAS_C21:ok",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c23_scope_sel": {
+    "expected": "SCOPE_C23:SCOPE_C23",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c2_template_slot": {
+    "expected": "TEMPLATE_ROW_C2",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c4_structuredclone": {
+    "expected": "STRUCTURED_CLONE_C4_7",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c5_customelements": {
+    "expected": "CUSTOM_EL_C5",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c6_cssom_rules": {
+    "expected": "CSSOM_MARKER_C6:rgb(1, 2, 3)",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c7_is_where": {
+    "expected": "ISWHERE:B_TEXT_C7",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r3_probe_c8_matchmedia": {
+    "expected": "MATCHMEDIA_WIDE_C8",
+    "mode": "equals",
+    "oracle": "chrome 150.0.7871.49"
+  },
+  "r4_q01_stock_list": {
+    "expected": [
+      "无线降噪耳机",
+      "￥499",
+      "机械键盘 87 键",
+      "￥329",
+      "USB-C 65W 充电器",
+      "￥129"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q02_target_section": {
+    "expected": [
+      "2.4.0 及以上"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q03_pricing_var": {
+    "expected": [
+      "￥79/月"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q04_status_dashboard": {
+    "expected": [
+      "支付网关",
+      "消息推送"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q05_reader_idb": {
+    "expected": [
+      "Rust 异步运行时对比",
+      "WebAssembly 在边缘计算的实践",
+      "从零实现一个 CSS 引擎",
+      "HTTP/3 与 QUIC 入门"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q06_notes_idb": {
+    "expected": [
+      "差旅发票贴在 A4 纸上",
+      "审批人填王敏"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q07_cart_idb": {
+    "expected": [
+      "5 件",
+      "￥1287"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q08_sale_has": {
+    "expected": [
+      "春季新茶 250g",
+      "手冲咖啡礼盒",
+      "进口巧克力 12 颗装"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q09_widget_adopted": {
+    "expected": [
+      "72%",
+      "运行中"
+    ],
+    "mode": "contains_all"
+  },
+  "r4_q10_leaderboard_nth": {
+    "expected": [
+      "林深",
+      "金牌",
+      "苏晓",
+      "银牌",
+      "陈屿",
+      "铜牌"
+    ],
+    "mode": "contains_all"
+  }
+}

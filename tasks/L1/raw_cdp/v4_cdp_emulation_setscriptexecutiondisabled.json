@@ -1,0 +1,50 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Toggles script execution off then on; the engine must accept both states.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Emulation.setScriptExecutionDisabled",
+        "params": {
+          "value": true
+        }
+      },
+      {
+        "method": "Emulation.setScriptExecutionDisabled",
+        "params": {
+          "value": false
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.emulation.set_script_execution_disabled"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error",
+        "label": "command_completed"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.emulation",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_emulation_setscriptexecutiondisabled",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Emulation.setScriptExecutionDisabled toggle"
+}

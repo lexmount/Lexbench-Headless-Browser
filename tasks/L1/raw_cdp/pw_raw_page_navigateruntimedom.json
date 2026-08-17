@@ -1,0 +1,83 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.page.navigateRuntimeDom by issuing raw CDP command(s) Page.enable, Runtime.enable, DOM.enable, Page.navigate, ... against the self-hosted fixture `/l1/core`. It passes when the saved value `value` equals `CDP Core Fixture`; every required CDP step completes without a protocol error.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Page.navigate",
+        "optional": false,
+        "params": {
+          "url": "{fixture_url}"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "expression": "document.title",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      },
+      {
+        "method": "DOM.getDocument",
+        "optional": false,
+        "params": {
+          "depth": 2
+        },
+        "save_as": "document"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate",
+    "cdp.runtime.evaluate",
+    "cdp.dom.get_document"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "CDP Core Fixture",
+        "kind": "value_equals"
+      },
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.core",
+    "purpose.smoke",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_page_navigateruntimedom",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.page.navigateRuntimeDom"
+}

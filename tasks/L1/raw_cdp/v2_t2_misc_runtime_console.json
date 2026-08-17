@@ -1,0 +1,73 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "With Runtime enabled, a page console.error emits Runtime.consoleAPICalled; the driver waits for the matching call (by type and args, ignoring the fixture's own load-time console.log) and asserts the first string argument value.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "params": {}
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "console.error('t2b-console-marker', 42)"
+        }
+      },
+      {
+        "match": {
+          "args": [
+            {
+              "value": "t2b-console-marker"
+            },
+            {
+              "value": 42
+            }
+          ],
+          "type": "error"
+        },
+        "save_result_as": "console",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Runtime.consoleAPICalled"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.console_api_called"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.consoleAPICalled",
+        "name": "console"
+      },
+      {
+        "expected": "t2b-console-marker",
+        "kind": "saved_path_equals",
+        "name": "console",
+        "path": "args.0.value"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_runtime_console",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.consoleAPICalled event"
+}

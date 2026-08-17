@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Evaluate probe: page.content() must serialize the whole live document; the dump must contain the exact fixture title tag and the bottom-marker text from the end of the body.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "<title>CDP Core Fixture</title>",
+        "kind": "saved_contains",
+        "label": "html_has_title_tag",
+        "name": "html"
+      },
+      {
+        "expected": "bottom-marker",
+        "kind": "saved_contains",
+        "label": "html_has_bottom_marker",
+        "name": "html"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "content",
+        "save_as": "html"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.content",
+    "cdp.page.get_frame_tree",
+    "cdp.dom.get_outer_html",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_evaluate",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_eval_content_html",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer page.content() returns the full serialized document"
+}

@@ -1,0 +1,92 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "After the page seeds localStorage, DOMStorage.enable + getDOMStorageItems read the entries for the page origin, and DOMStorage.setDOMStorageItem writes a new item that the page then reads back -- the CDP DOMStorage round trip (browser-use storage_state path).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "(function(){localStorage.clear();localStorage.setItem('dsKey','dsVal');return location.origin;})()",
+          "returnByValue": true
+        },
+        "save_as": "origin"
+      },
+      {
+        "method": "DOMStorage.enable",
+        "params": {}
+      },
+      {
+        "method": "DOMStorage.getDOMStorageItems",
+        "params": {
+          "storageId": {
+            "isLocalStorage": true,
+            "securityOrigin": "{saved:origin.result.value}"
+          }
+        },
+        "save_result_as": "items"
+      },
+      {
+        "method": "DOMStorage.setDOMStorageItem",
+        "params": {
+          "key": "srvKey",
+          "storageId": {
+            "isLocalStorage": true,
+            "securityOrigin": "{saved:origin.result.value}"
+          },
+          "value": "srvVal"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "localStorage.getItem('srvKey')",
+          "returnByValue": true
+        },
+        "save_as": "readback"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom_storage.enable",
+    "cdp.dom_storage.get_dom_storage_items",
+    "cdp.dom_storage.set_dom_storage_item"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": [
+          "dsKey",
+          "dsVal"
+        ],
+        "kind": "array_contains",
+        "name": "items",
+        "path": "entries"
+      },
+      {
+        "expected": "srvVal",
+        "kind": "value_equals",
+        "name": "readback"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_domstorage",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOMStorage.enable / getDOMStorageItems / setDOMStorageItem"
+}

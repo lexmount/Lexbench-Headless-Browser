@@ -1,0 +1,70 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Runtime.callFunctionOn against an element objectId: Runtime.evaluate returns the button's RemoteObject (no returnByValue, so an objectId), then callFunctionOn invokes a function with `this` bound to that element which clicks it and returns its data-token. Verifies the click really fired (window.__btnClicks incremented) and the function return value came back. Anchors Runtime.callFunctionOn as the Moli non-coordinate action path (survey README fix #5).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('btn')"
+        },
+        "save_result_as": "elbtn"
+      },
+      {
+        "method": "Runtime.callFunctionOn",
+        "params": {
+          "functionDeclaration": "function(){ this.click(); return this.getAttribute('data-token'); }",
+          "objectId": "{saved:elbtn.result.objectId}",
+          "returnByValue": true
+        },
+        "save_as": "clicked"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__btnClicks",
+          "returnByValue": true
+        },
+        "save_as": "clickcount"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.evaluate",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "BTN-TOKEN-42",
+        "kind": "value_equals",
+        "name": "clicked"
+      },
+      {
+        "expected": 1,
+        "kind": "value_equals",
+        "name": "clickcount"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_callfn_element_click",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "callFunctionOn on element objectId clicks and returns attribute"
+}

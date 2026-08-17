@@ -1,0 +1,71 @@
+{
+  "scenario_id": "obs_aria_snapshot_structure",
+  "family": "observation",
+  "title": "The ARIA snapshot exposes role structure with computed content",
+  "description": "Takes an ARIA snapshot of the main region and checks the computed heading appears in the structured output.",
+  "layer": "L1",
+  "diagnostic": true,
+  "extra_tags": [
+    "purpose.issue_106",
+    "purpose.issue_106_snapshot"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('ax-heading').textContent.indexOf('ax-heading-') !== -1"
+    },
+    {
+      "op": "aria_snapshot",
+      "selector": "main",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "aria_taken",
+      "step": 3
+    },
+    {
+      "kind": "saved_contains",
+      "label": "structure_present",
+      "name": "answer",
+      "expected": "ax-heading-63"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.accessibility.get_full_ax_tree"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "ax-heading-63"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_devtools_mcp",
+    "agent_browser"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "chrome-remote-interface exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "cdp_use": "cdp-use exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "pydoll": "Pydoll exposes raw Accessibility commands, but not a locator-scoped ARIA serialization API",
+    "stagehand": "the pinned Stagehand page surface has no locator-scoped ariaSnapshot method",
+    "chromedp": "chromedp exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "rod": "Rod exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "chromiumoxide": "chromiumoxide exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "ferrum": "Ferrum exposes raw Accessibility.getFullAXTree, but not a locator-scoped ARIA serialization API",
+    "selenium": "the cross-engine Selenium/WebDriver route has neither a standard accessibility-tree command nor a locator-scoped ARIA snapshot API"
+  }
+}

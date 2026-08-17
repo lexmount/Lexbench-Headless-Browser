@@ -1,0 +1,64 @@
+{
+  "scenario_id": "nav_redirect_chain",
+  "family": "navigation_lifecycle",
+  "title": "goto follows a 302 redirect chain to the final document",
+  "description": "Navigates to an endpoint that 302-redirects twice before landing on a page carrying a redirect-count marker. The driver must settle on the FINAL document.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/redirect/hop?n=2"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/v0_4/redirect/hop?n=2"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('redirect-landed')"
+    },
+    {
+      "op": "text_content",
+      "selector": "#redirect-landed",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "chain_followed",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "final_doc",
+      "name": "answer",
+      "expected": "landed-after-redirects"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.network.request_will_be_sent"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "landed-after-redirects"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

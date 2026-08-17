@@ -1,0 +1,86 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "A page controlled by a service worker (which synthesizes a 'SW:hit' response) is probed: before bypass the fetch is served by the worker; after Network.setBypassServiceWorker(true) the same fetch is served by the origin server ('SERVER:hit'). Asserts the bypass actually re-routes requests around the worker.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Network.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "new Promise(function(res){function c(){ if(window.__swReady===true) return res('ready'); if(window.__swError) return res('err:'+window.__swError); setTimeout(c,100);} c();})",
+          "returnByValue": true
+        },
+        "save_as": "swready"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "window.__abbProbe()",
+          "returnByValue": true
+        },
+        "save_as": "r1"
+      },
+      {
+        "method": "Network.setBypassServiceWorker",
+        "params": {
+          "bypass": true
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "fetch('/v2/t2a/sw-probe?nc='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();})",
+          "returnByValue": true
+        },
+        "save_as": "r2"
+      }
+    ]
+  },
+  "features": [
+    "cdp.network.set_bypass_service_worker"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "ready",
+        "kind": "value_equals",
+        "name": "swready"
+      },
+      {
+        "expected": "SW:hit",
+        "kind": "value_contains",
+        "name": "r1"
+      },
+      {
+        "expected": "SERVER:hit",
+        "kind": "value_contains",
+        "name": "r2"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/swpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_net_bypass_service_worker",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 25000
+  },
+  "title": "Network.setBypassServiceWorker bypasses the SW"
+}

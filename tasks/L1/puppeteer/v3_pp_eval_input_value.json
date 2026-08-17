@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Evaluate/read-channel probe: fill #textbox via Puppeteer's locator().fill() and read it back with the $eval value channel; the exact string must round-trip.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "fill_ok",
+        "step": 2
+      },
+      {
+        "expected": "value-channel-96",
+        "kind": "saved_equals",
+        "label": "value_roundtrip",
+        "name": "readback"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#textbox",
+        "value": "value-channel-96"
+      },
+      {
+        "op": "input_value",
+        "save_as": "readback",
+        "selector": "#textbox"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.locator.fill",
+    "fw.puppeteer.page.eval_on_selector",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_evaluate",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_eval_input_value",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer reads back an input value after locator fill"
+}

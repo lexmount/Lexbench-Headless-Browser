@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>diag dispatch mouse geometry</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  /* Click target at a known absolute rectangle: center is (150,110). A
+     coordinate-based Input.dispatchMouseEvent must hit this rect to fire click. */
+  #target{position:absolute;left:100px;top:80px;width:100px;height:60px;background:#59c;}
+</style></head><body>
+<div id="target"></div>
+<script>
+  window.__clickInfo="NONE";
+  document.getElementById('target').addEventListener('click',function(ev){
+    window.__clickInfo="CLICKED@"+Math.round(ev.clientX)+","+Math.round(ev.clientY);
+  });
+</script></body></html>

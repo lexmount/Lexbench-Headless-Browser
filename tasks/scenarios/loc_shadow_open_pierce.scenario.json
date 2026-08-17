@@ -1,0 +1,64 @@
+{
+  "scenario_id": "loc_shadow_open_pierce",
+  "family": "locator",
+  "title": "Read inside an open shadow root",
+  "description": "The page attaches an open shadow root at load. Reads the shadow content via explicit shadowRoot traversal - the engine must implement attachShadow and expose shadowRoot.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('shadow-open-host').shadowRoot"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('shadow-open-host').shadowRoot.getElementById('inner').textContent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "shadow_read_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "open_shadow_content",
+      "name": "answer",
+      "expected": "shadow-open-42"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "shadow-open-42"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

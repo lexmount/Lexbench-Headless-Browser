@@ -1,0 +1,82 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright wires a dialog handler (accept), then evaluates an IIFE that logs a marker to the console and calls window.confirm. Passes when the confirm return value is true (accepted dialog writes back into page JS - the Moli A5 target), the captured console contains the marker, and the recorded dialogs include a confirm.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "true",
+        "kind": "saved_equals",
+        "label": "confirm_returned_true",
+        "name": "confirm_result"
+      },
+      {
+        "expected": "abb-mark-77",
+        "kind": "saved_contains",
+        "label": "console_marker_captured",
+        "name": "logs"
+      },
+      {
+        "expected": "confirm",
+        "kind": "saved_contains",
+        "label": "confirm_dialog_recorded",
+        "name": "dialogs"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "action": "accept",
+        "op": "on_dialog"
+      },
+      {
+        "expression": "(()=>{console.log('abb-mark-77'); return window.confirm('go?');})()",
+        "op": "evaluate",
+        "save_as": "confirm_result"
+      },
+      {
+        "op": "get_console",
+        "save_as": "logs"
+      },
+      {
+        "op": "get_dialogs",
+        "save_as": "dialogs"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.on_console",
+    "fw.playwright.page.on_dialog",
+    "fw.playwright.dialog.accept",
+    "cdp.runtime.console_api_called",
+    "cdp.page.javascript_dialog_opening",
+    "cdp.page.handle_javascript_dialog"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_observation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_obs_console_dialog",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "console.log capture + confirm() dialog accept with return value"
+}

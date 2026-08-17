@@ -1,0 +1,65 @@
+{
+  "_generated_from": "tasks/scenarios/cs_url_surface.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Navigates to the core fixture and reads the current URL through the driver's own url surface (not page JS). The reported location must contain the fixture path.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "url_readable",
+        "step": 2
+      },
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "url_has_fixture_path",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_ferrum",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "url",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.ferrum.op.new_page",
+    "fw.ferrum.op.goto",
+    "fw.ferrum.op.url",
+    "cdp.page.navigate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.ferrum",
+  "tags": [
+    "family.connect_session",
+    "version.v0_4"
+  ],
+  "task_id": "sc_cs_url_surface__fr",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "The driver's URL surface reflects the navigated location (ferrum)"
+}

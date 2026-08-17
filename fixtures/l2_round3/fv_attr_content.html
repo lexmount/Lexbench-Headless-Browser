@@ -1,0 +1,1 @@
+<!doctype html><html><head><meta charset="utf-8"><title>fv attr</title><style>#b::before{content:attr(data-label)}</style></head><body><div id='b' data-label='ATTR_LABEL_X'>core</div><div id='out'></div><script>document.getElementById('out').textContent='C:'+getComputedStyle(document.getElementById('b'),'::before').content;</script></body></html>

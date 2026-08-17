@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt_a url</title></head>
+<body>
+<div id="out"></div>
+<script>
+// WPT url/ semantics rewritten as a self-hosted mechanism probe. The page
+// computes the WHATWG URL/URLSearchParams result at runtime; the expected
+// output lives only server-side (Chrome oracle), never in this static file.
+function compute(name) {
+  switch (name) {
+    case "rel_dotdot":
+      return new URL("../aaa/test.txt", "http://www.example.com/test").href;
+    case "rel_dot":
+      return new URL("./test.txt", "http://www.example.com/test").href;
+    case "idn_punycode":
+      return new URL("http://你好你好").host;
+    case "default_port_http":
+      return new URL("http://foo:80/").href;
+    case "backslash":
+      return new URL("http:\\\\www.google.com\\foo").href;
+    case "pct_space_path":
+      return new URL("/a/ /c", "http://example.org/foo/bar").pathname;
+    case "lowercase_host":
+      return new URL("http://ExAmPlE.CoM").href;
+    case "protocol_relative":
+      return new URL("//foo/bar", "http://example.org/foo/bar").href;
+    case "empty_query":
+      return new URL("?", "http://example.org/foo/bar").href;
+    case "nonspecial_opaque":
+      return new URL("non-special:opaque").href;
+    case "sp_getall":
+      return new URLSearchParams("a=1&a=2&b=3").getAll("a").join(",");
+    case "sp_plus_space":
+      return new URLSearchParams("q=a+b").get("q");
+    case "sp_set_replace": {
+      var p = new URLSearchParams("a=1&a=2&b=3");
+      p.set("a", "9");
+      return p.toString();
+    }
+    case "sp_sort": {
+      var q = new URLSearchParams("c=3&a=1&b=2");
+      q.sort();
+      return q.toString();
+    }
+    default:
+      return "UNKNOWN_CASE:" + name;
+  }
+}
+try {
+  var c = new URLSearchParams(location.search).get("case");
+  document.getElementById("out").textContent = String(compute(c));
+} catch (e) {
+  document.getElementById("out").textContent = "ERR:" + (e && e.message ? e.message : e);
+}
+</script>
+</body></html>

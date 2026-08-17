@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b template content inertness</title></head>
+<body>
+<template id="tpl"><div class="row">ROW</div><script>window.__tplRan=1;</script></template>
+<div id="out"></div>
+<script>
+try{
+  var tpl=document.getElementById('tpl');
+  var isFrag=tpl.content instanceof DocumentFragment;
+  var row=tpl.content.querySelector('.row');
+  var connected=row?row.isConnected:true;
+  var scriptRan=(typeof window.__tplRan!=='undefined');
+  document.getElementById('out').textContent='TEMPLATE:frag='+isFrag+';connected='+connected+';scriptRan='+(scriptRan?'Y':'N');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

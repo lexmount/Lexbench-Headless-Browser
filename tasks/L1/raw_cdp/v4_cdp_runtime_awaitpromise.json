@@ -1,0 +1,60 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Evaluates a promise without awaiting, then resolves it via Runtime.awaitPromise and checks the settled value.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": false,
+          "expression": "Promise.resolve(7)"
+        },
+        "save_result_as": "p"
+      },
+      {
+        "method": "Runtime.awaitPromise",
+        "params": {
+          "promiseObjectId": "{saved:p.result.objectId}",
+          "returnByValue": true
+        },
+        "save_result_as": "r"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.await_promise"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": 7,
+        "kind": "saved_path_equals",
+        "label": "promise_resolved_to_7",
+        "name": "r",
+        "path": "result.value"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.bootstrap",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_runtime_awaitpromise",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.awaitPromise resolves a promise object"
+}

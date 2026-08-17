@@ -1,0 +1,87 @@
+{
+  "_generated_from": "tasks/scenarios/nav_forward_after_back.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Navigates core -> page2, goes back, then forward again, and reads the second document's heading.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "forward_ok",
+        "step": 5
+      },
+      {
+        "expected": "Page Two",
+        "kind": "saved_equals",
+        "label": "second_doc_again",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_rod",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_base_url}/page2"
+      },
+      {
+        "op": "go_back"
+      },
+      {
+        "expression": "location.pathname === '/l1/core'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "go_forward"
+      },
+      {
+        "expression": "location.pathname === '/page2'",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#title"
+      }
+    ]
+  },
+  "features": [
+    "fw.rod.op.new_page",
+    "fw.rod.op.goto",
+    "fw.rod.op.go_back",
+    "fw.rod.op.wait_for_function",
+    "fw.rod.op.go_forward",
+    "fw.rod.op.text_content",
+    "cdp.page.navigate_to_history_entry"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.rod",
+  "tags": [
+    "family.navigation_lifecycle",
+    "version.v0_4"
+  ],
+  "task_id": "sc_nav_forward_after_back__rod",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "history forward re-reaches the second document (rod)"
+}

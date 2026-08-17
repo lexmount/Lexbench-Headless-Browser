@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Page.navigate loads a fixture page and returns a frameId; the destination's marker element is then read. Asserts navigate returned a frameId and the target document is really loaded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "location.origin + '/v2/t2a/interactive'",
+          "returnByValue": true
+        },
+        "save_result_as": "url"
+      },
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{saved:url.result.value}"
+        },
+        "save_result_as": "nav"
+      },
+      {
+        "sleep_ms": 400
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('title') ? document.getElementById('title').textContent : 'MISSING'",
+          "returnByValue": true
+        },
+        "save_as": "title"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "nav",
+        "path": "frameId"
+      },
+      {
+        "expected": "t2a-interactive",
+        "kind": "value_equals",
+        "name": "title"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/netpage"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_navigate",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.navigate loads a target document"
+}

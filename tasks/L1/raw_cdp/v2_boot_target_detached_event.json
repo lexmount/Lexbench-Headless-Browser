@@ -1,0 +1,94 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Auto-attaches to a created page target, then closes it and waits for the Target.detachedFromTarget event, asserting it carries the child sessionId. Real probe of the detach event lifecycle.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Target.setAutoAttach",
+        "params": {
+          "autoAttach": true,
+          "flatten": true,
+          "waitForDebuggerOnStart": false
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Target.createTarget",
+        "params": {
+          "url": "about:blank"
+        },
+        "save_result_as": "created",
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetInfo": {
+            "targetId": "{saved:created.targetId}"
+          }
+        },
+        "save_result_as": "attached",
+        "save_session_as": "child",
+        "timeout_ms": 5000,
+        "wait_for_event": "Target.attachedToTarget"
+      },
+      {
+        "method": "Target.closeTarget",
+        "params": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "session": "browser"
+      },
+      {
+        "match": {
+          "targetId": "{saved:created.targetId}"
+        },
+        "save_result_as": "detached",
+        "timeout_ms": 5000,
+        "wait_for_event": "Target.detachedFromTarget"
+      }
+    ]
+  },
+  "features": [
+    "cdp.target.detached_from_target",
+    "cdp.target.attached_to_target"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Target.attachedToTarget",
+        "name": "attached"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Target.detachedFromTarget",
+        "name": "detached"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "detached",
+        "path": "sessionId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_target_detached_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Target.detachedFromTarget on close"
+}

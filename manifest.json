@@ -1,0 +1,154 @@
+{
+  "bench_id": "agent_browser_bench",
+  "bench_version": "2026.08.17-v0_4.2",
+  "default_k_runs": 1,
+  "engine_policy": "repo_build_artifacts_pinned_binaries",
+  "engines": {
+    "chrome": {
+      "headless": "new",
+      "role": "gold_baseline"
+    },
+    "lightpanda": {
+      "role": "native_candidate"
+    },
+    "moli": {
+      "role": "native_candidate"
+    },
+    "obscura": {
+      "role": "native_candidate"
+    }
+  },
+  "fallback_allowed": false,
+  "layers": [
+    {
+      "enabled": true,
+      "layer_id": "L1",
+      "name": "cdp_compatibility",
+      "subsets": [
+        {
+          "chrome_gate": "best_effort",
+          "driver": "raw_cdp",
+          "subset_id": "l1.raw_cdp",
+          "task_glob": "tasks/L1/raw_cdp/*.json"
+        },
+        {
+          "chrome_gate": "best_effort",
+          "driver": "node_cdp_probe",
+          "subset_id": "l1.agent_browser_tool",
+          "task_glob": "tasks/L1/agent_browser/*.json"
+        },
+        {
+          "chrome_gate": "best_effort",
+          "driver": "framework_playwright",
+          "subset_id": "l1.playwright",
+          "task_glob": "tasks/L1/playwright/*.json"
+        },
+        {
+          "chrome_gate": "best_effort",
+          "driver": "framework_puppeteer",
+          "subset_id": "l1.puppeteer",
+          "task_glob": "tasks/L1/puppeteer/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_chrome_remote_interface",
+          "subset_id": "l1.chrome_remote_interface",
+          "task_glob": "tasks/L1/chrome_remote_interface/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_cdp_use",
+          "subset_id": "l1.cdp_use",
+          "task_glob": "tasks/L1/cdp_use/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_pydoll",
+          "subset_id": "l1.pydoll",
+          "task_glob": "tasks/L1/pydoll/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "framework_stagehand",
+          "subset_id": "l1.stagehand",
+          "task_glob": "tasks/L1/stagehand/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "mcp_chrome_devtools",
+          "subset_id": "l1.chrome_devtools_mcp",
+          "task_glob": "tasks/L1/chrome_devtools_mcp/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_chromedp",
+          "subset_id": "l1.chromedp",
+          "task_glob": "tasks/L1/chromedp/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_rod",
+          "subset_id": "l1.rod",
+          "task_glob": "tasks/L1/rod/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_chromiumoxide",
+          "subset_id": "l1.chromiumoxide",
+          "task_glob": "tasks/L1/chromiumoxide/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "thin_ferrum",
+          "subset_id": "l1.ferrum",
+          "task_glob": "tasks/L1/ferrum/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "tool_agent_browser",
+          "subset_id": "l1.agent_browser_scenarios",
+          "task_glob": "tasks/L1/agent_browser_scenarios/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "webdriver_selenium",
+          "subset_id": "l1.selenium",
+          "task_glob": "tasks/L1/selenium/*.json"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "layer_id": "L2",
+      "name": "web_platform_semantics",
+      "semantic_capability_map": "config/l2_semantic_capabilities.json",
+      "semantic_capability_map_required": true,
+      "subsets": [
+        {
+          "chrome_gate": "required",
+          "driver": "node_cdp_probe",
+          "subset_id": "l2.web_platform",
+          "task_glob": "tasks/L2/web_platform/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "framework_playwright",
+          "subset_id": "l2.playwright",
+          "task_glob": "tasks/L2/playwright/*.json"
+        },
+        {
+          "chrome_gate": "required",
+          "driver": "framework_puppeteer",
+          "subset_id": "l2.puppeteer",
+          "task_glob": "tasks/L2/puppeteer/*.json"
+        }
+      ]
+    }
+  ],
+  "root_dir": "Lexbench-Headless-Browser",
+  "site": {
+    "base_url": "http://127.0.0.1:{port}",
+    "kind": "self_hosted_fixture",
+    "site_version": "2026.07.10-fixtures"
+  }
+}

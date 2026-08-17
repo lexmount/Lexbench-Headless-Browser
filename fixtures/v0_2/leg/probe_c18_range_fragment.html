@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c18 range</title></head>
+<body><div id="src"><p>RANGE_C18</p><p>tail</p></div><div id="out"></div>
+<script>try{
+ var r=document.createRange(); r.selectNodeContents(document.getElementById('src'));
+ var frag=r.cloneContents(); document.getElementById('out').textContent='RANGE_C18:'+frag.querySelector('p').textContent;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

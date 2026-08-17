@@ -1,0 +1,94 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.input.dispatchMouseEvent by issuing raw CDP command(s) Page.enable, Runtime.enable, Page.navigate, Runtime.evaluate, ... against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Page.navigate",
+        "optional": false,
+        "params": {
+          "url": "{fixture_url}"
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": true,
+        "params": {
+          "expression": "document.querySelector(\"#inc\").getBoundingClientRect().toJSON ? 0 : 0",
+          "returnByValue": true
+        }
+      },
+      {
+        "method": "Input.dispatchMouseEvent",
+        "optional": false,
+        "params": {
+          "button": "left",
+          "clickCount": 1,
+          "type": "mousePressed",
+          "x": 20,
+          "y": 60
+        }
+      },
+      {
+        "method": "Input.dispatchMouseEvent",
+        "optional": false,
+        "params": {
+          "button": "left",
+          "clickCount": 1,
+          "type": "mouseReleased",
+          "x": 20,
+          "y": 60
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "optional": false,
+        "params": {
+          "expression": "document.querySelector(\"#count\").textContent",
+          "returnByValue": true
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_input_dispatchmouseevent",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.input.dispatchMouseEvent"
+}

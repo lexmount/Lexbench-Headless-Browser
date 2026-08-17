@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AX Fixture: Labeled Form</title>
+</head>
+<body>
+<h1>Account Registration</h1>
+<h2 id="sec-contact">Contact Details</h2>
+<form id="reg" aria-label="Registration form">
+  <p>
+    <label for="email">Email address</label>
+    <input id="email" type="text" value="ada@example.com">
+  </p>
+  <p>
+    <label for="nickname">Display name</label>
+    <input id="nickname" type="text" value="">
+  </p>
+  <p>
+    <input id="terms" type="checkbox" checked>
+    <label for="terms">Accept terms</label>
+  </p>
+  <p>
+    <input id="news" type="checkbox">
+    <label for="news">Subscribe to newsletter</label>
+  </p>
+  <p>
+    <button id="submit" type="button">Create account</button>
+  </p>
+  <p>
+    <a id="help" href="https://example.com/help">Need help?</a>
+  </p>
+</form>
+</body>
+</html>

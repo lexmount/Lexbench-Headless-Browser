@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Exercises agent-browser probe_list: check/uncheck through the agent-browser tool API. It passes when `agent-browser check #cb` succeeds; `agent-browser uncheck #cb` succeeds; the saved value `c1` equals `true`; the saved value `c2` equals `false`. Only these declared checks affect the verdict.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "AB_CHECKS": [
+        {
+          "kind": "ab_ok",
+          "step": 1
+        },
+        {
+          "kind": "ab_ok",
+          "step": 3
+        },
+        {
+          "expected": "true",
+          "kind": "saved_equals",
+          "name": "c1"
+        },
+        {
+          "expected": "false",
+          "kind": "saved_equals",
+          "name": "c2"
+        }
+      ],
+      "AB_STEPS": [
+        {
+          "ab": [
+            "open",
+            "{fixture_url}"
+          ]
+        },
+        {
+          "ab": [
+            "check",
+            "#cb"
+          ]
+        },
+        {
+          "eval": "document.querySelector('#cb').checked",
+          "save_as": "c1"
+        },
+        {
+          "ab": [
+            "uncheck",
+            "#cb"
+          ]
+        },
+        {
+          "eval": "document.querySelector('#cb').checked",
+          "save_as": "c2"
+        }
+      ]
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l1_ab_probe.js"
+  },
+  "features": [
+    "tool.agent_browser.check.uncheck"
+  ],
+  "grader": {
+    "checks": [
+      "script_reported"
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/probe"
+  },
+  "subset_id": "l1.agent_browser_tool",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "ab_probe_check_uncheck",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 120000,
+    "task_ms": 90000
+  },
+  "title": "agent-browser probe_list: check/uncheck"
+}

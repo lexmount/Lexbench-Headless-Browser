@@ -1,0 +1,96 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Non-coordinate search-and-submit: focus the search box, Input.insertText types a query, then Input.dispatchKeyEvent sends an Enter keydown/keyup which the page's handler treats as submit — fetching a server token and echoing 'RESULT:<query>:<token>'. The status must contain both the typed query (insertText) and the token (dispatchKeyEvent-triggered XHR).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('q').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focused"
+      },
+      {
+        "method": "Input.insertText",
+        "params": {
+          "text": "widget"
+        }
+      },
+      {
+        "method": "Input.dispatchKeyEvent",
+        "params": {
+          "code": "Enter",
+          "key": "Enter",
+          "nativeVirtualKeyCode": 13,
+          "type": "keyDown",
+          "windowsVirtualKeyCode": 13
+        }
+      },
+      {
+        "method": "Input.dispatchKeyEvent",
+        "params": {
+          "code": "Enter",
+          "key": "Enter",
+          "nativeVirtualKeyCode": 13,
+          "type": "keyUp",
+          "windowsVirtualKeyCode": 13
+        }
+      },
+      {
+        "sleep_ms": 700
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('status').textContent",
+          "returnByValue": true
+        },
+        "save_as": "status"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.insert_text",
+    "cdp.input.dispatch_key_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "q",
+        "kind": "value_equals",
+        "name": "focused"
+      },
+      {
+        "expected": "RESULT:widget",
+        "kind": "value_contains",
+        "name": "status"
+      },
+      {
+        "expected": "TKN-ACTL2-8842",
+        "kind": "value_contains",
+        "name": "status"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/actl2/search"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions_l2",
+    "version.v0_2"
+  ],
+  "task_id": "v2_actl2_dispatchkey_search",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "insertText + Enter key submit search"
+}

@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>v0.3 probe controls</title></head>
+<body>
+<h1>Framework probe controls</h1>
+<section aria-label="Text entry">
+  <label for="textbox">Probe text</label>
+  <input id="textbox" type="text" placeholder="type here">
+  <output id="textbox-len" aria-label="Text length">0</output>
+</section>
+<section aria-label="Keyboard">
+  <label for="keys">Key capture</label>
+  <input id="keys" type="text">
+  <output id="keydown-count">0</output>
+  <output id="enter-flag">no</output>
+</section>
+<section aria-label="Toggles">
+  <input id="agree" type="checkbox" aria-label="Agree to terms">
+  <output id="agree-out">unchecked</output>
+  <label for="dept">Department</label>
+  <select id="dept" aria-label="Department picker">
+    <option value="">choose</option>
+    <option value="ops">Operations</option>
+    <option value="eng">Engineering</option>
+    <option value="hr">People</option>
+  </select>
+  <output id="dept-out">none</output>
+</section>
+<section aria-label="Counter">
+  <button id="counter-btn" aria-label="Increment counter">bump</button>
+  <output id="press-count" role="status">0</output>
+</section>
+<ul id="late-list" aria-label="Late items"></ul>
+<script>
+(function () {
+  var tb = document.getElementById('textbox');
+  tb.addEventListener('input', function () {
+    document.getElementById('textbox-len').textContent = String(tb.value.length);
+  });
+  var keys = document.getElementById('keys');
+  var kd = 0;
+  keys.addEventListener('keydown', function (ev) {
+    kd += 1;
+    document.getElementById('keydown-count').textContent = String(kd);
+    if (ev.key === 'Enter') { document.getElementById('enter-flag').textContent = 'yes'; }
+  });
+  document.getElementById('agree').addEventListener('change', function (ev) {
+    document.getElementById('agree-out').textContent = ev.target.checked ? 'checked' : 'unchecked';
+  });
+  document.getElementById('dept').addEventListener('change', function (ev) {
+    document.getElementById('dept-out').textContent = 'picked:' + ev.target.value;
+  });
+  var presses = 0;
+  document.getElementById('counter-btn').addEventListener('click', function () {
+    presses += 1;
+    document.getElementById('press-count').textContent = String(presses);
+  });
+  setTimeout(function () {
+    var li = document.createElement('li');
+    li.id = 'late-item';
+    li.textContent = 'late-' + (7 * 4);
+    document.getElementById('late-list').appendChild(li);
+  }, 300);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Resolves the #field input's backendNodeId and calls Autofill.trigger with a synthetic card, exercising the Autofill domain surface (puppeteer). Chrome headless accepts the command cleanly.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#field"
+        },
+        "save_result_as": "found"
+      },
+      {
+        "method": "DOM.describeNode",
+        "params": {
+          "nodeId": "{saved:found.nodeId}"
+        },
+        "save_result_as": "desc"
+      },
+      {
+        "method": "Autofill.trigger",
+        "params": {
+          "card": {
+            "cvc": "123",
+            "expiryMonth": "12",
+            "expiryYear": "2030",
+            "name": "T2B Tester",
+            "number": "4444444444444448"
+          },
+          "fieldId": "{saved:desc.node.backendNodeId}"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.autofill.trigger"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_misc_autofill",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Autofill.trigger on a form field"
+}

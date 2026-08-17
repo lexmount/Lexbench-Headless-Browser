@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/fr_child_posts_parent.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Both static children post a greeting on load; the parent collects them and answers with the sorted join, proving frame scripts executed and the message channel works.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "messages_arrived",
+        "step": 2
+      },
+      {
+        "expected": "hello-a|hello-b",
+        "kind": "saved_equals",
+        "label": "both_children_posted",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__msgs && window.__msgs.length >= 2",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "window.__msgs.slice().sort().join('|')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.wait_for_function",
+    "fw.selenium.op.evaluate",
+    "cdp.page.frame_attached",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.frames_oopif",
+    "version.v0_4"
+  ],
+  "task_id": "sc_fr_child_posts_parent__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Child frames deliver postMessage to the parent document (selenium)"
+}

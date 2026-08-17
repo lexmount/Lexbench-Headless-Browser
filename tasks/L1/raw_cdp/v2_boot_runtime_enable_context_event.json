@@ -1,0 +1,62 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the Runtime domain on the page session and waits for the Runtime.executionContextCreated event for the existing main-world context, asserting it carries a context id and origin. Real probe that Runtime.enable opens the context event stream.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.enable",
+        "session": "page"
+      },
+      {
+        "save_result_as": "ctx",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Runtime.executionContextCreated"
+      }
+    ]
+  },
+  "features": [
+    "cdp.runtime.enable",
+    "cdp.runtime.execution_context_created"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Runtime.executionContextCreated",
+        "name": "ctx"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "ctx",
+        "path": "context.id"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "ctx",
+        "path": "context.origin"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_runtime_enable_context_event",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Runtime.enable delivers executionContextCreated"
+}

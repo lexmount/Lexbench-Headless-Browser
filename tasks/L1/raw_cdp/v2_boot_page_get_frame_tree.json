@@ -1,0 +1,68 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Navigates to a parent fixture containing a same-origin iframe and asserts Page.getFrameTree returns a root frame with an id/url plus a non-empty childFrames array whose first child also has a frame id. Real probe of getFrameTree tree shape (not merely that enable succeeded).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "session": "page"
+      },
+      {
+        "method": "Page.getFrameTree",
+        "params": {},
+        "save_result_as": "tree",
+        "session": "page"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.get_frame_tree"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "name": "tree",
+        "path": "frameTree.frame.id"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "tree",
+        "path": "frameTree.frame.url"
+      },
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "tree",
+        "path": "frameTree.childFrames"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "tree",
+        "path": "frameTree.childFrames.0.frame.id"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/boot/frames_parent"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_page_get_frame_tree",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.getFrameTree frame-tree shape with child frame"
+}

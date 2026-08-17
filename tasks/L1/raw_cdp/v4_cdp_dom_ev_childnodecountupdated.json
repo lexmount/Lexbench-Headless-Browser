@@ -1,0 +1,61 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Asserts DOM.childNodeCountUpdated fires when an un-expanded tracked node gains children.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        }
+      },
+      {
+        "method": "Runtime.enable"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "for(var i=0;i<3;i++){document.documentElement.appendChild(document.createElement('b'));}"
+        }
+      },
+      {
+        "timeout_ms": 3000,
+        "wait_for_event": "DOM.childNodeCountUpdated"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.child_node_count_updated"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "label": "count_updated_event",
+        "method": "DOM.childNodeCountUpdated"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_ev_childnodecountupdated",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.childNodeCountUpdated fires on subtree growth"
+}

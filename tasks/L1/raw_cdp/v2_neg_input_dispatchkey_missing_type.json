@@ -1,0 +1,46 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Negative (missing required param): Input.dispatchKeyEvent requires 'type'; omitting it must yield a clean InvalidParams rejection rather than a hang or a synthesized event.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "expect_unsupported": true,
+        "method": "Input.dispatchKeyEvent",
+        "params": {
+          "key": "a"
+        }
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.dispatch_key_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "unsupported_observed",
+        "method": "Input.dispatchKeyEvent"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.negative",
+    "purpose.negative",
+    "version.v0_2"
+  ],
+  "task_id": "v2_neg_input_dispatchkey_missing_type",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "input_dispatchkey_missing_type"
+}

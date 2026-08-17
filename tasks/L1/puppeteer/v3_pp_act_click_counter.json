@@ -1,0 +1,66 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Action probe (on_framework_main_path): real Puppeteer page.click() resolves #add3 to a clickable point (DOM.getContentQuads) and dispatches trusted Input.dispatchMouseEvent press/release three times; the page-computed running total must read exactly 9.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "clicks_dispatched",
+        "step": 2
+      },
+      {
+        "expected": "9",
+        "kind": "saved_equals",
+        "label": "total_equals_9",
+        "name": "total"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "click",
+        "selector": "#add3",
+        "times": 3
+      },
+      {
+        "op": "text_content",
+        "save_as": "total",
+        "selector": "#total"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.click",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.dom.get_content_quads",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/h/counter"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_act_click_counter",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer coordinate clicks drive the counter to 9"
+}

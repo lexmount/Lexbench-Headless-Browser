@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>c17 textenc</title></head>
+<body><div id="out"></div>
+<script>try{
+ var b=new TextEncoder().encode('AB'); var d=new TextDecoder().decode(b);
+ document.getElementById('out').textContent='TEXTENC_C17:'+b.length+':'+d;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}</script></body></html>

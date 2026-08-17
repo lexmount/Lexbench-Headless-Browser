@@ -1,0 +1,60 @@
+{
+  "scenario_id": "nav_slow_document",
+  "family": "navigation_lifecycle",
+  "title": "goto waits out a slow-responding document",
+  "description": "Navigates to an endpoint that holds the response for 1.2s before serving the document. A driver that gives up early or reads before the body arrives fails.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/slow?ms=1200"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/v0_4/slow?ms=1200"
+    },
+    {
+      "op": "text_content",
+      "selector": "#slow-title",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "slow_goto_ok",
+      "step": 1
+    },
+    {
+      "kind": "saved_equals",
+      "label": "slow_doc_read",
+      "name": "answer",
+      "expected": "slow-99"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.navigate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "slow-99"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

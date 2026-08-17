@@ -1,0 +1,65 @@
+{
+  "scenario_id": "loc_attribute_selector_click",
+  "family": "locator",
+  "title": "Click an element located by attribute selector",
+  "description": "Clicks a button addressed by [data-x=\"go-7\"] and reads its handler output. Exercises attribute-selector support in the driver's element resolution.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/locator"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "click",
+      "selector": "button[data-x=\"go-7\"]"
+    },
+    {
+      "op": "text_content",
+      "selector": "#attr-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "click_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "handler_saw_attr",
+      "name": "answer",
+      "expected": "attr-hit-go-7"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.query_selector",
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "attr-hit-go-7"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

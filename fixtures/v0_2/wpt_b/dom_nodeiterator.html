@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b nodeiterator</title></head>
+<body>
+<div id="root">Alpha<b>Beta</b><i>Gamma</i>Delta</div>
+<div id="out"></div>
+<script>
+try{
+  var root=document.getElementById('root');
+  var it=document.createNodeIterator(root,NodeFilter.SHOW_TEXT,{
+    acceptNode:function(n){ return n.data.trim()!=='' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }
+  });
+  var texts=[]; var node;
+  while((node=it.nextNode())){ texts.push(node.data); }
+  document.getElementById('out').textContent='NI:'+texts.join(',');
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

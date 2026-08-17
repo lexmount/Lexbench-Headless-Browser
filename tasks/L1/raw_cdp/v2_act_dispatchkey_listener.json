@@ -1,0 +1,91 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Input.dispatchKeyEvent keydown/keyup sequence: after focusing the input the driver dispatches a keyDown then a keyUp for the 'a' key. The page's keydown/keyup listeners increment counters and record event.key; the driver reads them back to prove both events fired on the page with the correct key. Anchors Input.dispatchKeyEvent event synthesis.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('inp').focus(); document.activeElement && document.activeElement.id",
+          "returnByValue": true
+        },
+        "save_as": "focused"
+      },
+      {
+        "method": "Input.dispatchKeyEvent",
+        "params": {
+          "code": "KeyA",
+          "key": "a",
+          "nativeVirtualKeyCode": 65,
+          "type": "keyDown",
+          "windowsVirtualKeyCode": 65
+        }
+      },
+      {
+        "method": "Input.dispatchKeyEvent",
+        "params": {
+          "code": "KeyA",
+          "key": "a",
+          "nativeVirtualKeyCode": 65,
+          "type": "keyUp",
+          "windowsVirtualKeyCode": 65
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "JSON.stringify({d: window.__keyDown, u: window.__keyUp, k: window.__lastKey})",
+          "returnByValue": true
+        },
+        "save_as": "keys"
+      }
+    ]
+  },
+  "features": [
+    "cdp.input.dispatch_key_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "inp",
+        "kind": "value_equals",
+        "name": "focused"
+      },
+      {
+        "expected": "\"d\":1",
+        "kind": "value_contains",
+        "name": "keys"
+      },
+      {
+        "expected": "\"u\":1",
+        "kind": "value_contains",
+        "name": "keys"
+      },
+      {
+        "expected": "\"k\":\"a\"",
+        "kind": "value_contains",
+        "name": "keys"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/act/bench"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_2"
+  ],
+  "task_id": "v2_act_dispatchkey_listener",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "dispatchKeyEvent fires keydown/keyup page listeners"
+}

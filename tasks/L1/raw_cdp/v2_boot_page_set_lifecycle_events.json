@@ -1,0 +1,80 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables Page lifecycle events, navigates, and waits for a Page.lifecycleEvent with name 'load', asserting the event actually arrives with a frameId. Real probe that setLifecycleEventsEnabled turns on the lifecycleEvent stream (not merely that the command returned).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "session": "page"
+      },
+      {
+        "method": "Page.setLifecycleEventsEnabled",
+        "params": {
+          "enabled": true
+        },
+        "session": "page"
+      },
+      {
+        "method": "Page.navigate",
+        "params": {
+          "url": "{fixture_url}"
+        },
+        "session": "page"
+      },
+      {
+        "match": {
+          "name": "load"
+        },
+        "save_result_as": "life",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Page.lifecycleEvent"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.set_lifecycle_events_enabled",
+    "cdp.page.lifecycle_event"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Page.lifecycleEvent",
+        "name": "life"
+      },
+      {
+        "expected": "load",
+        "kind": "saved_path_equals",
+        "name": "life",
+        "path": "name"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "life",
+        "path": "frameId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_page_set_lifecycle_events",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Page.setLifecycleEventsEnabled delivers lifecycleEvent"
+}

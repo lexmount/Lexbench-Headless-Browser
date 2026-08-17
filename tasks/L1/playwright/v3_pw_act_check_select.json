@@ -1,0 +1,88 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "on_framework_main_path: page.check drives the coordinate click chain. Real Playwright checks #agree and selects the 'eng' option of #dept; the fixture's change listeners mirror both into outputs. Passes when isChecked is true, #agree-out reads 'checked', and #dept-out reads 'picked:eng'.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "true",
+        "kind": "saved_equals",
+        "label": "checkbox_checked",
+        "name": "checked_state"
+      },
+      {
+        "expected": "checked",
+        "kind": "saved_equals",
+        "label": "change_event_seen",
+        "name": "agree_out"
+      },
+      {
+        "expected": "picked:eng",
+        "kind": "saved_equals",
+        "label": "select_change_seen",
+        "name": "dept_out"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "check",
+        "selector": "#agree"
+      },
+      {
+        "op": "is_checked",
+        "save_as": "checked_state",
+        "selector": "#agree"
+      },
+      {
+        "op": "text_content",
+        "save_as": "agree_out",
+        "selector": "#agree-out"
+      },
+      {
+        "op": "select_option",
+        "selector": "#dept",
+        "value": "eng"
+      },
+      {
+        "op": "text_content",
+        "save_as": "dept_out",
+        "selector": "#dept-out"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.check",
+    "fw.playwright.page.select_option",
+    "fw.playwright.page.is_checked",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_act_check_select",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "check a checkbox and pick a select option, page listeners confirm"
+}

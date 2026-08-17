@@ -1,0 +1,64 @@
+{
+  "scenario_id": "st_storage_remove",
+  "family": "state",
+  "title": "localStorage removeItem removes exactly one key",
+  "description": "Writes two keys, removes one, and derives which keys remain.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.setItem('abb_a', 'only-a'), localStorage.setItem('abb_b', 'only-b'), localStorage.removeItem('abb_a'), 'done'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "'left:' + (localStorage.getItem('abb_a') || 'gone') + '+' + (localStorage.getItem('abb_b') || 'gone')",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "derive_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "exactly_one_removed",
+      "name": "answer",
+      "expected": "left:gone+only-b"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "left:gone+only-b"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright navigates, plants a window global via evaluate, reloads the page, then reads the global back. Passes when the pre-reload write is observed and the post-reload read is 'undefined', proving Page.reload actually re-created the JS world rather than reusing the old context.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "seeded-31",
+        "kind": "saved_equals",
+        "label": "global_seeded",
+        "name": "seeded"
+      },
+      {
+        "kind": "step_ok",
+        "label": "reload_ok",
+        "step": 3
+      },
+      {
+        "expected": "undefined",
+        "kind": "saved_equals",
+        "label": "global_gone_after_reload",
+        "name": "after_reload"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "(window.__abbReloadProbe = 'seeded-31')",
+        "op": "evaluate",
+        "save_as": "seeded"
+      },
+      {
+        "op": "reload",
+        "save_as": "reload_status"
+      },
+      {
+        "expression": "String(window.__abbReloadProbe)",
+        "op": "evaluate",
+        "save_as": "after_reload"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.reload",
+    "fw.playwright.page.evaluate",
+    "cdp.page.reload",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_nav_reload",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "reload discards a window global set before the reload"
+}

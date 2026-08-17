@@ -1,0 +1,1603 @@
+{
+  "$schema": "l2_semantic_capabilities.schema.json",
+  "aggregation": "A capability-attempt passes only when every semantic_probe assigned to the capability passes. Each complete capability contributes one unit; driver_cross_check and diagnostic probes never add denominator units.",
+  "capabilities": [
+    {
+      "capability_id": "web.animations",
+      "category": "animations",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Web Animations (Element.animate/getAnimations)",
+          "role": "diagnostic",
+          "task_id": "r3_fv_web_animations"
+        }
+      ],
+      "title": "animations"
+    },
+    {
+      "capability_id": "web.clipboard",
+      "category": "clipboard",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Clipboard API",
+          "role": "diagnostic",
+          "task_id": "r3_fv_clipboard_api"
+        }
+      ],
+      "title": "clipboard"
+    },
+    {
+      "capability_id": "web.components.custom_elements",
+      "category": "components",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "customElements.define + upgrade",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c5_customelements"
+        },
+        {
+          "claim": "customElements.define + upgrade",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c5_customelements"
+        }
+      ],
+      "title": "components / custom elements"
+    },
+    {
+      "capability_id": "web.crypto.aes_gcm",
+      "category": "crypto",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "AES-GCM encrypt/decrypt roundtrip",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_aesgcm_roundtrip"
+        }
+      ],
+      "title": "crypto / aes gcm"
+    },
+    {
+      "capability_id": "web.crypto.digest",
+      "category": "crypto",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "SubtleCrypto SHA-256 digest byteLength is 32",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_digest_bytelength"
+        },
+        {
+          "claim": "SubtleCrypto SHA-1 of 'abc'",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_sha1_abc"
+        },
+        {
+          "claim": "SubtleCrypto SHA-256 of 'abc'",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_sha256_abc"
+        },
+        {
+          "claim": "SubtleCrypto SHA-256 of empty input",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_sha256_empty"
+        },
+        {
+          "claim": "SubtleCrypto SHA-384 of 'abc'",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_sha384_abc"
+        },
+        {
+          "claim": "SubtleCrypto SHA-512 of 'abc'",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_sha512_abc"
+        }
+      ],
+      "title": "crypto / digest"
+    },
+    {
+      "capability_id": "web.crypto.get_random_values",
+      "category": "crypto",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "getRandomValues fills and returns same typed array",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_getrandomvalues_shape"
+        }
+      ],
+      "title": "crypto / get random values"
+    },
+    {
+      "capability_id": "web.crypto.hmac",
+      "category": "crypto",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "HMAC-SHA256 sign then verify roundtrip",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_hmac_roundtrip"
+        },
+        {
+          "claim": "HMAC-SHA256 verify rejects tampered mac",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_crypto_hmac_tamper"
+        }
+      ],
+      "title": "crypto / hmac"
+    },
+    {
+      "capability_id": "web.crypto.random_uuid",
+      "category": "crypto",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "crypto.randomUUID",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c14_crypto_uuid"
+        },
+        {
+          "claim": "crypto.randomUUID",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c14_crypto_uuid"
+        }
+      ],
+      "title": "crypto / random uuid"
+    },
+    {
+      "capability_id": "web.css.cascade_specificity",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "cascade !important overrides higher specificity",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_cascade_important"
+        }
+      ],
+      "title": "css / cascade specificity"
+    },
+    {
+      "capability_id": "web.css.computed_style_cascade",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "getComputedStyle:color cascade",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_e_color_gate"
+        },
+        {
+          "claim": "getComputedStyle:font-size cascade",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_e_fontsize_gate"
+        },
+        {
+          "claim": "per-row getComputedStyle:color filtering + aggregate",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_h_color_table"
+        },
+        {
+          "claim": "computed color + font-size combined per-row classify",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_h_priced_list"
+        },
+        {
+          "claim": "getComputedStyle:background-color after class toggle",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_m_bgcolor_toggle"
+        },
+        {
+          "claim": "Computed-style stock filtering",
+          "role": "semantic_probe",
+          "task_id": "r4_q01_stock_list"
+        },
+        {
+          "claim": "Computed-style status dashboard",
+          "role": "semantic_probe",
+          "task_id": "r4_q04_status_dashboard"
+        }
+      ],
+      "title": "css / computed style cascade"
+    },
+    {
+      "capability_id": "web.css.constructable_stylesheets",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "adoptedStyleSheets constructable stylesheet",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_e_adopted_color"
+        },
+        {
+          "claim": "adoptedStyleSheets applied after async",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_m_adopted_async"
+        },
+        {
+          "claim": "adoptedStyleSheets widget state",
+          "role": "semantic_probe",
+          "task_id": "r4_q09_widget_adopted"
+        },
+        {
+          "claim": "constructable stylesheet + shadow adoptedStyleSheets",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_constructable"
+        }
+      ],
+      "title": "css / constructable stylesheets"
+    },
+    {
+      "capability_id": "web.css.cssom_rules",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSSOM styleSheets[].cssRules enumeration",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c6_cssom_rules"
+        },
+        {
+          "claim": "CSSOM styleSheets[].cssRules enumeration",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c6_cssom_rules"
+        }
+      ],
+      "title": "css / cssom rules"
+    },
+    {
+      "capability_id": "web.css.custom_properties",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "nested var() cascade override + async",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_h_var_cascade"
+        },
+        {
+          "claim": "CSS var() resolution after theme class swap",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_m_var_theme"
+        },
+        {
+          "claim": "CSS-variable pricing summary",
+          "role": "semantic_probe",
+          "task_id": "r4_q03_pricing_var"
+        }
+      ],
+      "title": "css / custom properties"
+    },
+    {
+      "capability_id": "web.css.generated_content",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "::before generated content",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_e_before_content"
+        },
+        {
+          "claim": "::after content on async-injected node",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_m_after_async"
+        },
+        {
+          "claim": "CSS attr() in generated content",
+          "role": "diagnostic",
+          "task_id": "r3_fv_attr_content"
+        }
+      ],
+      "title": "css / generated content"
+    },
+    {
+      "capability_id": "web.css.selector.attribute_case",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "case-insensitive attribute selector [a=v i]",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c19_ci_attr"
+        },
+        {
+          "claim": "case-insensitive attribute selector [a=v i]",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c19_ci_attr"
+        }
+      ],
+      "title": "css / selector / attribute case"
+    },
+    {
+      "capability_id": "web.css.selector.checked_state",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSS :checked sibling-combinator reveal",
+          "role": "diagnostic",
+          "task_id": "r3_probe_a3_checked_reveal"
+        },
+        {
+          "claim": "CSS :checked sibling-combinator reveal",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_a3_checked_reveal"
+        }
+      ],
+      "title": "css / selector / checked state"
+    },
+    {
+      "capability_id": "web.css.selector.focus_within",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":focus-within matches ancestor of focused element",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_focus_within"
+        }
+      ],
+      "title": "css / selector / focus within"
+    },
+    {
+      "capability_id": "web.css.selector.has",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":has() direct-child selector",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_e_has_child"
+        },
+        {
+          "claim": "compound :has():has() multi-condition aggregate",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_h_has_compound"
+        },
+        {
+          "claim": ":has() + :nth-child(of) combined + interaction",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_h_has_nth_combo"
+        },
+        {
+          "claim": ":has(> child) on async-injected items",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_m_has_child_inject"
+        },
+        {
+          "claim": ":not(:has()) selector",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c20_not_has"
+        },
+        {
+          "claim": "Element.matches(:has())",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c21_matches_has"
+        },
+        {
+          "claim": ":has() sale summary",
+          "role": "semantic_probe",
+          "task_id": "r4_q08_sale_has"
+        },
+        {
+          "claim": ":not(:has()) selector",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c20_not_has"
+        },
+        {
+          "claim": "Element.matches(:has())",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c21_matches_has"
+        },
+        {
+          "claim": ":has() with nested forgiving :is() child combinator",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_has_forgiving"
+        }
+      ],
+      "title": "css / selector / has"
+    },
+    {
+      "capability_id": "web.css.selector.is_where_specificity",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":is()/:where() selector",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c7_is_where"
+        },
+        {
+          "claim": ":is()/:where() selector",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c7_is_where"
+        },
+        {
+          "claim": ":is() specificity equals its most specific argument",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_is_specificity"
+        },
+        {
+          "claim": ":where() contributes zero specificity",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_where_zero"
+        }
+      ],
+      "title": "css / selector / is where specificity"
+    },
+    {
+      "capability_id": "web.css.selector.nth_of",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":nth-child(n of S) selector",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_e_nth_of"
+        },
+        {
+          "claim": ":nth-last-child(n of S) selector",
+          "role": "semantic_probe",
+          "task_id": "r3_dC_m_nthlast_of"
+        },
+        {
+          "claim": ":nth-child(of S) leaderboard",
+          "role": "semantic_probe",
+          "task_id": "r4_q10_leaderboard_nth"
+        },
+        {
+          "claim": ":nth-child(An+B of S) filtered structural match",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_nth_child_of"
+        }
+      ],
+      "title": "css / selector / nth of"
+    },
+    {
+      "capability_id": "web.css.selector.scope",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":scope selector",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c23_scope_sel"
+        },
+        {
+          "claim": ":scope selector",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c23_scope_sel"
+        }
+      ],
+      "title": "css / selector / scope"
+    },
+    {
+      "capability_id": "web.css.supports",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSS.supports()",
+          "role": "diagnostic",
+          "task_id": "r3_fv_css_supports"
+        }
+      ],
+      "title": "css / supports"
+    },
+    {
+      "capability_id": "web.css.target_state",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": ":target pseudo-class reveal",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_e_target_reveal"
+        },
+        {
+          "claim": "multi :target tab walk + aggregate",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_h_tabs_target"
+        },
+        {
+          "claim": ":target reveal via in-page anchor click",
+          "role": "semantic_probe",
+          "task_id": "r3_dA_m_target_click"
+        },
+        {
+          "claim": ":target version summary",
+          "role": "semantic_probe",
+          "task_id": "r4_q02_target_section"
+        }
+      ],
+      "title": "css / target state"
+    },
+    {
+      "capability_id": "web.css.typed_custom_properties",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSS Houdini registerProperty",
+          "role": "diagnostic",
+          "task_id": "r3_fv_css_registerproperty"
+        },
+        {
+          "claim": "@property at-rule initial-value resolution",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_at_property"
+        },
+        {
+          "claim": "registered property inherits:true vs false",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_property_inherits"
+        },
+        {
+          "claim": "CSS.registerProperty <length> typed validation + initial fallback",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_css_register_syntax"
+        }
+      ],
+      "title": "css / typed custom properties"
+    },
+    {
+      "capability_id": "web.css.typed_om",
+      "category": "css",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSS Typed OM (computedStyleMap)",
+          "role": "diagnostic",
+          "task_id": "r3_fv_computedstylemap"
+        }
+      ],
+      "title": "css / typed om"
+    },
+    {
+      "capability_id": "web.dom.abort_signal",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "AbortSignal removes listener on abort; aborted/reason state",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_abortsignal"
+        }
+      ],
+      "title": "dom / abort signal"
+    },
+    {
+      "capability_id": "web.dom.adopt_node",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "adoptNode / importNode cross-document ownership",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_adoptnode"
+        }
+      ],
+      "title": "dom / adopt node"
+    },
+    {
+      "capability_id": "web.dom.clone_node",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "cloneNode deep vs shallow semantics",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_clonenode"
+        }
+      ],
+      "title": "dom / clone node"
+    },
+    {
+      "capability_id": "web.dom.event_dispatch",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CustomEvent capture/target/bubble listener order",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_event_order"
+        },
+        {
+          "claim": "stopPropagation blocks ancestors but not same-target listeners",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_event_stopprop"
+        }
+      ],
+      "title": "dom / event dispatch"
+    },
+    {
+      "capability_id": "web.dom.layout_geometry",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "getBoundingClientRect width (layout geometry)",
+          "role": "diagnostic",
+          "task_id": "r3_fv_geom_gbcr"
+        },
+        {
+          "claim": "offsetWidth (layout geometry)",
+          "role": "diagnostic",
+          "task_id": "r3_fv_geom_offsetwidth"
+        },
+        {
+          "claim": "scrollHeight layout geometry",
+          "role": "diagnostic",
+          "task_id": "r3_fv_geom_scrollheight"
+        }
+      ],
+      "title": "dom / layout geometry"
+    },
+    {
+      "capability_id": "web.dom.mutation_observer",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "MutationObserver attributeFilter + attributeOldValue",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_mo_attributes"
+        },
+        {
+          "claim": "MutationObserver characterData oldValue records",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_mo_chardata"
+        },
+        {
+          "claim": "MutationObserver childList added/removed record aggregation",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_mo_childlist"
+        }
+      ],
+      "title": "dom / mutation observer"
+    },
+    {
+      "capability_id": "web.dom.parser",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "DOMParser.parseFromString",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c11_domparser"
+        },
+        {
+          "claim": "DOMParser.parseFromString",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c11_domparser"
+        },
+        {
+          "claim": "DOMParser XML parsererror vs HTML tolerance",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_domparser"
+        }
+      ],
+      "title": "dom / parser"
+    },
+    {
+      "capability_id": "web.dom.ranges",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Range.cloneContents",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c18_range_fragment"
+        },
+        {
+          "claim": "Range.cloneContents",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c18_range_fragment"
+        },
+        {
+          "claim": "Range.extractContents partial text-node boundary split",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_range_extract"
+        },
+        {
+          "claim": "Range.surroundContents wrapping semantics",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_range_surround"
+        }
+      ],
+      "title": "dom / ranges"
+    },
+    {
+      "capability_id": "web.dom.rendered_text_extraction",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "CSS-aware innerText (display:none exclusion)",
+          "role": "diagnostic",
+          "task_id": "r3_fv_cssaware_innertext"
+        },
+        {
+          "claim": "CSS-aware extraction via getComputedStyle(display) on simple class rule",
+          "role": "diagnostic",
+          "task_id": "r3_probe_a11_cssaware_extract"
+        },
+        {
+          "claim": "CSS-aware extraction via getComputedStyle(display) on simple class rule",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_a11_cssaware_extract"
+        }
+      ],
+      "title": "dom / rendered text extraction"
+    },
+    {
+      "capability_id": "web.dom.shadow_root",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "open Shadow DOM attach/read",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c1_shadow"
+        }
+      ],
+      "title": "dom / shadow root"
+    },
+    {
+      "capability_id": "web.dom.structured_clone",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "structuredClone()",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c4_structuredclone"
+        },
+        {
+          "claim": "structuredClone()",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c4_structuredclone"
+        }
+      ],
+      "title": "dom / structured clone"
+    },
+    {
+      "capability_id": "web.dom.templates",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "<template>.content clone",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c2_template_slot"
+        },
+        {
+          "claim": "<template>.content clone",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c2_template_slot"
+        },
+        {
+          "claim": "template.content inert DocumentFragment and inert script",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_template_content"
+        }
+      ],
+      "title": "dom / templates"
+    },
+    {
+      "capability_id": "web.dom.traversal",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "document.createTreeWalker",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c12_treewalker"
+        },
+        {
+          "claim": "document.createTreeWalker",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c12_treewalker"
+        },
+        {
+          "claim": "NodeIterator SHOW_TEXT traversal with acceptNode filter",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_nodeiterator"
+        },
+        {
+          "claim": "TreeWalker acceptNode FILTER_REJECT vs FILTER_SKIP",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_dom_treewalker_filter"
+        }
+      ],
+      "title": "dom / traversal"
+    },
+    {
+      "capability_id": "web.dom.visibility",
+      "category": "dom",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Element.checkVisibility()",
+          "role": "diagnostic",
+          "task_id": "r3_fv_checkvisibility"
+        }
+      ],
+      "title": "dom / visibility"
+    },
+    {
+      "capability_id": "web.encoding.decode",
+      "category": "encoding",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "TextDecoder strips UTF-8 BOM",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_bom_strip"
+        },
+        {
+          "claim": "TextDecoder fatal mode throws on invalid byte",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_fatal_throws"
+        },
+        {
+          "claim": "TextDecoder label aliases canonicalize",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_labels"
+        },
+        {
+          "claim": "TextDecoder non-fatal replacement char",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_nonfatal_replacement"
+        }
+      ],
+      "title": "encoding / decode"
+    },
+    {
+      "capability_id": "web.encoding.encode",
+      "category": "encoding",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "TextEncoder/TextDecoder",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c17_textencoder"
+        },
+        {
+          "claim": "TextEncoder/TextDecoder",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c17_textencoder"
+        },
+        {
+          "claim": "TextEncoder.encodeInto read/written counts",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_encode_into"
+        },
+        {
+          "claim": "TextEncoder.encoding is utf-8",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_encoding_prop"
+        },
+        {
+          "claim": "TextEncoder replaces lone surrogate",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_surrogate_replace"
+        },
+        {
+          "claim": "TextEncoder UTF-8 of astral (4-byte) char",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_utf8_astral"
+        }
+      ],
+      "title": "encoding / encode"
+    },
+    {
+      "capability_id": "web.encoding.streaming_decode",
+      "category": "encoding",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "TextDecoder stream splits a multibyte char",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_enc_stream_split"
+        }
+      ],
+      "title": "encoding / streaming decode"
+    },
+    {
+      "capability_id": "web.html.dialog",
+      "category": "html",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "<dialog>.showModal()",
+          "role": "diagnostic",
+          "task_id": "r3_g_dialog"
+        },
+        {
+          "claim": "<dialog>.showModal()",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_g_dialog"
+        }
+      ],
+      "title": "html / dialog"
+    },
+    {
+      "capability_id": "web.intl.duration_format",
+      "category": "intl",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Intl.DurationFormat",
+          "role": "diagnostic",
+          "task_id": "r3_g_durationformat"
+        },
+        {
+          "claim": "Intl.DurationFormat",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_g_durationformat"
+        }
+      ],
+      "title": "intl / duration format"
+    },
+    {
+      "capability_id": "web.intl.number_format",
+      "category": "intl",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Intl.NumberFormat",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c13_intl"
+        },
+        {
+          "claim": "Intl.NumberFormat",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c13_intl"
+        }
+      ],
+      "title": "intl / number format"
+    },
+    {
+      "capability_id": "web.intl.segmenter",
+      "category": "intl",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "Intl.Segmenter",
+          "role": "diagnostic",
+          "task_id": "r3_g_segmenter"
+        },
+        {
+          "claim": "Intl.Segmenter",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_g_segmenter"
+        }
+      ],
+      "title": "intl / segmenter"
+    },
+    {
+      "capability_id": "web.media.match_media",
+      "category": "media",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "matchMedia()",
+          "role": "diagnostic",
+          "task_id": "r3_probe_c8_matchmedia"
+        },
+        {
+          "claim": "matchMedia()",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_c8_matchmedia"
+        }
+      ],
+      "title": "media / match media"
+    },
+    {
+      "capability_id": "web.observer.intersection",
+      "category": "observer",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "IntersectionObserver callback",
+          "role": "diagnostic",
+          "task_id": "r3_g_io"
+        },
+        {
+          "claim": "IntersectionObserver callback",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_g_io"
+        }
+      ],
+      "title": "observer / intersection"
+    },
+    {
+      "capability_id": "web.storage.cache_api",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "CacheStorage API",
+          "role": "diagnostic",
+          "task_id": "r3_fv_cache_api"
+        }
+      ],
+      "title": "storage / cache api"
+    },
+    {
+      "capability_id": "web.storage.cookies",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "document.cookie read/write",
+          "role": "diagnostic",
+          "task_id": "r3_probe_b3_cookie"
+        },
+        {
+          "claim": "document.cookie read/write",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_b3_cookie"
+        },
+        {
+          "claim": "document.cookie stores multiple cookies",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_cookie_multiple"
+        },
+        {
+          "claim": "document.cookie write then read",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_cookie_readwrite"
+        }
+      ],
+      "title": "storage / cookies"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.bulk_read",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB autoIncrement + getAll aggregate",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_m_idb_getall"
+        },
+        {
+          "claim": "IndexedDB reader list",
+          "role": "semantic_probe",
+          "task_id": "r4_q05_reader_idb"
+        },
+        {
+          "claim": "IndexedDB cart total",
+          "role": "semantic_probe",
+          "task_id": "r4_q07_cart_idb"
+        },
+        {
+          "claim": "IndexedDB getAll / getAllKeys / count semantics",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_getall_keys_count"
+        }
+      ],
+      "title": "storage / indexeddb / bulk read"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.cursor",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB cursor iterate + aggregate sum",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_h_idb_cursor"
+        },
+        {
+          "claim": "IndexedDB cursor advance(n) skip semantics",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_cursor_advance"
+        },
+        {
+          "claim": "IndexedDB openCursor forward continue traversal",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_cursor_forward"
+        },
+        {
+          "claim": "IndexedDB openCursor reverse (prev) traversal",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_cursor_reverse"
+        }
+      ],
+      "title": "storage / indexeddb / cursor"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.index_query",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB index query",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_m_idb_index"
+        },
+        {
+          "claim": "IndexedDB notes lookup",
+          "role": "semantic_probe",
+          "task_id": "r4_q06_notes_idb"
+        },
+        {
+          "claim": "IndexedDB createIndex + index.getAll query",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_index_query"
+        },
+        {
+          "claim": "IndexedDB multiEntry index query",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_multientry_index"
+        }
+      ],
+      "title": "storage / indexeddb / index query"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.key_paths",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB compound key path ordering and lookup",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_compound_key"
+        },
+        {
+          "claim": "IndexedDB nested keyPath extraction",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_nested_keypath"
+        }
+      ],
+      "title": "storage / indexeddb / key paths"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.key_ranges",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB index count over key range",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_index_range_count"
+        },
+        {
+          "claim": "IndexedDB IDBKeyRange.bound inclusive/exclusive boundaries",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_keyrange_bound"
+        },
+        {
+          "claim": "IndexedDB IDBKeyRange.only and upperBound exclusive",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_keyrange_only_upper"
+        }
+      ],
+      "title": "storage / indexeddb / key ranges"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.object_store",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB single keyPath record",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_e_idb_record"
+        },
+        {
+          "claim": "IndexedDB two records read-back",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_e_idb_two"
+        },
+        {
+          "claim": "Read seeded inventory from IndexedDB",
+          "role": "semantic_probe",
+          "task_id": "storage_indexeddb_inventory_001"
+        }
+      ],
+      "title": "storage / indexeddb / object store"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.structured_clone",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB Blob and ArrayBuffer value round-trip",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_blob_value"
+        }
+      ],
+      "title": "storage / indexeddb / structured clone"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.transactions",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB multi-store single-transaction atomicity",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_multistore_atomic"
+        },
+        {
+          "claim": "IndexedDB transaction abort rollback",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_txn_abort_rollback"
+        }
+      ],
+      "title": "storage / indexeddb / transactions"
+    },
+    {
+      "capability_id": "web.storage.indexeddb.upgrade",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "IndexedDB version upgrade migration + index",
+          "role": "semantic_probe",
+          "task_id": "r3_dB_h_idb_upgrade"
+        },
+        {
+          "claim": "IndexedDB onupgradeneeded version migration retains old store and adds new store",
+          "role": "semantic_probe",
+          "task_id": "v2_idb_upgrade_migrate"
+        }
+      ],
+      "title": "storage / indexeddb / upgrade"
+    },
+    {
+      "capability_id": "web.storage.local_storage",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "localStorage get/set",
+          "role": "diagnostic",
+          "task_id": "r3_probe_b1_localstorage"
+        },
+        {
+          "claim": "localStorage get/set",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_b1_localstorage"
+        },
+        {
+          "claim": "localStorage coerces value to string",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_coerce_string"
+        },
+        {
+          "claim": "localStorage key()/length contract (order-insensitive)",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_key_order"
+        },
+        {
+          "claim": "localStorage set/get/length/key/removeItem",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_local_setget"
+        },
+        {
+          "claim": "localStorage overwrite keeps length",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_overwrite_length"
+        },
+        {
+          "claim": "localStorage removeItem on missing key is a no-op",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_removeitem_missing"
+        }
+      ],
+      "title": "storage / local storage"
+    },
+    {
+      "capability_id": "web.storage.session_storage",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "sessionStorage get/set",
+          "role": "diagnostic",
+          "task_id": "r3_probe_b2_sessionstorage"
+        },
+        {
+          "claim": "sessionStorage get/set",
+          "role": "semantic_probe",
+          "task_id": "v2_leg_probe_b2_sessionstorage"
+        },
+        {
+          "claim": "sessionStorage is independent of localStorage",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_session_local_independent"
+        }
+      ],
+      "title": "storage / session storage"
+    },
+    {
+      "capability_id": "web.storage.storage_event",
+      "category": "storage",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "storage_state",
+      "probes": [
+        {
+          "claim": "storage event fires in another same-origin context",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_store_event_fires"
+        }
+      ],
+      "title": "storage / storage event"
+    },
+    {
+      "capability_id": "web.url.idn",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URL IDN host converts to punycode",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_idn_punycode"
+        }
+      ],
+      "title": "url / idn"
+    },
+    {
+      "capability_id": "web.url.parser_normalization",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URL normalizes backslash in special scheme",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_backslash"
+        },
+        {
+          "claim": "URL empty query preserves trailing ?",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_empty_query"
+        },
+        {
+          "claim": "URL lowercases host and scheme",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_lowercase_host"
+        },
+        {
+          "claim": "URL non-special scheme keeps opaque path",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_nonspecial_opaque"
+        }
+      ],
+      "title": "url / parser normalization"
+    },
+    {
+      "capability_id": "web.url.percent_encoding",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URL percent-encodes space in path",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_pct_space_path"
+        }
+      ],
+      "title": "url / percent encoding"
+    },
+    {
+      "capability_id": "web.url.port_normalization",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URL drops default port 80",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_default_port_http"
+        }
+      ],
+      "title": "url / port normalization"
+    },
+    {
+      "capability_id": "web.url.relative_resolution",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URL protocol-relative //host resolution",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_protocol_relative"
+        },
+        {
+          "claim": "URL relative resolution (./ dot segment)",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_rel_dot"
+        },
+        {
+          "claim": "URL relative resolution (../ dot segments)",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_rel_dotdot"
+        }
+      ],
+      "title": "url / relative resolution"
+    },
+    {
+      "capability_id": "web.url.search_params",
+      "category": "url",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "URLSearchParams getAll on repeated key",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_sp_getall"
+        },
+        {
+          "claim": "URLSearchParams decodes + as space",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_sp_plus_space"
+        },
+        {
+          "claim": "URLSearchParams set replaces all values",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_sp_set_replace"
+        },
+        {
+          "claim": "URLSearchParams sort orders keys",
+          "role": "semantic_probe",
+          "task_id": "v2_wpt_url_sp_sort"
+        }
+      ],
+      "title": "url / search params"
+    },
+    {
+      "capability_id": "web.view_transitions",
+      "category": "view_transitions",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "dom_state",
+      "probes": [
+        {
+          "claim": "View Transitions API",
+          "role": "diagnostic",
+          "task_id": "r3_fv_view_transitions"
+        }
+      ],
+      "title": "view transitions"
+    },
+    {
+      "capability_id": "workflow.authenticated_filter",
+      "category": "workflow",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "workflow_result",
+      "probes": [
+        {
+          "claim": "real Puppeteer login -> list -> premium filter",
+          "role": "driver_cross_check",
+          "task_id": "v3_pp_flow_login_filter"
+        },
+        {
+          "claim": "real Playwright login -> list -> premium filter",
+          "role": "semantic_probe",
+          "task_id": "v3_pw_flow_login_filter"
+        }
+      ],
+      "title": "authenticated filter"
+    },
+    {
+      "capability_id": "workflow.filtered_aggregate",
+      "category": "workflow",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "workflow_result",
+      "probes": [
+        {
+          "claim": "real Puppeteer select filter -> aggregated stat",
+          "role": "driver_cross_check",
+          "task_id": "v3_pp_flow_records_stat"
+        },
+        {
+          "claim": "real Playwright select filter -> aggregated stat",
+          "role": "semantic_probe",
+          "task_id": "v3_pw_flow_records_stat"
+        }
+      ],
+      "title": "filtered aggregate"
+    },
+    {
+      "capability_id": "workflow.paginated_cart",
+      "category": "workflow",
+      "description": "All semantic probes below are correlated evidence for this primary capability and jointly contribute one all-probes-pass verdict.",
+      "observable": "workflow_result",
+      "probes": [
+        {
+          "claim": "real Puppeteer paged shop add-to-cart across three pages",
+          "role": "driver_cross_check",
+          "task_id": "v3_pp_flow_shop_cart"
+        },
+        {
+          "claim": "real Playwright paged shop add-to-cart across three pages",
+          "role": "semantic_probe",
+          "task_id": "v3_pw_flow_shop_cart"
+        }
+      ],
+      "title": "paginated cart"
+    }
+  ],
+  "evaluation_axis": "web_platform_workflow_semantic_correctness",
+  "layer": "L2",
+  "probe_roles": {
+    "diagnostic": "Failure-localization evidence only; excluded from semantic scoring.",
+    "driver_cross_check": "Representative alternate-driver evidence; excluded from semantic scoring.",
+    "semantic_probe": "Observable semantic evidence included in the capability verdict."
+  },
+  "schema_version": 1,
+  "score_unit": "semantic_capability_attempt"
+}

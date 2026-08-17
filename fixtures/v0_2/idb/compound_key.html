@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb compound key</title></head><body><div id="out">PENDING</div><script>
+// Compound keyPath ['region','id']: records are ordered lexicographically by
+// the key tuple, and get([region,id]) retrieves by the exact tuple. Records are
+// inserted shuffled; correct ordering proves compound-key comparison.
+var DB='v2idb_compound_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){e.target.result.createObjectStore('s',{keyPath:['region','id']});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    st.put({region:'EU',id:2,name:'B'});st.put({region:'AS',id:1,name:'A'});
+    st.put({region:'EU',id:1,name:'C'});st.put({region:'AS',id:2,name:'D'});
+    tx.oncomplete=function(){
+      var rt=db.transaction('s').objectStore('s');
+      var acc=[];var cur=rt.openCursor();var g=null;
+      cur.onsuccess=function(ev){var c=ev.target.result;if(c){acc.push(c.value.name);c.continue();}else{
+        g=db.transaction('s').objectStore('s').get(['EU',2]);
+        g.onsuccess=function(){set('ORDER='+acc.join(',')+'_GET_EU2='+(g.result&&g.result.name));};
+        g.onerror=function(){fail(g.error);};
+      }};
+      cur.onerror=function(){fail(cur.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

@@ -1,0 +1,74 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Moves #link under #bottom via DOM.moveTo and asserts the relocated node id.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 0
+        },
+        "save_result_as": "d"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "selector": "#link"
+        },
+        "save_result_as": "src"
+      },
+      {
+        "method": "DOM.querySelector",
+        "params": {
+          "nodeId": "{saved:d.root.nodeId}",
+          "selector": "#bottom"
+        },
+        "save_result_as": "dst"
+      },
+      {
+        "method": "DOM.moveTo",
+        "params": {
+          "nodeId": "{saved:src.nodeId}",
+          "targetNodeId": "{saved:dst.nodeId}"
+        },
+        "save_result_as": "m"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.move_to"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "saved_path_truthy",
+        "label": "moved_node_id",
+        "name": "m",
+        "path": "nodeId"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.actions",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_dom_moveto",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "DOM.moveTo relocates a node"
+}

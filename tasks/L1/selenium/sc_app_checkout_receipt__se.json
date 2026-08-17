@@ -1,0 +1,105 @@
+{
+  "_generated_from": "tasks/scenarios/app_checkout_receipt.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Logs in, adds one item, checks out, and answers with the order id the server derived from the cart.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "receipt_shown",
+        "step": 8
+      },
+      {
+        "expected": "ord-13-1",
+        "kind": "saved_equals",
+        "label": "order_id",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#user-in",
+        "value": "eve-7"
+      },
+      {
+        "op": "click",
+        "selector": "#login-btn"
+      },
+      {
+        "expression": "document.getElementById('greet').textContent.indexOf('hi-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "!!document.getElementById('add-gizmo-y')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#add-gizmo-y"
+      },
+      {
+        "expression": "!!document.getElementById('cart-gizmo-y')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "click",
+        "selector": "#checkout-btn"
+      },
+      {
+        "expression": "document.getElementById('receipt').textContent.indexOf('ord-') !== -1",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#receipt"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.fill",
+    "fw.selenium.op.click",
+    "fw.selenium.op.wait_for_function",
+    "fw.selenium.op.text_content",
+    "cdp.runtime.evaluate",
+    "cdp.input.dispatch_mouse_event",
+    "cdp.network.request_will_be_sent"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/app"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.multi_step_flow",
+    "version.v0_4"
+  ],
+  "task_id": "sc_app_checkout_receipt__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Checkout returns a server-computed order receipt (selenium)"
+}

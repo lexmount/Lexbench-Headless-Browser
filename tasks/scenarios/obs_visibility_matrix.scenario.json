@@ -1,0 +1,66 @@
+{
+  "scenario_id": "obs_visibility_matrix",
+  "family": "observation",
+  "title": "Visible and display:none elements are distinguishable",
+  "description": "Computes a visibility matrix over a visible and a hidden element from live layout state.",
+  "layer": "L1",
+  "diagnostic": true,
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "!!document.getElementById('visible-one') && !!document.getElementById('hidden-one')"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(function () { var v = document.getElementById('visible-one').getClientRects().length > 0; var h = document.getElementById('hidden-one').getClientRects().length > 0; return 'vis:' + (v ? 1 : 0) + '|hid:' + (h ? 1 : 0); })()",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "matrix_read",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "visibility_split",
+      "name": "answer",
+      "expected": "vis:1|hid:0"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.get_box_model",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "vis:1|hid:0"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

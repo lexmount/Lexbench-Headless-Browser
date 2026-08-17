@@ -1,0 +1,88 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "queryAXTree rooted at the document backendNodeId with accessibleName='Locked action' returns the matching button node. Verifies the name-scoped AX query used to locate a control by its accessible name.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true
+      },
+      {
+        "method": "Accessibility.enable",
+        "optional": true
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": -1
+        },
+        "save_result_as": "doc"
+      },
+      {
+        "method": "Accessibility.queryAXTree",
+        "params": {
+          "accessibleName": "Locked action",
+          "backendNodeId": "{saved:doc.root.backendNodeId}"
+        },
+        "save_result_as": "q"
+      }
+    ]
+  },
+  "features": [
+    "cdp.accessibility.query_ax_tree",
+    "cdp.dom.get_document",
+    "web.ax.name"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "q",
+        "path": "nodes"
+      },
+      {
+        "expected": {
+          "name": {
+            "value": "Locked action"
+          },
+          "role": {
+            "value": "button"
+          }
+        },
+        "kind": "array_contains",
+        "name": "q",
+        "path": "nodes"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/ax/checkbox"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.accessibility",
+    "purpose.agent_observation",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ax_query_by_name",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "queryAXTree filters nodes by accessible name"
+}

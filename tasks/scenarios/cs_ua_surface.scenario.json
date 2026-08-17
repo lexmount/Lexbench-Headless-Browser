@@ -1,0 +1,64 @@
+{
+  "scenario_id": "cs_ua_surface",
+  "family": "connect_session",
+  "title": "Read the browser identity through the driver and the page",
+  "description": "Reads the user agent through the driver's own identity surface and through page JavaScript. Exercises the session's identity plumbing end to end; every engine spoofs a Mozilla-family UA, so the page-observed value must contain 'Mozilla/'.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "user_agent",
+      "save_as": "driver_ua"
+    },
+    {
+      "op": "evaluate",
+      "expression": "navigator.userAgent",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "driver_ua_readable",
+      "step": 2
+    },
+    {
+      "kind": "saved_contains",
+      "label": "page_ua_mozilla",
+      "name": "answer",
+      "expected": "Mozilla/"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.browser.get_version"
+  ],
+  "expected_answer": {
+    "mode": "contains",
+    "expected": "Mozilla/"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

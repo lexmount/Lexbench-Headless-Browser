@@ -1,0 +1,72 @@
+{
+  "_generated_from": "tasks/scenarios/wait_late_item.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Navigates to the probe controls page and waits for #late-item, which the page appends via setTimeout ~300ms after load, then reads its text. Exercises event-driven waiting for a DOM node that does not exist at load time.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "late_item_appeared",
+        "step": 2
+      },
+      {
+        "expected": "late-28",
+        "kind": "saved_equals",
+        "label": "late_text",
+        "name": "answer"
+      }
+    ],
+    "kind": "webdriver_selenium",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#late-item"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#late-item"
+      }
+    ],
+    "transport_policy": "engine_native"
+  },
+  "features": [
+    "fw.selenium.op.new_page",
+    "fw.selenium.op.goto",
+    "fw.selenium.op.wait_for_selector",
+    "fw.selenium.op.text_content",
+    "cdp.dom.query_selector"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.selenium",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_late_item__se",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for a late-inserted list item (selenium)"
+}

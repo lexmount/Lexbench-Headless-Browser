@@ -1,0 +1,69 @@
+{
+  "scenario_id": "dl_download_checksum",
+  "family": "dialog_download_upload",
+  "title": "A clicked download is captured and its bytes checksummed",
+  "description": "Clicks the attachment link, captures the download to the artifact dir, and answers with the probe-computed sha256 prefix and size of the saved bytes.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "download",
+      "selector": "#dl-link",
+      "path": "{artifact_dir}/dl.txt",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "download_captured",
+      "step": 2
+    },
+    {
+      "kind": "file_nonempty",
+      "label": "bytes_on_disk",
+      "path": "{artifact_dir}/dl.txt"
+    },
+    {
+      "kind": "saved_equals",
+      "label": "checksum",
+      "name": "answer",
+      "expected": "2902f066860b:21"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.browser.set_download_behavior",
+    "cdp.page.download_will_begin"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "2902f066860b:21"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "cdp_use": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "pydoll": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "stagehand": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "chrome_devtools_mcp": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "chromedp": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "rod": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "chromiumoxide": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "ferrum": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "agent_browser": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed",
+    "selenium": "adapter op vocabulary has no download-capture op, so the saved bytes cannot be observed"
+  }
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>actl2 binding action</title></head>
+<body>
+<h1>binding action</h1>
+<button id="compute">compute</button>
+<div id="status">idle</div>
+<script>
+// Clicking computes an answer and pushes it back to the driver through a
+// binding the driver installed via Runtime.addBinding. The driver then reads
+// the answer off the bindingCalled event rather than the DOM.
+document.getElementById("compute").addEventListener("click", function () {
+  var v = 6 * 7;
+  document.getElementById("status").textContent = "computed:" + v;
+  if (typeof window.__abbResult === "function") {
+    window.__abbResult("ANSWER:" + v);
+  }
+});
+</script>
+</body>
+</html>

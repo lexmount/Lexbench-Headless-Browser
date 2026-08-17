@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Navigation/wait probe: the controls fixture injects #late-item ~300ms after load; real Puppeteer page.waitForSelector() (isolated-world polling via Runtime.callFunctionOn) must resolve within the 5s budget and the node text must be the computed late-28.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "wait_for_selector_resolved",
+        "step": 2
+      },
+      {
+        "expected": "late-28",
+        "kind": "saved_equals",
+        "label": "late_item_text",
+        "name": "late_text"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "wait_for_selector",
+        "selector": "#late-item",
+        "timeout_ms": 5000
+      },
+      {
+        "op": "text_content",
+        "save_as": "late_text",
+        "selector": "#late-item"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.page.wait_for_selector",
+    "cdp.runtime.call_function_on",
+    "cdp.page.create_isolated_world"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_nav_wait_for_selector",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer waitForSelector catches a late-injected node"
+}

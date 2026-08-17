@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb multiEntry index</title></head><body><div id="out">PENDING</div><script>
+// multiEntry index over an array-valued property: each array element becomes an
+// independent index entry, so index.getAll('red') matches every record whose
+// tags array contains 'red'. Without multiEntry the whole array is one key and
+// getAll('red') would return nothing.
+var DB='v2idb_multientry_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){
+    var st=e.target.result.createObjectStore('s',{keyPath:'id'});
+    st.createIndex('byTag','tags',{multiEntry:true});
+  };
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;var tx=db.transaction('s','readwrite');var st=tx.objectStore('s');
+    st.put({id:1,name:'A',tags:['red','big']});st.put({id:2,name:'B',tags:['blue']});
+    st.put({id:3,name:'C',tags:['red','small']});
+    tx.oncomplete=function(){
+      var idx=db.transaction('s').objectStore('s').index('byTag');
+      var g=idx.getAll('red');
+      g.onsuccess=function(){var names=g.result.map(function(x){return x.name;});set('RED='+names.length+':'+names.join(','));};
+      g.onerror=function(){fail(g.error);};
+    };
+    tx.onerror=function(){fail(tx.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

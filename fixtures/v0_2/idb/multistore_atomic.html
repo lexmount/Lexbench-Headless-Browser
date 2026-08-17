@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><title>idb multi-store atomicity</title></head><body><div id="out">PENDING</div><script>
+// One transaction spanning two object stores is atomic. tx1 commits id1 into
+// both 'a' and 'b'. tx2 writes id2 into both stores then abort(): the abort
+// must roll back BOTH stores together, leaving one row in each. ATOMIC=ok only
+// if neither store retained id2.
+var DB='v2idb_multi_'+((new URLSearchParams(location.search)).get('db')||'default');
+function set(t){document.getElementById('out').textContent=t;}
+function fail(e){set('ERR:'+((e&&e.message)||e));}
+try{
+  var rq=indexedDB.open(DB,1);
+  rq.onupgradeneeded=function(e){var db=e.target.result;db.createObjectStore('a',{keyPath:'id'});db.createObjectStore('b',{keyPath:'id'});};
+  rq.onerror=function(){fail(rq.error);};
+  rq.onsuccess=function(e){
+    var db=e.target.result;
+    var tx1=db.transaction(['a','b'],'readwrite');
+    tx1.objectStore('a').put({id:1,x:'A1'});tx1.objectStore('b').put({id:1,y:'B1'});
+    tx1.oncomplete=function(){
+      var tx2=db.transaction(['a','b'],'readwrite');
+      tx2.objectStore('a').put({id:2,x:'A2'});tx2.objectStore('b').put({id:2,y:'B2'});
+      tx2.onabort=function(){
+        var rt=db.transaction(['a','b'],'readonly');
+        var ca=rt.objectStore('a').count();var cb=rt.objectStore('b').count();
+        rt.oncomplete=function(){var atomic=(ca.result===1&&cb.result===1)?'ok':'broken';set('A='+ca.result+'_B='+cb.result+'_ATOMIC='+atomic);};
+        rt.onerror=function(){fail(rt.error);};
+      };
+      tx2.abort();
+    };
+    tx1.onerror=function(){fail(tx1.error);};
+  };
+}catch(e){fail(e);}
+</script></body></html>

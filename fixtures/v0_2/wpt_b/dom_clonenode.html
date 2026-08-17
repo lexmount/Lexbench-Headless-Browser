@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b cloneNode deep/shallow</title></head>
+<body>
+<div id="src" data-k="v"><span class="c">CHILD</span></div>
+<div id="out"></div>
+<script>
+try{
+  var src=document.getElementById('src');
+  var deep=src.cloneNode(true);
+  var shallow=src.cloneNode(false);
+  var deepText=deep.querySelector('.c')?deep.querySelector('.c').textContent:'NONE';
+  document.getElementById('out').textContent='CLONE:deep='+deep.childElementCount+';shallow='+shallow.childElementCount+';deepText='+deepText+';attr='+deep.getAttribute('data-k')+';connected='+deep.isConnected;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

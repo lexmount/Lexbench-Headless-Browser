@@ -1,0 +1,51 @@
+{
+  "artifact_profile": "l2_standard",
+  "description": "Runs a fixture-backed Web-platform semantics probe for multi :target tab walk + aggregate. The driver reads output from the self-hosted fixture `/fixtures/l2_round3/dA_h_tabs_target.html`, and the server-side grader compares it with the checked-in expected answer. Current probe details: requires clicking #l1,#l2,#l3 in order, waiting for each SPEC_x to appear in window.__seen; output 'SPECS:SPEC_A,SPEC_B,SPEC_C'.",
+  "driver": {
+    "connect_env": "BROWSER_WS",
+    "env": {
+      "PROBE_SPEC": {
+        "pre_clicks": [
+          "#l1",
+          "#l2",
+          "#l3"
+        ],
+        "read": "textContent",
+        "selector": "#out",
+        "settle": "nonempty",
+        "settle_timeout_ms": 8000,
+        "wait_ms": 300
+      }
+    },
+    "kind": "node_cdp_probe",
+    "script": "runner/scripts/l2_fixture_probe.js"
+  },
+  "features": [
+    "web.css.cascade",
+    "web.css.computed_style"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L2",
+  "scene": {
+    "fixture_id": "dA_h_tabs_target",
+    "kind": "self_hosted_fixture",
+    "url": "/fixtures/l2_round3/dA_h_tabs_target.html"
+  },
+  "subset_id": "l2.web_platform",
+  "tags": [
+    "version.v0_1"
+  ],
+  "task_id": "r3_dA_h_tabs_target",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "multi :target tab walk + aggregate"
+}

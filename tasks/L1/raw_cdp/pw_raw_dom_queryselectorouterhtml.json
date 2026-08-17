@@ -1,0 +1,92 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.dom.querySelectorOuterHTML by issuing raw CDP command(s) Page.enable, DOM.enable, Page.navigate, DOM.getDocument, ... against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. Navigation is anchored to a matching `Page.frameNavigated` event before the DOM lookup.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "DOM.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "Page.navigate",
+        "optional": false,
+        "params": {
+          "url": "{fixture_url}"
+        }
+      },
+      {
+        "match": {
+          "frame": {
+            "url": "{fixture_url}"
+          }
+        },
+        "wait_for_event": "Page.frameNavigated"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "DOM.getDocument",
+        "optional": false,
+        "params": {
+          "depth": 1
+        },
+        "save_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "optional": false,
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#title"
+        },
+        "save_as": "found"
+      },
+      {
+        "method": "DOM.getOuterHTML",
+        "optional": false,
+        "params": {
+          "nodeId": "{saved:found.nodeId}"
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.navigate",
+    "cdp.dom.get_document",
+    "cdp.dom.query_selector",
+    "cdp.dom.get_outer_html"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "about_blank"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_dom_queryselectorouterhtml",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.dom.querySelectorOuterHTML"
+}

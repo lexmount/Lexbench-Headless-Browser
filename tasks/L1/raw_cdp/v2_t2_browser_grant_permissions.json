@@ -1,0 +1,78 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Browser.grantPermissions('geolocation') flips navigator.permissions.query('geolocation').state to 'granted'; Browser.resetPermissions then returns it to 'prompt'. Verifies the permission commands produce a real, observable page-API behaviour change.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.grantPermissions",
+        "params": {
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "navigator.permissions.query({name:'geolocation'}).then(function(p){return p.state;})",
+          "returnByValue": true
+        },
+        "save_as": "granted"
+      },
+      {
+        "method": "Browser.resetPermissions",
+        "params": {},
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "awaitPromise": true,
+          "expression": "navigator.permissions.query({name:'geolocation'}).then(function(p){return p.state;})",
+          "returnByValue": true
+        },
+        "save_as": "afterreset"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.grant_permissions",
+    "cdp.browser.reset_permissions"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "granted",
+        "kind": "value_equals",
+        "name": "granted"
+      },
+      {
+        "expected": "prompt",
+        "kind": "value_equals",
+        "name": "afterreset"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_browser_grant_permissions",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Browser.grantPermissions / resetPermissions change page API state"
+}

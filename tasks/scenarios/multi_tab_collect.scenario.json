@@ -1,0 +1,80 @@
+{
+  "scenario_id": "multi_tab_collect",
+  "family": "connect_session",
+  "title": "Collect and aggregate values from two tabs in one driver session",
+  "description": "Opens two live targets, reads a distinct heading from each, and aggregates both values in the second tab through same-origin session state.",
+  "layer": "L1",
+  "extra_tags": [
+    "purpose.issue_106"
+  ],
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.setItem('abb-first-tab-heading', document.getElementById('title').textContent.trim()), localStorage.getItem('abb-first-tab-heading')"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/page2"
+    },
+    {
+      "op": "evaluate",
+      "expression": "localStorage.getItem('abb-first-tab-heading') + '|' + document.getElementById('title').textContent.trim()",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "first_value_collected",
+      "step": 2
+    },
+    {
+      "kind": "step_ok",
+      "label": "second_target_created",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "two_tab_values_aggregated",
+      "name": "answer",
+      "expected": "CDP Core Fixture|Page Two"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target",
+    "cdp.target.attach_to_target"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "CDP Core Fixture|Page Two"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

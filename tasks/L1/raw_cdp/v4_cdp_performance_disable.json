@@ -1,0 +1,55 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Enables Performance, reads the metric list (must be non-empty), then disables the domain.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Performance.enable"
+      },
+      {
+        "method": "Performance.getMetrics",
+        "save_result_as": "m"
+      },
+      {
+        "method": "Performance.disable"
+      }
+    ]
+  },
+  "features": [
+    "cdp.performance.disable"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "array_length",
+        "label": "metrics_present",
+        "min": 1,
+        "name": "m",
+        "path": "metrics"
+      },
+      {
+        "kind": "no_error",
+        "label": "disable_ok"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.diagnostics",
+    "version.v0_4"
+  ],
+  "task_id": "v4_cdp_performance_disable",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "Performance.disable after enable+getMetrics"
+}

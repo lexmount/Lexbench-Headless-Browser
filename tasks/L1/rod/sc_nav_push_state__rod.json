@@ -1,0 +1,70 @@
+{
+  "_generated_from": "tasks/scenarios/nav_push_state.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "Pushes a same-document history entry with a query string and derives the new search plus proof that the document did not reload.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "derive_ok",
+        "step": 3
+      },
+      {
+        "expected": "?spa=1:no-reload",
+        "kind": "saved_equals",
+        "label": "spa_url_no_reload",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_rod",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "window.__abb_alive = 3, history.pushState({}, '', '/l1/core?spa=1'), 'pushed'",
+        "op": "evaluate"
+      },
+      {
+        "expression": "location.search + ':' + (window.__abb_alive === 3 ? 'no-reload' : 'reloaded')",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.rod.op.new_page",
+    "fw.rod.op.goto",
+    "fw.rod.op.evaluate",
+    "cdp.page.navigated_within_document"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.rod",
+  "tags": [
+    "family.navigation_lifecycle",
+    "version.v0_4"
+  ],
+  "task_id": "sc_nav_push_state__rod",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "history.pushState changes the URL without a load (rod)"
+}

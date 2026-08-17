@@ -1,0 +1,71 @@
+{
+  "_generated_from": "tasks/scenarios/wait_spinner_replaced.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "required",
+  "description": "A container holds a spinner that is replaced with content 500ms after load. Waits for the spinner to disappear and reads the replacement.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "spinner_gone",
+        "step": 2
+      },
+      {
+        "expected": "content-77",
+        "kind": "saved_equals",
+        "label": "content_text",
+        "name": "answer"
+      }
+    ],
+    "kind": "tool_agent_browser",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "!document.querySelector('#replace .spinner')",
+        "op": "wait_for_function"
+      },
+      {
+        "op": "text_content",
+        "save_as": "answer",
+        "selector": "#replace"
+      }
+    ]
+  },
+  "features": [
+    "fw.agent_browser.op.new_page",
+    "fw.agent_browser.op.goto",
+    "fw.agent_browser.op.wait_for_function",
+    "fw.agent_browser.op.text_content",
+    "cdp.runtime.evaluate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/waiting"
+  },
+  "subset_id": "l1.agent_browser_scenarios",
+  "tags": [
+    "family.waiting_dynamic",
+    "version.v0_4"
+  ],
+  "task_id": "sc_wait_spinner_replaced__ab",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Wait for spinner content to be replaced (agent_browser)"
+}

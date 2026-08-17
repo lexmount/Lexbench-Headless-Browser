@@ -1,0 +1,73 @@
+{
+  "_generated_from": "tasks/scenarios/obs_title_url_surface.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Answers with the live document title joined with the pathname — the most basic observation pair every driver must expose.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "surface_read",
+        "step": 3
+      },
+      {
+        "expected": "Observation Fixture|/v0_4/obs",
+        "kind": "saved_equals",
+        "label": "title_url_pair",
+        "name": "answer"
+      }
+    ],
+    "kind": "thin_chrome_remote_interface",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "expression": "document.title.length > 0",
+        "op": "wait_for_function"
+      },
+      {
+        "expression": "document.title + '|' + location.pathname",
+        "op": "evaluate",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.chrome_remote_interface.op.new_page",
+    "fw.chrome_remote_interface.op.goto",
+    "fw.chrome_remote_interface.op.wait_for_function",
+    "fw.chrome_remote_interface.op.evaluate",
+    "cdp.runtime.evaluate",
+    "cdp.page.navigate"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.chrome_remote_interface",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_title_url_surface__cri",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "Document title and URL observation surfaces agree with the page (chrome_remote_interface)"
+}

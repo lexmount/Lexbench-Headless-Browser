@@ -1,0 +1,74 @@
+{
+  "scenario_id": "cs_session_survives_three_pages",
+  "family": "connect_session",
+  "title": "The driver session stays healthy across three page creations",
+  "description": "Creates three pages in sequence, navigating each, and reads the heading from the last one. Exercises session/bookkeeping stability across repeated target creation within one attempt.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_base_url}/page2"
+    },
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "text_content",
+      "selector": "#title",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "third_page_nav_ok",
+      "step": 5
+    },
+    {
+      "kind": "saved_equals",
+      "label": "third_page_heading",
+      "name": "answer",
+      "expected": "CDP Core Fixture"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.target.create_target"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "CDP Core Fixture"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

@@ -1,0 +1,512 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lexmount/Lexbench-Headless-Browser/config/browser_driver_bindings.schema.json",
+  "title": "Agent Browser Bench browser/driver binding catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "browser_ids",
+    "driver_ids",
+    "references",
+    "routes",
+    "bindings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "browser_ids": {
+      "const": [
+        "chrome",
+        "moli",
+        "lightpanda",
+        "obscura"
+      ]
+    },
+    "driver_ids": {
+      "const": [
+        "playwright",
+        "puppeteer",
+        "chrome_remote_interface",
+        "cdp_use",
+        "pydoll",
+        "stagehand",
+        "chrome_devtools_mcp",
+        "chromedp",
+        "rod",
+        "agent_browser",
+        "ferrum",
+        "selenium",
+        "chromiumoxide"
+      ]
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/route"
+      }
+    },
+    "bindings": {
+      "type": "array",
+      "minItems": 52,
+      "maxItems": 52,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "source",
+        "key"
+      ],
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source": {
+          "enum": [
+            "runner.run.ENGINE_DEFS",
+            "harness_pins.json.drivers"
+          ]
+        },
+        "key": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "hop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "protocol",
+        "transport",
+        "endpoint_kind"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "to": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "protocol": {
+          "enum": [
+            "playwright_api",
+            "puppeteer_api",
+            "library_api",
+            "pydoll_api",
+            "stagehand_deterministic_api",
+            "mcp_jsonrpc",
+            "cdp",
+            "chromedp_api",
+            "rod_api",
+            "agent_browser_cli",
+            "ferrum_api",
+            "chromiumoxide_api",
+            "selenium_api",
+            "webdriver_classic"
+          ]
+        },
+        "transport": {
+          "enum": [
+            "in_process",
+            "websocket",
+            "stdio",
+            "subprocess_and_local_socket",
+            "connect_command_with_http_port",
+            "http",
+            "debugger_address"
+          ]
+        },
+        "endpoint_kind": {
+          "enum": [
+            "library_api",
+            "cdp_http_discovery",
+            "cdp_browser_websocket",
+            "mcp_stdio",
+            "isolated_daemon_session",
+            "cdp_http_port",
+            "webdriver_classic_http",
+            "chromedriver_http"
+          ]
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "browser_owner",
+        "bridge_owner",
+        "adapter_owner"
+      ],
+      "properties": {
+        "browser_owner": {
+          "const": "runner_browser_manager"
+        },
+        "bridge_owner": {
+          "enum": [
+            "none",
+            "adapter_per_attempt_child",
+            "adapter_per_attempt_session"
+          ]
+        },
+        "adapter_owner": {
+          "const": "runner_per_attempt_subprocess"
+        }
+      }
+    },
+    "discoveryPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "endpoint_kind",
+        "probe",
+        "readiness_owner"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "http_json_version",
+            "direct_input",
+            "mcp_initialize",
+            "agent_browser_connect",
+            "chromedriver_service",
+            "webdriver_session"
+          ]
+        },
+        "endpoint_kind": {
+          "enum": [
+            "cdp_http_discovery",
+            "cdp_browser_websocket",
+            "mcp_stdio",
+            "isolated_daemon_session",
+            "webdriver_classic_http",
+            "chromedriver_http"
+          ]
+        },
+        "probe": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "readiness_owner": {
+          "enum": [
+            "runner_browser_manager",
+            "adapter_per_attempt"
+          ]
+        }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "browser",
+        "client"
+      ],
+      "properties": {
+        "browser": {
+          "$ref": "#/$defs/discoveryPoint"
+        },
+        "client": {
+          "$ref": "#/$defs/discoveryPoint"
+        }
+      }
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mechanism",
+        "actual_path",
+        "operator",
+        "condition"
+      ],
+      "properties": {
+        "mechanism": {
+          "enum": [
+            "http_json_version",
+            "cdp",
+            "framework",
+            "mcp",
+            "agent_browser",
+            "webdriver_capabilities",
+            "selenium_cdp_extension"
+          ]
+        },
+        "actual_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "operator": {
+          "enum": [
+            "equals",
+            "contains",
+            "is_contained_by"
+          ]
+        },
+        "expected_ref": {
+          "enum": [
+            "expect_product",
+            "expect_ua",
+            "browser_ws",
+            "expect_product_live"
+          ]
+        },
+        "expected_literal": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "condition": {
+          "enum": [
+            "always",
+            "expected_nonempty",
+            "when_present"
+          ]
+        },
+        "fallback_actual_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "fallback_operator": {
+          "enum": [
+            "equals",
+            "contains",
+            "is_contained_by"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "expected_ref"
+          ],
+          "not": {
+            "required": [
+              "expected_literal"
+            ]
+          }
+        },
+        {
+          "required": [
+            "expected_literal"
+          ],
+          "not": {
+            "required": [
+              "expected_ref"
+            ]
+          }
+        }
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "http_assertions",
+        "live_transport_assertions"
+      ],
+      "properties": {
+        "http_assertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/assertion"
+          }
+        },
+        "live_transport_assertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/assertion"
+          }
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "client_protocol",
+        "client_endpoint_kind",
+        "browser_endpoint_kind",
+        "connect_mode",
+        "provider",
+        "ordered_hops",
+        "lifecycle",
+        "discovery",
+        "identity"
+      ],
+      "properties": {
+        "route_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "client_protocol": {
+          "enum": [
+            "playwright_api_over_cdp",
+            "puppeteer_api_over_cdp",
+            "cdp",
+            "pydoll_api_over_cdp",
+            "stagehand_deterministic_api_over_cdp",
+            "mcp_jsonrpc",
+            "chromedp_api_over_cdp",
+            "rod_api_over_cdp",
+            "agent_browser_cli",
+            "ferrum_api_over_cdp",
+            "chromiumoxide_api_over_cdp",
+            "webdriver_classic"
+          ]
+        },
+        "client_endpoint_kind": {
+          "enum": [
+            "cdp_browser_websocket",
+            "mcp_stdio",
+            "isolated_daemon_session",
+            "webdriver_classic_http",
+            "chromedriver_http"
+          ]
+        },
+        "browser_endpoint_kind": {
+          "enum": [
+            "cdp_browser_websocket",
+            "cdp_http_port",
+            "webdriver_classic_http"
+          ]
+        },
+        "connect_mode": {
+          "enum": [
+            "connect_existing",
+            "attach_existing"
+          ]
+        },
+        "provider": {
+          "enum": [
+            "browser_native",
+            "driver_managed_bridge",
+            "driver_managed_session",
+            "chromedriver"
+          ]
+        },
+        "ordered_hops": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/hop"
+          }
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/lifecycle"
+        },
+        "discovery": {
+          "$ref": "#/$defs/discovery"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_id",
+        "browser_id",
+        "driver_id",
+        "browser_pin_ref",
+        "driver_pin_ref",
+        "bridge_pin_refs",
+        "fallback_allowed"
+      ],
+      "properties": {
+        "binding_id": {
+          "type": "string",
+          "pattern": "^(chrome|moli|lightpanda|obscura)__(playwright|puppeteer|chrome_remote_interface|cdp_use|pydoll|stagehand|chrome_devtools_mcp|chromedp|rod|agent_browser|ferrum|selenium|chromiumoxide)$"
+        },
+        "browser_id": {
+          "enum": [
+            "chrome",
+            "moli",
+            "lightpanda",
+            "obscura"
+          ]
+        },
+        "driver_id": {
+          "enum": [
+            "playwright",
+            "puppeteer",
+            "chrome_remote_interface",
+            "cdp_use",
+            "pydoll",
+            "stagehand",
+            "chrome_devtools_mcp",
+            "chromedp",
+            "rod",
+            "agent_browser",
+            "ferrum",
+            "selenium",
+            "chromiumoxide"
+          ]
+        },
+        "route_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "unavailable_reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "browser_pin_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "driver_pin_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "bridge_pin_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "fallback_allowed": {
+          "const": false
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "route_ref"
+          ],
+          "not": {
+            "required": [
+              "unavailable_reason"
+            ]
+          }
+        },
+        {
+          "required": [
+            "unavailable_reason"
+          ],
+          "not": {
+            "required": [
+              "route_ref"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

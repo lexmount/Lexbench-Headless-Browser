@@ -1,0 +1,103 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Real Playwright navigates core -> page2, then goes back (URL must contain /l1/core, restored DOM title must read 'CDP Core Fixture') and forward again (URL must contain /page2, title 'Page Two'), proving Page.navigateToHistoryEntry drives real history hops. The hops are graded by post-navigation URL + DOM rather than the goBack/goForward return value: against an externally launched Chrome (no --disable-back-forward-cache), bfcache restores emit no load event, so Playwright's lifecycle wait inside goBack/goForward times out even though the history navigation itself commits correctly; the hops carry a short 3s timeout and are marked optional for that reason.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "/l1/core",
+        "kind": "saved_contains",
+        "label": "back_lands_on_core",
+        "name": "url_after_back"
+      },
+      {
+        "expected": "CDP Core Fixture",
+        "kind": "saved_equals",
+        "label": "back_page_dom_alive",
+        "name": "title_after_back"
+      },
+      {
+        "expected": "/page2",
+        "kind": "saved_contains",
+        "label": "forward_lands_on_page2",
+        "name": "url_after_forward"
+      },
+      {
+        "expected": "Page Two",
+        "kind": "saved_equals",
+        "label": "forward_page_dom_alive",
+        "name": "title_after_forward"
+      }
+    ],
+    "kind": "framework_playwright",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_origin}/page2"
+      },
+      {
+        "op": "go_back",
+        "optional": true,
+        "save_as": "back_result",
+        "timeout_ms": 3000
+      },
+      {
+        "op": "url",
+        "save_as": "url_after_back"
+      },
+      {
+        "op": "text_content",
+        "save_as": "title_after_back",
+        "selector": "#title"
+      },
+      {
+        "op": "go_forward",
+        "optional": true,
+        "save_as": "forward_result",
+        "timeout_ms": 3000
+      },
+      {
+        "op": "url",
+        "save_as": "url_after_forward"
+      },
+      {
+        "op": "text_content",
+        "save_as": "title_after_forward",
+        "selector": "#title"
+      }
+    ]
+  },
+  "features": [
+    "fw.playwright.page.go_back",
+    "fw.playwright.page.go_forward",
+    "cdp.page.navigate_to_history_entry",
+    "cdp.page.get_navigation_history"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.playwright",
+  "tags": [
+    "family.framework_navigation",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pw_nav_back_forward",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "history goBack/goForward across two fixture pages"
+}

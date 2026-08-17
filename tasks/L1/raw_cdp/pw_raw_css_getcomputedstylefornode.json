@@ -1,0 +1,84 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Verifies raw.css.getComputedStyleForNode by issuing raw CDP command(s) Page.enable, Runtime.enable, DOM.enable, CSS.enable, ... against the self-hosted fixture `/l1/core`. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "Runtime.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "DOM.enable",
+        "optional": true,
+        "params": {}
+      },
+      {
+        "method": "CSS.enable",
+        "optional": false,
+        "params": {}
+      },
+      {
+        "method": "DOM.getDocument",
+        "optional": false,
+        "params": {
+          "depth": 1
+        },
+        "save_as": "doc"
+      },
+      {
+        "method": "DOM.querySelector",
+        "optional": false,
+        "params": {
+          "nodeId": "{saved:doc.root.nodeId}",
+          "selector": "#title"
+        },
+        "save_as": "found"
+      },
+      {
+        "method": "CSS.getComputedStyleForNode",
+        "optional": false,
+        "params": {
+          "nodeId": "{saved:found.nodeId}"
+        },
+        "save_as": "value"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.get_document",
+    "cdp.dom.query_selector",
+    "cdp.css.get_computed_style_for_node"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "no_error"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.extended",
+    "version.v0_1"
+  ],
+  "task_id": "pw_raw_css_getcomputedstylefornode",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "raw.css.getComputedStyleForNode"
+}

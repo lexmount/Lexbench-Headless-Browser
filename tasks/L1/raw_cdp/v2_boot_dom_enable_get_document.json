@@ -1,0 +1,65 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Enables the DOM domain and asserts DOM.getDocument returns a #document root node with a nodeId and a non-empty children array. Real probe of DOM.enable/getDocument return structure.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "DOM.enable",
+        "session": "page"
+      },
+      {
+        "method": "DOM.getDocument",
+        "params": {
+          "depth": 1
+        },
+        "save_result_as": "doc",
+        "session": "page"
+      }
+    ]
+  },
+  "features": [
+    "cdp.dom.enable"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": "#document",
+        "kind": "saved_path_equals",
+        "name": "doc",
+        "path": "root.nodeName"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "doc",
+        "path": "root.nodeId"
+      },
+      {
+        "kind": "array_length",
+        "min": 1,
+        "name": "doc",
+        "path": "root.children"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "coverage.tier1_bootstrap",
+    "family.bootstrap",
+    "version.v0_2"
+  ],
+  "task_id": "v2_boot_dom_enable_get_document",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 15000
+  },
+  "title": "DOM.enable + getDocument returns node tree"
+}

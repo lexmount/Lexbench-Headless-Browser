@@ -1,0 +1,94 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "off",
+  "description": "fulfillRequest returns status 503 for /api-answer; the app's status branch renders DEGRADED_MODE_503 instead of the success path. Proves an injected error status steers client control flow.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Fetch.enable",
+        "params": {
+          "patterns": [
+            {
+              "requestStage": "Request",
+              "urlPattern": "*ifx/api-answer*"
+            }
+          ]
+        }
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__abbStatusBranch(location.origin+'/v0_2/ifx/api-answer')"
+        }
+      },
+      {
+        "save_result_as": "paused",
+        "session": "page",
+        "timeout_ms": 6000,
+        "wait_for_event": "Fetch.requestPaused"
+      },
+      {
+        "method": "Fetch.fulfillRequest",
+        "params": {
+          "body": "",
+          "requestId": "{saved:paused.requestId}",
+          "responseCode": 503,
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain"
+            }
+          ]
+        }
+      },
+      {
+        "sleep_ms": 500
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__answer",
+          "returnByValue": true
+        },
+        "save_as": "ans"
+      }
+    ]
+  },
+  "features": [
+    "cdp.fetch.enable",
+    "cdp.fetch.fulfill_request"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Fetch.requestPaused",
+        "name": "paused"
+      },
+      {
+        "expected": "DEGRADED_MODE_503",
+        "kind": "value_equals",
+        "name": "ans"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_2/ifx/app"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.fetch_intercept",
+    "version.v0_2"
+  ],
+  "task_id": "v2_ifx_status_override_branch",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Injected 503 status drives a degradation branch"
+}

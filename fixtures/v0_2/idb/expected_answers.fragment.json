@@ -1,0 +1,17 @@
+{
+  "v2_idb_upgrade_migrate": {"expected": "USERS=3_ORDERS=2_OLDKEEP=ANN", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_index_query": {"expected": "CITY_BJ=2:ANN,CAM", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_cursor_forward": {"expected": "FWD=A,B,C,D,E", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_cursor_reverse": {"expected": "REV=E,D,C,B,A", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_cursor_advance": {"expected": "ADV=A,C,D,E,F", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_getall_keys_count": {"expected": "COUNT=5_KEYS=10,20,30,40,50_NAMES=A,B,C,D,E", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_txn_abort_rollback": {"expected": "AFTER_ABORT=1:KEEP", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_multistore_atomic": {"expected": "A=1_B=1_ATOMIC=ok", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_compound_key": {"expected": "ORDER=A,D,C,B_GET_EU2=B", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_multientry_index": {"expected": "RED=2:A,C", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_blob_value": {"expected": "BLOB=HELLO_IDB_BUFLEN=5_B0=1", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_nested_keypath": {"expected": "KEYS=X3,X5,X7_GET_X7=ANN", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_keyrange_bound": {"expected": "INCL=3,4,5,6,7_EXCL=4,5,6", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_keyrange_only_upper": {"expected": "ONLY=5_UB_INCL=1,2,3,4,5_UB_EXCL=1,2,3,4", "mode": "equals", "oracle": "chrome 150.0.7871.49"},
+  "v2_idb_index_range_count": {"expected": "GE50=4_RANGE_KEYS=5,3,2", "mode": "equals", "oracle": "chrome 150.0.7871.49"}
+}

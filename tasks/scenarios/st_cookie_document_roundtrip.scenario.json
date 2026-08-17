@@ -1,0 +1,64 @@
+{
+  "scenario_id": "st_cookie_document_roundtrip",
+  "family": "state",
+  "title": "document.cookie set/read round-trip",
+  "description": "Sets a cookie via document.cookie and parses it back out of the cookie string.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.cookie = 'abbk=c-' + (71 + 0), 'set'"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(document.cookie.match(/abbk=([^;]+)/) || [])[1] || 'missing'",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "cookie_read_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "cookie_roundtrips",
+      "name": "answer",
+      "expected": "c-71"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.network.get_cookies"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "c-71"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

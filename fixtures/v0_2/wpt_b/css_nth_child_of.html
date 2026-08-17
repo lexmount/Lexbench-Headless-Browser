@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt-b :nth-child(An+B of S)</title></head>
+<body>
+<ul id="list">
+  <li class="x">1</li>
+  <li>skip</li>
+  <li class="x">2</li>
+  <li class="x">3</li>
+  <li class="x">4</li>
+</ul>
+<div id="out"></div>
+<script>
+try{
+  var els=document.querySelectorAll('#list li:nth-child(2n of .x)');
+  var t=[].map.call(els,function(e){return e.textContent;}).join(',');
+  document.getElementById('out').textContent='NTHOF:'+t;
+}catch(e){document.getElementById('out').textContent='ERR:'+e.message;}
+</script></body></html>

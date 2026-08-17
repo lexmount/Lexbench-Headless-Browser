@@ -1,0 +1,95 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Browser.setDownloadBehavior(allowAndName, eventsEnabled) arms download events, a link click triggers a same-origin file download, and the driver waits for Browser.downloadWillBegin (capturing guid + suggestedFilename) followed by the matching guid's completed Browser.downloadProgress. Asserts the begin event, expected filename, and completed terminal state. It passes when the `Browser.downloadWillBegin` event is observed; `dwb.guid` is present; `dwb.suggestedFilename` contains `report`; the `Browser.downloadProgress` event is observed; the declared `saved_path_equals` check passes.",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Browser.setDownloadBehavior",
+        "params": {
+          "behavior": "allowAndName",
+          "downloadPath": "{artifact_dir}",
+          "eventsEnabled": true
+        },
+        "session": "browser"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.getElementById('dl').click()"
+        }
+      },
+      {
+        "save_result_as": "dwb",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Browser.downloadWillBegin"
+      },
+      {
+        "match": {
+          "guid": "{saved:dwb.guid}",
+          "state": "completed"
+        },
+        "save_result_as": "dprog",
+        "session": "browser",
+        "timeout_ms": 6000,
+        "wait_for_event": "Browser.downloadProgress"
+      }
+    ]
+  },
+  "features": [
+    "cdp.browser.set_download_behavior",
+    "cdp.browser.download_will_begin",
+    "cdp.browser.download_progress"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "kind": "event_observed",
+        "method": "Browser.downloadWillBegin",
+        "name": "dwb"
+      },
+      {
+        "kind": "saved_path_truthy",
+        "name": "dwb",
+        "path": "guid"
+      },
+      {
+        "expected": "report",
+        "kind": "saved_path_contains",
+        "name": "dwb",
+        "path": "suggestedFilename"
+      },
+      {
+        "kind": "event_observed",
+        "method": "Browser.downloadProgress",
+        "name": "dprog"
+      },
+      {
+        "expected": "completed",
+        "kind": "saved_path_equals",
+        "name": "dprog",
+        "path": "state"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2b/download_page"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_b",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_browser_download",
+  "task_version": 2,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Browser.setDownloadBehavior + downloadWillBegin/downloadProgress events"
+}

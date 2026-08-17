@@ -1,0 +1,72 @@
+{
+  "artifact_profile": "l1_standard",
+  "description": "Action probe: Puppeteer locator().fill() on #textbox must both set the value and emit real input events — the fixture's input listener mirrors the length into #textbox-len, which must read 15 for the 15-char probe string.",
+  "driver": {
+    "checks": [
+      {
+        "expected": "puppeteer fills",
+        "kind": "saved_equals",
+        "label": "value_set",
+        "name": "field_value"
+      },
+      {
+        "expected": "15",
+        "kind": "saved_equals",
+        "label": "input_event_len_15",
+        "name": "len_out"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "fill",
+        "selector": "#textbox",
+        "value": "puppeteer fills"
+      },
+      {
+        "op": "input_value",
+        "save_as": "field_value",
+        "selector": "#textbox"
+      },
+      {
+        "op": "text_content",
+        "save_as": "len_out",
+        "selector": "#textbox-len"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.locator.fill",
+    "cdp.input.insert_text",
+    "cdp.input.dispatch_key_event",
+    "cdp.runtime.call_function_on"
+  ],
+  "grader": {
+    "checks": [],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_3/probe/controls"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.framework_actions",
+    "version.v0_3"
+  ],
+  "task_id": "v3_pp_act_fill_form",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "real Puppeteer locator fill fires the fixture's input listener"
+}

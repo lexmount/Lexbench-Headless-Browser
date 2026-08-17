@@ -1,0 +1,79 @@
+{
+  "_generated_from": "tasks/scenarios/obs_console_error_captured.scenario.json",
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "Clicks a button that emits console.error and answers with the driver's console capture.",
+  "driver": {
+    "checks": [
+      {
+        "kind": "step_ok",
+        "label": "console_read",
+        "step": 5
+      },
+      {
+        "expected": "console-error-32",
+        "kind": "saved_contains",
+        "label": "error_captured",
+        "name": "answer"
+      }
+    ],
+    "kind": "framework_puppeteer",
+    "steps": [
+      {
+        "op": "new_page"
+      },
+      {
+        "op": "goto",
+        "url": "{fixture_url}"
+      },
+      {
+        "op": "get_console"
+      },
+      {
+        "op": "click",
+        "selector": "#err-btn"
+      },
+      {
+        "ms": 300,
+        "op": "wait_ms"
+      },
+      {
+        "op": "get_console",
+        "save_as": "answer"
+      }
+    ]
+  },
+  "features": [
+    "fw.puppeteer.op.new_page",
+    "fw.puppeteer.op.goto",
+    "fw.puppeteer.op.get_console",
+    "fw.puppeteer.op.click",
+    "fw.puppeteer.op.wait_ms",
+    "cdp.runtime.console_api_called"
+  ],
+  "grader": {
+    "checks": [
+      "answer_matches_expected"
+    ],
+    "endpoint": "/__grade__/expected_answer",
+    "kind": "server_side"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/obs"
+  },
+  "subset_id": "l1.puppeteer",
+  "tags": [
+    "family.observation",
+    "version.v0_4",
+    "purpose.diagnostic"
+  ],
+  "task_id": "sc_obs_console_error_captured__pp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 45000,
+    "task_ms": 30000
+  },
+  "title": "A page console.error with computed content is captured by the driver (puppeteer)"
+}

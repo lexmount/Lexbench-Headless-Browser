@@ -1,0 +1,64 @@
+{
+  "scenario_id": "form_radio_pick",
+  "family": "forms",
+  "title": "Clicking one radio selects it and deselects siblings",
+  "description": "Clicks the second radio in a group and derives which one the group reports as checked.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/forms"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "click",
+      "selector": "#opt-b"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(document.querySelector('input[name=opt]:checked') || {id: 'none'}).id",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "click_ok",
+      "step": 2
+    },
+    {
+      "kind": "saved_equals",
+      "label": "b_selected",
+      "name": "answer",
+      "expected": "opt-b"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.input.dispatch_mouse_event"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "opt-b"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

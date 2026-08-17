@@ -1,0 +1,68 @@
+{
+  "scenario_id": "nav_reload_resets_dom",
+  "family": "navigation_lifecycle",
+  "title": "Reload discards un-persisted DOM state",
+  "description": "Fills an input, reloads the page, and confirms the fresh document no longer carries the typed value. Exercises Page.reload semantics: a real reload must produce a new document, not restore transient DOM state.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "fill",
+      "selector": "#field",
+      "value": "transient-77"
+    },
+    {
+      "op": "reload"
+    },
+    {
+      "op": "evaluate",
+      "expression": "document.getElementById('field').value === '' ? 'reset-after-reload' : 'kept:' + document.getElementById('field').value",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "reload_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "dom_state_reset",
+      "name": "answer",
+      "expected": "reset-after-reload"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.reload"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "reset-after-reload"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

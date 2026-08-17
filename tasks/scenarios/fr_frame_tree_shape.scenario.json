@@ -1,0 +1,69 @@
+{
+  "scenario_id": "fr_frame_tree_shape",
+  "family": "frames_oopif",
+  "title": "The live frame tree reflects static plus dynamic children",
+  "description": "Counts frames before and after inserting a child that itself embeds a grandchild, answering with the observed growth of the reachable same-origin tree.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/frames"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__c0 = window.frames.length; var f = document.createElement('iframe'); f.src = '/v0_4/frames/child?tag=shape&deep=1'; document.getElementById('slot').appendChild(f); 'inserted'"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "window.frames.length === 3 && frames[2].frames.length === 1"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__c0 + '>' + window.frames.length + '>' + (window.frames.length + frames[2].frames.length)",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "tree_settled",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "tree_shape",
+      "name": "answer",
+      "expected": "2>3>4"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.get_frame_tree",
+    "cdp.page.frame_attached"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "2>3>4"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

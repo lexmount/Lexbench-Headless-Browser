@@ -1,0 +1,82 @@
+{
+  "artifact_profile": "l1_standard",
+  "chrome_gate": "best_effort",
+  "description": "The fixture is served with Content-Security-Policy: script-src 'none', so its inline script is normally blocked. Page.setBypassCSP(true) followed by a reload lets that inline script execute. Asserts the previously-blocked script ran (window flag + document.title changed).",
+  "driver": {
+    "kind": "raw_cdp",
+    "steps": [
+      {
+        "method": "Page.enable"
+      },
+      {
+        "method": "Page.setBypassCSP",
+        "params": {
+          "enabled": true
+        }
+      },
+      {
+        "method": "Page.reload"
+      },
+      {
+        "save_result_as": "load",
+        "session": "page",
+        "timeout_ms": 8000,
+        "wait_for_event": "Page.loadEventFired"
+      },
+      {
+        "sleep_ms": 300
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "window.__cspRan === true",
+          "returnByValue": true
+        },
+        "save_as": "ran"
+      },
+      {
+        "method": "Runtime.evaluate",
+        "params": {
+          "expression": "document.title",
+          "returnByValue": true
+        },
+        "save_as": "title"
+      }
+    ]
+  },
+  "features": [
+    "cdp.page.set_bypass_csp"
+  ],
+  "grader": {
+    "checks": [
+      {
+        "expected": true,
+        "kind": "value_equals",
+        "name": "ran"
+      },
+      {
+        "expected": "CSP Bypassed",
+        "kind": "value_equals",
+        "name": "title"
+      }
+    ],
+    "kind": "inline_assertions"
+  },
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v2/t2a/csp"
+  },
+  "subset_id": "l1.raw_cdp",
+  "tags": [
+    "family.tier2_a",
+    "version.v0_2"
+  ],
+  "task_id": "v2_t2_page_bypass_csp",
+  "task_version": 1,
+  "timeouts": {
+    "hard_kill_ms": 30000,
+    "task_ms": 20000
+  },
+  "title": "Page.setBypassCSP lets blocked inline script run"
+}

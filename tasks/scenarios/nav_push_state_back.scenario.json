@@ -1,0 +1,71 @@
+{
+  "scenario_id": "nav_push_state_back",
+  "family": "navigation_lifecycle",
+  "title": "history back pops a pushState entry in-document",
+  "description": "Pushes a same-document entry, then drives history back through the driver and confirms the original URL is restored without a reload.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/l1/core"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "evaluate",
+      "expression": "window.__abb_alive = 5, history.pushState({}, '', '/l1/core?spa=2'), 'pushed'"
+    },
+    {
+      "op": "go_back"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "location.search === ''"
+    },
+    {
+      "op": "evaluate",
+      "expression": "(location.pathname + location.search) + ':' + (window.__abb_alive === 5 ? 'no-reload' : 'reloaded')",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "back_ok",
+      "step": 3
+    },
+    {
+      "kind": "saved_equals",
+      "label": "back_in_document",
+      "name": "answer",
+      "expected": "/l1/core:no-reload"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.page.navigated_within_document"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "/l1/core:no-reload"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer",
+    "chrome_remote_interface",
+    "cdp_use",
+    "pydoll",
+    "stagehand",
+    "chrome_devtools_mcp",
+    "chromedp",
+    "rod",
+    "chromiumoxide",
+    "ferrum",
+    "agent_browser",
+    "selenium"
+  ]
+}

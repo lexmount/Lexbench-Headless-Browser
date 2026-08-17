@@ -1,0 +1,77 @@
+{
+  "scenario_id": "up_upload_filereader",
+  "family": "dialog_download_upload",
+  "title": "A file attached to an input is readable by page-side FileReader",
+  "description": "Attaches the payload to a bare file input (no submit); the page's change handler reads it with FileReader and writes a computed digest of length and first token.",
+  "layer": "L1",
+  "scene": {
+    "kind": "self_hosted_fixture",
+    "url": "/v0_4/dialogs"
+  },
+  "steps": [
+    {
+      "op": "new_page"
+    },
+    {
+      "op": "goto",
+      "url": "{fixture_url}"
+    },
+    {
+      "op": "write_file",
+      "path": "{artifact_dir}/probe-upload.txt",
+      "content": "abb-upload-payload-2026\n"
+    },
+    {
+      "op": "set_input_files",
+      "selector": "#fr-file",
+      "path": "{artifact_dir}/probe-upload.txt"
+    },
+    {
+      "op": "wait_for_function",
+      "expression": "document.getElementById('fr-out').textContent.indexOf('read:') !== -1"
+    },
+    {
+      "op": "text_content",
+      "selector": "#fr-out",
+      "save_as": "answer"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "step_ok",
+      "label": "filereader_done",
+      "step": 4
+    },
+    {
+      "kind": "saved_equals",
+      "label": "client_read",
+      "name": "answer",
+      "expected": "read:24:abb"
+    }
+  ],
+  "cdp_anchors": [
+    "cdp.dom.set_file_input_files",
+    "cdp.runtime.evaluate"
+  ],
+  "expected_answer": {
+    "mode": "equals",
+    "expected": "read:24:abb"
+  },
+  "drivers": [
+    "playwright",
+    "puppeteer"
+  ],
+  "driver_skips": {
+    "chrome_remote_interface": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "cdp_use": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "pydoll": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "stagehand": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chrome_devtools_mcp": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chromedp": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "rod": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "chromiumoxide": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "ferrum": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "agent_browser": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached",
+    "selenium": "adapter op vocabulary has no file-input op (write_file/set_input_files), so the upload payload cannot be attached"
+  }
+}

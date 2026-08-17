@@ -1,0 +1,121 @@
+<!doctype html><html><head><meta charset="utf-8"><title>wpt_a webstorage</title></head>
+<body>
+<div id="out"></div>
+<script>
+// WPT webstorage/ + cookies/ semantics rewritten as a self-hosted mechanism
+// probe. localStorage/sessionStorage/document.cookie behavior is computed at
+// runtime; expected output is server-side only.
+function setOut(v) { document.getElementById("out").textContent = String(v); }
+
+function computeSync(name) {
+  switch (name) {
+    case "local_setget": {
+      localStorage.clear();
+      localStorage.setItem("k", "V1");
+      var got = localStorage.getItem("k");
+      var len = localStorage.length;
+      var k0 = localStorage.key(0);
+      localStorage.removeItem("k");
+      var afterRm = localStorage.getItem("k");
+      var lenAfter = localStorage.length;
+      return got + "|" + len + "|" + k0 + "|" + afterRm + "|" + lenAfter;
+    }
+    case "coerce_string": {
+      localStorage.clear();
+      localStorage.setItem("n", 5);
+      var v = localStorage.getItem("n");
+      return typeof v + ":" + v;
+    }
+    case "overwrite_length": {
+      localStorage.clear();
+      localStorage.setItem("a", "1");
+      localStorage.setItem("a", "2");
+      return localStorage.getItem("a") + ":" + localStorage.length;
+    }
+    case "session_local_independent": {
+      localStorage.clear();
+      sessionStorage.clear();
+      localStorage.setItem("x", "L");
+      sessionStorage.setItem("y", "S");
+      return sessionStorage.getItem("x") + "|" + localStorage.getItem("y") + "|" + sessionStorage.getItem("y");
+    }
+    case "key_order": {
+      // WPT webstorage/storage_key.window.js contract: every in-range index
+      // returns a distinct existing key, out-of-range returns null, and
+      // value-only updates preserve the enumeration order. No specific order
+      // is mandated, so the reported answer is the sorted key set.
+      localStorage.clear();
+      ["c", "a", "b"].forEach(function (k) { localStorage.setItem(k, k); });
+      if (localStorage.length !== 3) return "fail:length=" + localStorage.length;
+      var seen = [];
+      for (var i = 0; i < 3; i++) {
+        var k = localStorage.key(i);
+        if (k === null || ["a", "b", "c"].indexOf(k) === -1) return "fail:key(" + i + ")=" + k;
+        if (seen.indexOf(k) !== -1) return "fail:duplicate:" + k;
+        seen.push(k);
+      }
+      if (localStorage.key(3) !== null) return "fail:key(3)=" + localStorage.key(3);
+      localStorage.setItem(seen[0], "changed-value-only");
+      for (var j = 0; j < 3; j++) {
+        if (localStorage.key(j) !== seen[j]) return "fail:order-changed-at-" + j;
+      }
+      return "ok:" + seen.slice().sort().join(",");
+    }
+    case "removeitem_missing": {
+      localStorage.clear();
+      localStorage.removeItem("nope");
+      return localStorage.length + ":" + localStorage.getItem("nope");
+    }
+    case "cookie_readwrite": {
+      document.cookie = "wptc=VAL1; path=/";
+      var m = /wptc=([^;]+)/.exec(document.cookie || "");
+      return m ? m[1] : "NONE";
+    }
+    case "cookie_multiple": {
+      document.cookie = "c1=A; path=/";
+      document.cookie = "c2=B; path=/";
+      var has1 = /(^|;\s*)c1=A(;|$)/.test(document.cookie);
+      var has2 = /(^|;\s*)c2=B(;|$)/.test(document.cookie);
+      return has1 + ":" + has2;
+    }
+    default:
+      return null;
+  }
+}
+
+function runEvent() {
+  // storage event fires in OTHER same-origin browsing contexts. A same-origin
+  // srcdoc iframe installs the listener; the parent mutates localStorage and
+  // the iframe records the observed key=newValue for the parent to read.
+  var ifr = document.createElement("iframe");
+  ifr.srcdoc =
+    "<script>window.__ev='';addEventListener('storage',function(e){" +
+    "window.__ev=e.key+'='+e.newValue;});<\/script>";
+  ifr.onload = function () {
+    localStorage.clear();
+    localStorage.setItem("evk", "EVVAL");
+    var deadline = Date.now() + 4000;
+    (function poll() {
+      var captured = "";
+      try { captured = ifr.contentWindow.__ev || ""; } catch (e) { captured = "ERR:" + e.message; }
+      if (captured && captured.indexOf("ERR:") !== 0) { setOut(captured); return; }
+      if (Date.now() >= deadline) { setOut(captured ? captured : "NO_EVENT"); return; }
+      setTimeout(poll, 100);
+    })();
+  };
+  document.body.appendChild(ifr);
+}
+
+try {
+  var c = new URLSearchParams(location.search).get("case");
+  if (c === "event_fires") {
+    runEvent();
+  } else {
+    var r = computeSync(c);
+    setOut(r === null ? "UNKNOWN_CASE:" + c : r);
+  }
+} catch (e) {
+  setOut("ERR:" + (e && e.message ? e.message : e));
+}
+</script>
+</body></html>
