@@ -13,7 +13,14 @@
   <a href="README.md">English</a> · <a href="README.zh.md">中文</a>
 </p>
 
-<p align="center"><strong>无头浏览器的下一个使用者是 Agent。</strong></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="https://img.shields.io/badge/%E6%97%A0%E5%A4%B4%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E4%B8%8B%E4%B8%80%E4%B8%AA%E4%BD%BF%E7%94%A8%E8%80%85%E6%98%AF%20Agent%E3%80%82-3D74D9?style=for-the-badge">
+    <img src="https://img.shields.io/badge/%E6%97%A0%E5%A4%B4%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E4%B8%8B%E4%B8%80%E4%B8%AA%E4%BD%BF%E7%94%A8%E8%80%85%E6%98%AF%20Agent%E3%80%82-2050B3?style=for-the-badge"
+         alt="无头浏览器的下一个使用者是 Agent。" />
+  </picture>
+</p>
 
 你现在在 `kitesurf-eval`，也就是 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/) 的评测分支。完整的项目介绍与动机在 [`main`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/main/README.zh.md) 分支：这个 benchmark 为什么存在、四个本地固定二进制引擎的排行榜，以及资源测量。Kitesurf 目前只以远程端点的形态存在，没有二进制摘要，也没有可测量的进程树，证据等级与本地二进制不同（`formal_score_eligible: false`）。这个分支加上第五列、让远程引擎变得可测的那套机制，并在两个明确定义的任务子集上发布对比结果。其余一切（1,928 道任务集、driver、grader 和方法）与 `main` 完全一致。
 
@@ -57,6 +64,8 @@
 
 ## Documentation
 
+<div align="center">
+
 | 文档 | 回答什么 |
 |:---|:---|
 | [docs/kitesurf-deployment.zh.md](docs/kitesurf-deployment.zh.md) | 怎么部署 fixture，怎么跑 Kitesurf lane |
@@ -65,6 +74,8 @@
 | [docs/REPRODUCE.zh.md](docs/REPRODUCE.zh.md) | 怎么复现已发布的 run，怎么重新生成报告 |
 | [docs/RESULTS.zh.md](docs/RESULTS.zh.md) | 结果怎么读：判定边界与适用范围 |
 | [docs/reports/](docs/reports/) | 报告本身，由 run 产物生成 |
+
+</div>
 
 ## 这个分支多了什么
 

@@ -13,7 +13,14 @@
   <a href="README.md">English</a> · <a href="README.zh.md">中文</a>
 </p>
 
-<p align="center"><strong>The next user of the headless browser is the agent.</strong></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="https://img.shields.io/badge/The%20next%20users%20of%20the%20headless%20browser%20are%20agents.-3D74D9?style=for-the-badge">
+    <img src="https://img.shields.io/badge/The%20next%20users%20of%20the%20headless%20browser%20are%20agents.-2050B3?style=for-the-badge"
+         alt="The next users of the headless browser are agents." />
+  </picture>
+</p>
 
 You are on `kitesurf-eval`, the evaluation lane for [Kitesurf](https://blog.cloudflare.com/kitesurf/), the agent-first cloud browser Cloudflare just launched. The [`main`](https://github.com/lexmount/Lexbench-Headless-Browser) branch carries the full story: the benchmark's motivation, the four-engine leaderboard over locally pinned binaries, and the resource measurements. Kitesurf exists only behind a remote endpoint, with no binary digest and no process tree to measure, so its evidence class differs from a local binary (`formal_score_eligible: false`). This branch adds the fifth column, the machinery that makes a remote engine measurable at all, and reports the comparison on two explicitly defined task subsets. Everything else, the 1,928-task set, the drivers, the graders and the methodology, is identical to `main`.
 
@@ -57,6 +64,8 @@ Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Mol
 
 ## Documentation
 
+<div align="center">
+
 | Document | What it answers |
 |:---|:---|
 | [docs/kitesurf-deployment.md](docs/kitesurf-deployment.md) | Deploying the fixtures and running the Kitesurf lane |
@@ -65,6 +74,8 @@ Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Mol
 | [docs/REPRODUCE.md](docs/REPRODUCE.md) | Reproducing the published runs and regenerating their reports |
 | [docs/RESULTS.md](docs/RESULTS.md) | Reading the results: scoring boundaries and limits |
 | [docs/reports/](docs/reports/) | The reports themselves, generated from run artifacts |
+
+</div>
 
 ## What this branch adds
 
