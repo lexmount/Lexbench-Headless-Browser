@@ -56,7 +56,7 @@ python3 tools/kitesurf_experiments.py run raw_full \
 
 ## Boundary declarations
 
-- **Latency budget.** Task timeouts are set to the same caliber as the local engines (30s for most
+- **Latency budget.** Task timeouts are the same as for the local engines (30s for most
   tasks). Your entire path (local machine →
   tunnel → remote endpoint → tunnel → local machine) counts against the budget. A high-latency path
   will push borderline tasks into

@@ -48,7 +48,7 @@ python3 tools/kitesurf_experiments.py run raw_full \
 
 ## 边界声明
 
-- **延迟预算。**任务超时按本地引擎口径设定（多数 30s）。你的链路（本机 →
+- **延迟预算。**任务超时与本地引擎用同一套标准（多数 30s）。你的链路（本机 →
   隧道 → 远程端点 → 隧道 → 本机）全程计入。高延迟链路会把边缘任务推成
   timeout——这是部署属性，不是引擎属性；报告结论前先看
   `runs/<id>/results.jsonl` 里 timeout 的分布。
