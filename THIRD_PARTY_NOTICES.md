@@ -1,6 +1,6 @@
 # Third-party notices
 
-Lexbench-Headless-Browser is licensed under AGPL-3.0. Some benchmark tasks and
+Lexbench-Headless-Browser is licensed under Apache-2.0. Some benchmark tasks and
 self-hosted fixtures were rewritten from Web Platform Tests (WPT), or designed
 with reference to Chromium inspector-protocol tests. The benchmark does not fetch
 or execute either upstream suite at run time; the checked-in task, fixture, and
