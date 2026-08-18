@@ -22,13 +22,12 @@ Every result row carries exactly one status:
 | `timeout` | Task budget exhausted | yes |
 | `crash` | Engine process died | yes |
 | `infra` | Identity gate or environment failed; the engine was never validly reached | no; the row is excluded as harness territory |
-| `chrome_gate_fail` | The Chrome control itself failed in gated modes | no; flags the task, not the candidate |
 
 Failing rows additionally carry `failure.class` and `failure.origin`, so a report can attribute a miss to the protocol surface, the page semantics, the driver stack, or the harness, instead of leaving a bare count.
 
 ## The L1 axis: one behavior, thirteen ecosystems
 
-L1 deliberately repeats behavior across driver stacks, because driver compatibility is the dimension under measurement. 1,233 of the 1,740 L1 tasks are rendered from 116 driver-independent scenario specs, so when an engine passes a scenario under Puppeteer and fails it under Selenium, that difference is the finding.
+L1 deliberately repeats behavior across driver stacks, because driver compatibility is the dimension under measurement. 1,233 of the 1,740 L1 tasks are expanded from 116 driver-independent scenario specs, so when an engine passes a scenario under Puppeteer and fails it under Selenium, that difference is the finding.
 
 Read a whole-column zero as a bootstrap failure, not as 92 separate misses: the stack cannot complete its session handshake against that engine, and every task behind the handshake is unreachable. The reports attribute each zero column to its root cause.
 
@@ -59,9 +58,9 @@ Resource figures come from the separate A/B-calibrated round documented in [reso
 - Filled values are medians; the resource card also carries p95 values, PSS deltas, process counts and fixture traffic.
 - A remote engine has no process tree on the measuring machine. An empty cell means unmeasurable, never zero.
 
-## Five engines and the calibers
+## The five-engine comparison
 
-The main branch reports four locally pinned binaries. The [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch adds Kitesurf, a remote endpoint, and publishes its comparison under two explicit calibers: caliber A drops the subsets whose failures cannot be attributed across a remote boundary, and caliber B further drops subsets that are systematically blocked end to end. The caliber definitions, the adjudication rule and the five-engine table live in that branch's report; the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
+The main branch reports four locally pinned binaries. The [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch adds Kitesurf, a remote endpoint, and publishes its comparison on explicitly defined task subsets: first dropping the subsets whose failures cannot be attributed across a remote boundary, then further dropping subsets that are systematically blocked end to end. The subset definitions, the adjudication rule and the five-engine table live in that branch's report; the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
 
 ## Why these mechanisms
 
