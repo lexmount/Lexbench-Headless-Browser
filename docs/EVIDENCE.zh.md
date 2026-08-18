@@ -30,8 +30,11 @@
 
 ## Release 资产
 
-挂在 [v0.5.0](https://github.com/lexmount/Lexbench-Headless-Browser/releases/tag/v0.5.0)
-上。每个 `evidence-*` 包含一次 run 的 `results.jsonl`、`host_telemetry.jsonl` 和
+挂在 [evidence-20260812](https://github.com/lexmount/Lexbench-Headless-Browser/releases/tag/evidence-20260812)
+上。这个 tag 命名的是采集时间而不是代码状态：这批 run 采集于 2026-08-12 和 08-13，
+而 tag 指向的那棵树比它们更晚。
+
+每个 `evidence-*` 包含一次 run 的 `results.jsonl`、`host_telemetry.jsonl` 和
 `scorecard.md`；每个 `artifacts-*` 包含该次 run 每个 attempt 的原始协议日志，第三方
 因此可以审计某一次失败的协议交互，而不只是看结果行。
 
