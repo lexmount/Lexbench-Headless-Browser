@@ -38,6 +38,7 @@ Attached to [evidence-20260812](https://github.com/lexmount/Lexbench-Headless-Br
 a tag that names when the runs were collected rather than the state of the
 code: the runs date from 2026-08-12 and 2026-08-13, while the tree the tag
 points at is later than that.
+
 Each `evidence-*` archive holds one run's `results.jsonl`,
 `host_telemetry.jsonl` and `scorecard.md`; each `artifacts-*` archive holds
 that run's per-attempt protocol logs, which is what lets a third party audit an
