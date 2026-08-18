@@ -12,7 +12,7 @@ Every number in the reports traces back to one of three runs. This page records 
 | `resource_baseline_20260812` | Resource round A | `l1.raw_cdp` + `l2.web_platform`, 557 tasks | 5 | 1 | off |
 | `resource_engine_20260812` | Resource round B | same 557 tasks | 5 | 1 | on |
 
-Run parameters: bench `2026.08.02-v0_4.1`, seed `official20260709`, `--score-mode independent --chrome-baseline best_effort`, engines `chrome,moli,lightpanda,obscura`. Engine pins (version and sha256) are listed in each report's provenance table and enforced by `doctor`; where to get each binary — [Moli](https://github.com/lexmount/moli), [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/), [Lightpanda](https://github.com/lightpanda-io/browser), [Obscura](https://github.com/h4ckf0r0day/obscura) — and where to place it are covered in [RUNNING.md](RUNNING.md). The commands below are taken verbatim from each run's recorded `argv` in its `run_manifest.json`.
+Run parameters: bench `2026.08.02-v0_4.1`, seed `official20260709`, `--score-mode independent --chrome-baseline best_effort`, engines `chrome,moli,lightpanda,obscura`. Engine pins (version and sha256) are listed in each report's provenance table and enforced by `doctor`; where to get each binary ([Moli](https://github.com/lexmount/moli), [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/), [Lightpanda](https://github.com/lightpanda-io/browser), [Obscura](https://github.com/h4ckf0r0day/obscura)) and where to place it are covered in [RUNNING.md](RUNNING.md). The commands below are taken verbatim from each run's recorded `argv` in its `run_manifest.json`.
 
 The functional run:
 
@@ -78,6 +78,6 @@ Run directories are not committed (`runs/` is ignored; the three published ones 
 Work down this ladder before concluding anything about a browser:
 
 1. Compare `run_manifest.json` digests and engine sha256 values against the published ones. Different pins mean you measured different software, which is an answer, not an error.
-2. Check `doctor` was green and no rows are `infra` or `chrome_gate_fail` in unexpected volume. Identity failures are environment problems.
+2. Check `doctor` was green and no rows are `infra` in unexpected volume. Identity failures are environment problems.
 3. For functional scores, small flake-level differences show up as tasks passing k=2 of 3; the all-attempts-pass rule makes the headline number sensitive to real instability, which is intentional.
 4. For resource numbers, confirm `resource_comparison_eligible: true` in your own round B. Numbers from an ineligible round are not comparable with anyone's, including ours. Resource figures also never extrapolate beyond the 557-task set.

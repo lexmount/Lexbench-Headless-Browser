@@ -8,7 +8,7 @@
 
 Headline 通过率把一道题计为通过的条件是全部 k 次 attempt 都通过（已发布 run 的 k=3）。过了两次、超时一次的题按失败计。让 headline 对不稳定敏感是有意的：agent 重试一个抖动的操作，消耗预算的方式和撞上硬失败没有区别。
 
-每个引擎只按自己的 attempt 计分（`--score-mode independent`）。Chrome 是参照列，不是门。另一种模式 `--chrome-baseline required` 会把 Chrome 失败的题从所有引擎的分母中剔除，从而把 Chrome 那列构造性地推向 100%——这正是发布 run 采用 `best_effort` 的原因：Chrome 的 99.90% 是测出来的值，它挂掉的那两道题留在所有人的分母里。
+每个引擎只按自己的 attempt 计分（`--score-mode independent`）。Chrome 是参照列，不是门。另一种模式 `--chrome-baseline required` 会把 Chrome 失败的题从所有引擎的分母中剔除，从而把 Chrome 那列构造性地推向 100%，这正是发布 run 采用 `best_effort` 的原因：Chrome 的 99.90% 是测出来的值，它挂掉的那两道题留在所有人的分母里。
 
 ## 状态分类
 
@@ -22,13 +22,12 @@ Headline 通过率把一道题计为通过的条件是全部 k 次 attempt 都�
 | `timeout` | 任务预算耗尽 | 计 |
 | `crash` | 引擎进程死亡 | 计 |
 | `infra` | 身份门或环境失败，引擎没有被有效连接 | 不计；该行划归框架侧 |
-| `chrome_gate_fail` | 门控模式下 Chrome 对照自身失败 | 不计；标记的是题，不是候选引擎 |
 
 失败行还带 `failure.class` 和 `failure.origin`，报告因此能把一次失误归因到协议面、页面语义、driver 栈或框架自身，而不是只给一个裸计数。
 
-## L1 轴：同一个行为，十三个生态
+## L1 轴：同一个行为，13 个生态
 
-L1 刻意让同一行为跨 driver 重复，因为 driver 兼容性正是被测量的维度。1,740 道 L1 里的 1,233 道由 116 个与 driver 无关的 scenario spec 渲染而来，所以当一个引擎在 Puppeteer 下通过、在 Selenium 下失败时，这个差值本身就是发现。
+L1 刻意让同一行为跨 driver 重复，因为 driver 兼容性正是被测量的维度。1,740 道 L1 里的 1,233 道由 116 个与 driver 无关的 scenario spec 展开而来，所以当一个引擎在 Puppeteer 下通过、在 Selenium 下失败时，这个差值本身就是发现。
 
 整列为零要读作 bootstrap 失败，而不是 92 次独立失误：这个栈对该引擎连会话握手都完成不了，握手之后的所有题都够不着。报告会把每个零列归因到根因。
 
@@ -59,9 +58,9 @@ L2 按行为判语义。fixture 跑在框架自己的服务器上，由服务端
 - 实心值是中位数；资源卡片里还有 p95、PSS 增量、进程数和 fixture 流量。
 - 远程引擎在测量机上没有进程树。空单元格的意思是无法测量，永远不是零。
 
-## 五引擎与口径
+## 五引擎对比
 
-main 分支报告四个本地固定二进制。[`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支加入远程端点 Kitesurf，并在两个显式口径下发布对比：口径 A 剔除跨远程边界后失败无法归因的 subset，口径 B 进一步剔除端到端系统性阻塞的 subset。口径定义、裁定规则和五引擎表都在那个分支的报告里；一句话版本是：远程端点只有在显式声明的分母之内才可比。
+main 分支报告四个本地固定二进制。[`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支加入远程端点 Kitesurf，并在显式定义的可比任务子集上发布对比：先剔除跨远程边界后失败无法归因的 subset，再进一步剔除端到端系统性阻塞的 subset。子集定义、裁定规则和五引擎表都在那个分支的报告里；一句话版本是：远程端点只有在显式声明的分母之内才可比。
 
 ## 为什么测这些机制
 

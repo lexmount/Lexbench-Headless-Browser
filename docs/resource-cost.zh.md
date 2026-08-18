@@ -66,8 +66,8 @@ python3 -m runner.run run \
 
 三个 scope 不混算：
 
-- `engine_scope`：engine root 及全部 descendants，是所选引擎的主对比口径。
-- `harness_scope`：driver、adapter、grader 等控制成本；不计入 engine 主口径。
+- `engine_scope`：engine root 及全部 descendants，是所选引擎资源对比的主对象。
+- `harness_scope`：driver、adapter、grader 等控制成本；不计入 engine 侧的主对比。
 - `host_scope`：整机环境与污染证据，只用于可比性和归因。
 
 Warm attempt 至少记录：
@@ -100,7 +100,7 @@ baseline/end 两点会显式写 `baseline_end_only`，不能把它解释成连�
 
 资源采集异常被隔离在 profiler 内：task 的功能状态仍由原 driver/grader 决定。
 
-## Fixture 流量口径
+## Fixture 流量的统计范围
 
 Phase 1 的 portable 真值来自自托管 fixture server：
 

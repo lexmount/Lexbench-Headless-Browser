@@ -69,7 +69,7 @@ sampling frequency.
 
 The three scopes are never mixed:
 
-- `engine_scope`: the engine root plus all descendants — the primary comparison basis for the selected engine.
+- `engine_scope`: the engine root plus all descendants, the primary comparison basis for the selected engine.
 - `harness_scope`: control costs such as the driver, adapters, and grader; not counted in the primary engine basis.
 - `host_scope`: whole-machine environment and pollution evidence, used only for comparability and attribution.
 
@@ -100,7 +100,7 @@ Permission errors or unconfirmable read failures write `unavailable.pss` and are
 `/proc/PID/task/TID/children` is walked. PSS files are read in parallel to lower the observer
 wall overhead, while each reader thread's CPU is counted into `sampler_cpu_ms`.
 `pss_peak_bytes` is the maximum over all PSS samples of the attempt; if a short task has only the
-two baseline/end points, `baseline_end_only` is written explicitly — it must not be interpreted as
+two baseline/end points, `baseline_end_only` is written explicitly; it must not be interpreted as
 an instantaneous peak from continuous sampling.
 
 Resource-collection anomalies are isolated inside the profiler: the task's functional status is
