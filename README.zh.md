@@ -22,7 +22,7 @@
   </picture>
 </p>
 
-<p align="center"><b>1,928 道 task · <a href="#benchmark-composition">Playwright、Puppeteer、Selenium 等 13 个浏览器自动化工具</a> · 5 个语言生态</b></p>
+<p align="center"><b>1,928 道 task · <a href="#benchmark-composition">Playwright、Puppeteer、Selenium 等 13 个浏览器自动化工具</a></b></p>
 
 Agent 正在接管搜索、比价、填表、下单这些原本由人完成的网页操作。页面不再渲染给人看：Agent 在里面读状态、执行操作、取回结果，浏览器成了 Agent 的运行时。
 
@@ -54,11 +54,6 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 
 </div>
 
-本次 run 的参数：run id `four_engine_full_20260812`，bench tag `2026.08.02-v0_4.1`，seed `official20260709`，k=3，共 23,136 条结果行。一道题三次 attempt 全部通过才算通过。每个引擎只按自己的 attempt 计分（`--score-mode independent`），Chrome 是参照列。完整报告见 [docs](docs/reports/four-engine-report-20260812.md)。
-
-> [!NOTE]
-> 如果你关心 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/)，它的评测在 [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支。Kitesurf 目前只以远程端点形态存在，没有二进制摘要、无法测量资源，五引擎结果在该分支发布。
-
 <details>
 <summary><b>五引擎结果速览（含 Kitesurf，1,308 道可比任务子集）</b></summary>
 
@@ -69,6 +64,8 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
   </picture>
 </div>
 
+<div align="center">
+
 | 引擎 | 可比子集（1,308 道） |
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,306 / 1,308 · **99.85%** |
@@ -77,9 +74,16 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 697 / 1,308 · **53.29%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 587 / 1,308 · **44.88%** |
 
+</div>
+
 这份对比取同一份 1,928 道任务集的一个子集：剔除面对远程端点失败无法归因的题，剔除对五个引擎一视同仁；剔除不代表这些题在 Kitesurf 提供本地二进制后就一定能通过。子集定义和完整报告见 [`kitesurf-eval` 分支](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md)。
 
 </details>
+
+本次 run 的参数：run id `four_engine_full_20260812`，bench tag `2026.08.02-v0_4.1`，seed `official20260709`，k=3，共 23,136 条结果行。一道题三次 attempt 全部通过才算通过。每个引擎只按自己的 attempt 计分（`--score-mode independent`），Chrome 是参照列。完整报告见 [docs](docs/reports/four-engine-report-20260812.md)。
+
+> [!NOTE]
+> 如果你关心 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/)，它的评测在 [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支。Kitesurf 目前只以远程端点形态存在，没有二进制摘要、无法测量资源，五引擎结果在该分支发布。
 
 ## Resource Cost
 
@@ -105,6 +109,8 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 
 13 个 driver 横跨五个语言生态，版本全部固定在 [`harness_pins.json`](harness_pins.json)，`doctor` 在每次 run 前逐一校验：
 
+<div align="center">
+
 | Driver | 生态 | 控制路径 | 版本 pin |
 |:---|:---|:---|:---|
 | [playwright-core](https://github.com/microsoft/playwright) | Node | CDP（框架 API） | 1.61.1 |
@@ -120,6 +126,8 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 | [ferrum](https://github.com/rubycdp/ferrum) | Ruby | CDP（生态 driver） | 0.17.2 |
 | [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) | Node | MCP → Puppeteer → CDP | 1.6.0 |
 | [agent-browser](https://github.com/vercel-labs/agent-browser) | Node | CLI 会话 → CDP | 0.31.1 |
+
+</div>
 
 任务集由 `manifest.json` 固定：同一个 bench 版本内任务内容冻结，任何改动都必须提升版本号。任务集会随引擎和 driver 生态的演进持续扩充，新增的 subset 和 task 以新的 bench 版本发布。
 
@@ -137,6 +145,8 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 
 ## Documentation
 
+<div align="center">
+
 | 文档 | 回答什么 |
 |:---|:---|
 | [docs/RUNNING.zh.md](docs/RUNNING.zh.md) | 怎么装引擎和 driver，怎么把 bench 跑起来 |
@@ -144,7 +154,11 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 | [docs/RESULTS.zh.md](docs/RESULTS.zh.md) | 结果怎么读：判定边界与适用范围 |
 | [docs/reports/](docs/reports/) | 报告本身，由 run 产物生成 |
 
+</div>
+
 ## Repository Layout
+
+<div align="center">
 
 | 路径 | 内容 |
 |:---|:---|
@@ -157,6 +171,8 @@ Lexbench-Headless-Browser 把这个前提变成可以测的东西：每道 task 
 | [`harness_pins.json`](harness_pins.json) | 各生态的 driver 版本 pin |
 | [`test/`](test/) | 框架单元测试（stdlib + pytest，不需要引擎二进制） |
 | [`docs/`](docs/) | 怎么跑、怎么复现、结果怎么读，以及报告 |
+
+</div>
 
 ## License
 
