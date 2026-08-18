@@ -22,7 +22,7 @@
   </picture>
 </p>
 
-<p align="center"><b>1,928 tasks · <a href="#benchmark-composition">13 browser automation tools including Playwright, Puppeteer and Selenium</a> · 5 language ecosystems</b></p>
+<p align="center"><b>1,928 tasks · <a href="#benchmark-composition">13 browser automation tools including Playwright, Puppeteer and Selenium</a></b></p>
 
 Agents are taking over the web chores that used to be done by hand: searching, comparing prices, filling forms, placing orders. The page is no longer rendered for a person to look at: the agent reads state, performs operations and collects results inside it, and the browser has become the agent's runtime.
 
@@ -54,11 +54,6 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 
 </div>
 
-Run parameters: run id `four_engine_full_20260812`, bench tag `2026.08.02-v0_4.1`, seed `official20260709`, k=3, 23,136 result rows. A task counts as passed only when all three attempts pass. Each engine is scored on its own attempts (`--score-mode independent`); Chrome is the reference column. Full report: [docs/reports/four-engine-report-20260812.md](docs/reports/four-engine-report-20260812.md).
-
-> [!NOTE]
-> If you care about [Kitesurf](https://blog.cloudflare.com/kitesurf/), the agent-first cloud browser Cloudflare just launched, its evaluation lives on the [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch. Kitesurf currently exists only as a remote endpoint, with no binary digest and no resource measurement, so its evidence class differs from a locally pinned binary (`formal_score_eligible: false`) and the five-engine results are published on that branch.
-
 <details>
 <summary><b>Five-engine results at a glance (with Kitesurf, on a 1,308-task comparable subset)</b></summary>
 
@@ -69,6 +64,8 @@ Run parameters: run id `four_engine_full_20260812`, bench tag `2026.08.02-v0_4.1
   </picture>
 </div>
 
+<div align="center">
+
 | Engine | Comparable subset (1,308 tasks) |
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,306 / 1,308 · **99.85%** |
@@ -77,9 +74,16 @@ Run parameters: run id `four_engine_full_20260812`, bench tag `2026.08.02-v0_4.1
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 697 / 1,308 · **53.29%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 587 / 1,308 · **44.88%** |
 
+</div>
+
 This comparison uses a subset of the same 1,928-task set: tasks whose failures cannot be attributed when the engine is a remote endpoint are removed, and the removal applies to all five engines alike; removing a task does not mean Kitesurf would pass it once a local binary ships. The subset definition and the full report are on the [`kitesurf-eval` branch](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md).
 
 </details>
+
+Run parameters: run id `four_engine_full_20260812`, bench tag `2026.08.02-v0_4.1`, seed `official20260709`, k=3, 23,136 result rows. A task counts as passed only when all three attempts pass. Each engine is scored on its own attempts (`--score-mode independent`); Chrome is the reference column. Full report: [docs/reports/four-engine-report-20260812.md](docs/reports/four-engine-report-20260812.md).
+
+> [!NOTE]
+> If you care about [Kitesurf](https://blog.cloudflare.com/kitesurf/), the agent-first cloud browser Cloudflare just launched, its evaluation lives on the [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch. Kitesurf currently exists only as a remote endpoint, with no binary digest and no resource measurement, and the five-engine results are published on that branch.
 
 ## Resource Cost
 
@@ -98,12 +102,16 @@ Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Mol
 
 ## Documentation
 
+<div align="center">
+
 | Document | What it answers |
 |:---|:---|
 | [docs/RUNNING.md](docs/RUNNING.md) | Installing the engines and drivers, and running the bench |
 | [docs/REPRODUCE.md](docs/REPRODUCE.md) | Reproducing the published runs and regenerating their reports |
 | [docs/RESULTS.md](docs/RESULTS.md) | Reading the results: scoring boundaries and limits |
 | [docs/reports/](docs/reports/) | The reports themselves, generated from run artifacts |
+
+</div>
 
 ## Benchmark Composition
 
@@ -113,6 +121,8 @@ Current bench version `2026.08.17-v0_4.2`: 1,928 tasks in 18 subsets, on two lay
 - L2 measures web-platform semantics (188 tasks, 182 of which form the `l2.web_platform` subset). It covers DOM, storage, network, workers and CSSOM, and judges by what the page finally does rather than by protocol echo: a call that returns success while nothing happens on the page does not pass. The rows fold through a capability map into 72 capabilities; capabilities with semantic probes are scored per attempt (k=3), giving the 192 scoring units in the report's L2 row.
 
 The 13 drivers span five language ecosystems. Every version is pinned in [`harness_pins.json`](harness_pins.json) and verified by `doctor` before each run:
+
+<div align="center">
 
 | Driver | Ecosystem | Control path | Pinned version |
 |:---|:---|:---|:---|
@@ -130,6 +140,8 @@ The 13 drivers span five language ecosystems. Every version is pinned in [`harne
 | [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) | Node | MCP → Puppeteer → CDP | 1.6.0 |
 | [agent-browser](https://github.com/vercel-labs/agent-browser) | Node | CLI session → CDP | 0.31.1 |
 
+</div>
+
 The task set is fixed by `manifest.json`: task content is frozen inside a bench version, and any change requires a version bump. The set will keep growing as engines and the driver ecosystem evolve, with new subsets and tasks shipped under new bench versions.
 
 ## Methodology
@@ -146,6 +158,8 @@ Functional and resource rounds never share a run. Resource figures come from the
 
 ## Repository Layout
 
+<div align="center">
+
 | Path | Contents |
 |:---|:---|
 | [`runner/`](runner/) | The harness: `run.py` (orchestration), `resources.py`, `bindings.py`, `scenario.py`, and the 13 driver adapters under `scripts/adapters/` |
@@ -157,6 +171,8 @@ Functional and resource rounds never share a run. Resource figures come from the
 | [`harness_pins.json`](harness_pins.json) | Pinned driver versions per ecosystem |
 | [`test/`](test/) | Harness unit tests (stdlib + pytest, no engine binaries needed) |
 | [`docs/`](docs/) | How to run, how to reproduce, how to read the results, and the reports |
+
+</div>
 
 ## License
 
