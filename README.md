@@ -117,8 +117,16 @@ Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Mol
 
 Current bench version `2026.08.17-v0_4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above remains pinned to `2026.08.02-v0_4.1`; the current version changes task descriptions and non-executable metadata, not task membership, drivers, graders, fixtures, or capability assignments.
 
-- L1 measures protocol and driver compatibility (1,740 tasks). The paths are raw CDP (`l1.raw_cdp`, 375 tasks, speaking the protocol directly on the websocket with no driver library) plus the 13 pinned drivers in the table below. 1,233 of the tasks are expanded from 116 scenario specs across the 13 drivers, so one behavior is tested once in every ecosystem; not every behavior is expressible on every driver, and a spec must record an explicit skip reason for each driver it does not bind, which `scenarios --check` verifies.
-- L2 measures web-platform semantics (188 tasks, 182 of which form the `l2.web_platform` subset). It covers DOM, storage, network, workers and CSSOM, and judges by what the page finally does rather than by protocol echo: a call that returns success while nothing happens on the page does not pass. The rows fold through a capability map into 72 capabilities; capabilities with semantic probes are scored per attempt (k=3), giving the 192 scoring units in the report's L2 row.
+**L1 measures protocol and driver compatibility (1,740 tasks) across two paths:**
+
+- Raw CDP (`l1.raw_cdp`, 375 tasks), speaking the protocol directly on the websocket with no driver library.
+- The 13 pinned drivers in the table below. 1,233 of the tasks are expanded from 116 scenario specs across the 13 drivers, so one behavior is tested once in every ecosystem; not every behavior is expressible on every driver, and a spec must record an explicit skip reason for each driver it does not bind, which `scenarios --check` verifies.
+
+**L2 measures web-platform semantics (188 tasks, 182 of which form the `l2.web_platform` subset):**
+
+- It covers DOM, storage, network, workers and CSSOM.
+- It judges by what the page finally does rather than by protocol echo: a call that returns success while nothing happens on the page does not pass.
+- The rows fold through a capability map into 72 capabilities; capabilities with semantic probes are scored per attempt (k=3), giving the 192 scoring units in the report's L2 row.
 
 The 13 drivers span five language ecosystems. Every version is pinned in [`harness_pins.json`](harness_pins.json) and verified by `doctor` before each run:
 
