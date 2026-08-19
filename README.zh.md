@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://x.com/LexmountAI"><img src="https://img.shields.io/badge/X-%40LexmountAI-000000?style=flat&logo=x&logoColor=white" alt="在 X 上关注 @LexmountAI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-2F80ED.svg" alt="许可证：AGPL-3.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-2F80ED.svg" alt="许可证：Apache-2.0"></a>
 </p>
 
 <p align="center">
@@ -196,4 +196,4 @@ python3 -m runner.run run --subset l1.raw_cdp --tag purpose.smoke \
 
 ## 许可证
 
-AGPL-3.0，见 [LICENSE](LICENSE)。上游 task 与 fixture 的署名和许可信息集中保留在 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Apache-2.0，见 [LICENSE](LICENSE)。上游 task 与 fixture 的署名和许可信息集中保留在 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

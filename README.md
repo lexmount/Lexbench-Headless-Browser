@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://x.com/LexmountAI"><img src="https://img.shields.io/badge/X-%40LexmountAI-000000?style=flat&logo=x&logoColor=white" alt="Follow @LexmountAI on X"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-2F80ED.svg" alt="License: AGPL-3.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-2F80ED.svg" alt="License: Apache-2.0"></a>
 </p>
 
 <p align="center">
@@ -196,4 +196,4 @@ Functional and resource rounds never share a run. Resource figures come from the
 
 ## License
 
-AGPL-3.0. See [LICENSE](LICENSE). Upstream task and fixture attributions are retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Apache-2.0. See [LICENSE](LICENSE). Upstream task and fixture attributions are retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
