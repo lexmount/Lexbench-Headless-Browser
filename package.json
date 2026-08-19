@@ -1,6 +1,6 @@
 {
   "name": "lexbench-headless-browser-harness",
-  "version": "0.5.0",
+  "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
   "description": "Pinned framework drivers for Browser Runtime Bench: real Playwright / Puppeteer connect-over-CDP harness. Versions are locked in harness_pins.json; install with `npm ci`.",
