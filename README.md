@@ -100,6 +100,18 @@ Because observing a process can itself distort the numbers, the measurement is a
 
 Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU time per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
 
+## Quick Start
+
+Prerequisites: Linux with cgroup v2, Python 3.11+, Node 20, and one engine binary in place (where to get and put it: [docs/RUNNING.md](docs/RUNNING.md)). Then two commands:
+
+```bash
+npm ci
+python3 -m runner.run run --subset l1.raw_cdp --tag purpose.smoke \
+  --engines chrome --score-mode independent --seed smoke
+```
+
+A smoke round finishes in minutes, with per-task pass/fail in `runs/<run-id>/results.jsonl` (a single-engine run verifies the environment and is never formally scored). In a hurry? Hand [docs/RUNNING.md](docs/RUNNING.md) to your coding agent and let it set up the environment and run the bench for you.
+
 ## Documentation
 
 <div align="center">

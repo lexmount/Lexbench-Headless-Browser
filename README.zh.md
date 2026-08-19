@@ -151,6 +151,18 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 
 `run_manifest.json` 记录了 runner 源码树、fixture 树和编译后 adapter 二进制的摘要，任何人都能核对某次 run 到底由哪份代码产出。时间戳统一使用 UTC；结果行不包含绝对路径；使用 `--provenance-level minimal` 时只保留硬件事实、去掉部署指纹。
 
+## 快速开始
+
+前提：Linux（启用 cgroup v2）、Python 3.11+、Node 20，以及一个引擎二进制（获取与放置位置见 [docs/RUNNING.zh.md](docs/RUNNING.zh.md)）。然后两条命令：
+
+```bash
+npm ci
+python3 -m runner.run run --subset l1.raw_cdp --tag purpose.smoke \
+  --engines chrome --score-mode independent --seed smoke
+```
+
+几分钟跑完一轮冒烟测试，每道题的 pass/fail 都在 `runs/<run-id>/results.jsonl` 里（单引擎 run 用于验证环境，不计正式分）。想更省事：把 [docs/RUNNING.zh.md](docs/RUNNING.zh.md) 直接交给你的 coding agent，让它照着文档装好环境、替你把 bench 跑起来。
+
 ## 文档
 
 <div align="center">
