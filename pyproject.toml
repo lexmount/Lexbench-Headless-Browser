@@ -1,6 +1,6 @@
 [project]
 name = "lexbench-headless-browser"
-version = "0.5.0"
+version = "0.1.0"
 description = "Agent Browser Bench: a native-capability benchmark for browser runtimes across real automation driver stacks (CDP, WebDriver, and framework clients)"
 readme = "README.md"
 requires-python = ">=3.11"
