@@ -276,6 +276,7 @@ Lexbench-Headless-Browser/
     _fakes.py                    # FakeCDP (scripted HTTP+WS) / StubProc / task & manifest factories
     _stub_scripts/stub.js        # mode-switched node stub for node_cdp_probe (no real CDP connection)
     test_unit_validate.py        # §2: good+bad for every validate rule
+    test_unit_versioning.py      # dataset (bench_version) and harness version: shapes, single source, run_manifest
     test_unit_gate_score.py      # §5: Chrome baseline priority / 5 score_eligible reasons / should_include_score
     test_unit_checks.py          # §2: all grade_inline kinds / seed determinism / parse_engines / placeholder substitution
     test_fixture_server.py       # §7: static serving / routing / directory-traversal blocking / expected_answer / anti-cheating

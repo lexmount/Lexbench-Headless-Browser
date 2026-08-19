@@ -1,6 +1,6 @@
 {
   "bench_id": "agent_browser_bench",
-  "bench_version": "2026.08.17-v0_4.2",
+  "bench_version": "0.4.2",
   "default_k_runs": 1,
   "engine_policy": "repo_build_artifacts_pinned_binaries",
   "engines": {
@@ -148,7 +148,6 @@
   "root_dir": "Lexbench-Headless-Browser",
   "site": {
     "base_url": "http://127.0.0.1:{port}",
-    "kind": "self_hosted_fixture",
-    "site_version": "2026.07.10-fixtures"
+    "kind": "self_hosted_fixture"
   }
 }

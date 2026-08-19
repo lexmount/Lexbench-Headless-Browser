@@ -77,6 +77,24 @@ L2 选的机制是生产页面真实依赖的，并配了第三方使用数据�
 - **客户端存储是沉默的基础设施。** Chrome 最后一批公开计数显示：19.3% 的页面加载执行了 IndexedDB 读、16.6% 执行了写（[bucket 3023](https://chromestatus.com/metrics/feature/timeline/popularity/3023)、[bucket 3024](https://chromestatus.com/metrics/feature/timeline/popularity/3024)）；Firestore 的 web 离线持久化底层就是 IndexedDB（[文档](https://firebase.google.com/docs/firestore/manage-data/enable-offline)）。促成这批题的正是 Agent 场景特有的失败方式：引擎对缺失的存储 API **优雅降级**，页面照常渲染但数据为空，Agent 会自信地给出错误答案而不是报错——只有存储语义题能暴露这一点。
 - **driver 的交互原语直接消费 layout 和 computed style。** Playwright 的 actionability 规则要求每次 click/fill 前有非空 bounding box、computed 可见性和 hit-target 检查（[playwright.dev/docs/actionability](https://playwright.dev/docs/actionability)）。样式或布局不完整的引擎，丢掉的不是某一道题，而是**框架自动等待与点击的底座**。Lightpanda 自己的文档写明其 Web API 覆盖不完整（[lightpanda.io/docs](https://lightpanda.io/docs/)），与它 L2 失误的聚集位置一致。
 
+## 版本号
+
+两个数字，回答两个问题。
+
+**数据集 —— `manifest.json` 里的 `bench_version`，当前 `0.4.2`。** 它标识**测的是什么**：有哪些 task，以及它们跑在哪些 driver、grader、fixture 和 capability 归属上。它存在的意义就是回答"两次 run 能不能比"，因此按"这次改动对可比性做了什么"来递增：
+
+| 递增位 | 改了什么 | 对已发布数字的影响 |
+|:---|:---|:---|
+| MAJOR | 任务集、grader、fixture 或 capability 归属 | 不可比，分母变了 |
+| MINOR | 纯新增——加 task 或子集，原有的不动 | 原有子集仍可比 |
+| PATCH | task 描述及其他不参与执行的元数据 | 完全可比 |
+
+fixture 树属于这条轴：改 fixture 会改结果，所以算 MAJOR。每次 run 都记录 `runner.fixtures.tree_sha256`，这条声明因此是可核对的，而不只是写在文档里。
+
+**Harness —— `runner/version.py`，当前 `0.1.0`。** 跑这个数据集的代码，`pyproject.toml` 与 `package.json` 与之同步。它递增不改变被测对象，因此跨 harness 版本的 run 仍然可比。run 会把它记为 `harness_version`。
+
+这套方案之前的 run 记的是带日期的旧标签：三次已发布的 run 记录为 `2026.08.02-v0_4.1`，在这里就是 `0.4.1`，它与 `0.4.2` 的差异是 PATCH——只改了描述，完全可比。另外，这两个数字都不是可复现性的承重墙：`run_manifest.json` 用 sha256 固定了 manifest、fixture 树、runner 源码树和 capability map，重跑时被核对的是这些摘要；版本号只是让读者可以不做这一步核对的标签。
+
 ## 边界
 
 - **截图、PDF 与光栅输出不在当前测量范围内。** 这是**暂缓**而不是永久结论：这条边界划定于候选引擎普遍还没有 paint 管线的时期，已列入重新评估。这里的一切都不测像素正确性。

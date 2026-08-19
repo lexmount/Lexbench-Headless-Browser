@@ -102,7 +102,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 
 ## 测试集构成
 
-当前 bench 版本 `2026.08.17-v0_4.2`：共 1,928 道 task、18 个子集，分两层（L1 / L2）。上文发布的 run 仍固定在 `2026.08.02-v0_4.1`——本次版本只是调整了 task 描述和不参与执行的元数据，没有改变任务集、driver、grader、fixture 或 capability 归属。
+当前数据集版本 `0.4.2`：共 1,928 道 task、18 个子集，分两层（L1 / L2）。上文发布的 run 仍固定在 `0.4.1`（其 manifest 里记为 `2026.08.02-v0_4.1`，那是版本号统一之前的带日期旧标签）。两者的差异是一个 PATCH：只调整了 task 描述和不参与执行的元数据，没有改变任务集、driver、grader、fixture 或 capability 归属。数据集版本与 harness 版本各自怎么递增，见 [版本号](docs/RESULTS.zh.md#版本号)。
 
 **L1：测协议与 driver 兼容性，共 1,740 道，走两条路径**
 

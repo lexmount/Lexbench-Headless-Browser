@@ -12,7 +12,7 @@
 | `resource_baseline_20260812` | 资源 A 轮 | `l1.raw_cdp` + `l2.web_platform`，557 道 | 5 | 1 | 关 |
 | `resource_engine_20260812` | 资源 B 轮 | 同一批 557 道 | 5 | 1 | 开 |
 
-三次 run 的共同参数：bench 版本 `2026.08.02-v0_4.1`、seed `official20260709`、`--score-mode independent --chrome-baseline best_effort`、引擎 `chrome,moli,lightpanda,obscura`。每个引擎的 pin（版本与 sha256）列在各报告最后的溯源表里，由 `doctor` 强制校验；二进制的获取位置——[Moli](https://github.com/lexmount/moli)、[Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/)、[Lightpanda](https://github.com/lightpanda-io/browser)、[Obscura](https://github.com/h4ckf0r0day/obscura)——与放置路径见 [RUNNING.zh.md](RUNNING.zh.md)。下面的命令逐字取自各 run 的 `run_manifest.json` 里记录的 `argv`（实际启动参数）。
+三次 run 的共同参数：bench 版本 `2026.08.02-v0_4.1`（按当前方案即数据集 `0.4.1`，见[版本号](RESULTS.zh.md#版本号)）、seed `official20260709`、`--score-mode independent --chrome-baseline best_effort`、引擎 `chrome,moli,lightpanda,obscura`。每个引擎的 pin（版本与 sha256）列在各报告最后的溯源表里，由 `doctor` 强制校验；二进制的获取位置——[Moli](https://github.com/lexmount/moli)、[Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/)、[Lightpanda](https://github.com/lightpanda-io/browser)、[Obscura](https://github.com/h4ckf0r0day/obscura)——与放置路径见 [RUNNING.zh.md](RUNNING.zh.md)。下面的命令逐字取自各 run 的 `run_manifest.json` 里记录的 `argv`（实际启动参数）。
 
 **功能 run：**
 
