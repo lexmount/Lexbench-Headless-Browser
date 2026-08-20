@@ -191,7 +191,11 @@ def build_report(
     out("")
     out(
         f"**Four-engine run** `{manifest.get('run_id')}` · {run_date} · "
-        f"Bench `{manifest.get('bench_version')}` · Kitesurf lane: k=1 + B-class adjudication"
+        f"Bench `{manifest.get('bench_version')}`"
+        # Runs recorded before the harness was versioned carry no harness_version;
+        # their reports keep regenerating byte-identically without one.
+        + (f" · Harness `{manifest['harness_version']}`" if manifest.get("harness_version") else "")
+        + " · Kitesurf lane: k=1 + B-class adjudication"
     )
     out("")
     out(

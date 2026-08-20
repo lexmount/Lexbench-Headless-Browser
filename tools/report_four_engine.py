@@ -145,6 +145,10 @@ def build_report(manifest: dict, rows: list[dict], scores: dict) -> str:
     out(f"# Agent Browser Bench Four-Engine Evaluation (L1 + L2)")
     out("")
     header = f"**Run** `{manifest.get('run_id')}` · {run_date} · Bench `{manifest.get('bench_version')}`"
+    # Runs recorded before the harness was versioned carry no harness_version;
+    # their reports keep regenerating byte-identically without one.
+    if manifest.get("harness_version"):
+        header += f" · Harness `{manifest['harness_version']}`"
     out(header)
     out("")
     engine_names = ", ".join(engine_label(manifest, e) for e in engines)

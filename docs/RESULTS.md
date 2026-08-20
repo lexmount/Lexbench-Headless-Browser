@@ -22,13 +22,12 @@ Every result row carries exactly one status:
 | `timeout` | Task budget exhausted | yes |
 | `crash` | Engine process died | yes |
 | `infra` | Identity gate or environment failed; the engine was never validly reached | no; the row is excluded as harness territory |
-| `chrome_gate_fail` | The Chrome control itself failed in gated modes | no; flags the task, not the candidate |
 
 Failing rows additionally carry `failure.class` and `failure.origin`, so a report can attribute a miss to the protocol surface, the page semantics, the driver stack, or the harness, instead of leaving a bare count.
 
 ## The L1 axis: one behavior, thirteen ecosystems
 
-L1 deliberately repeats behavior across driver stacks, because driver compatibility is the dimension under measurement. 1,233 of the 1,740 L1 tasks are rendered from 116 driver-independent scenario specs, so when an engine passes a scenario under Puppeteer and fails it under Selenium, that difference is the finding.
+L1 deliberately repeats behavior across driver stacks, because driver compatibility is the dimension under measurement. 1,233 of the 1,740 L1 tasks are expanded from 116 driver-independent scenario specs, so when an engine passes a scenario under Puppeteer and fails it under Selenium, that difference is the finding.
 
 Read a whole-column zero as a bootstrap failure, not as 92 separate misses: the stack cannot complete its session handshake against that engine, and every task behind the handshake is unreachable. The reports attribute each zero column to its root cause.
 
@@ -59,9 +58,9 @@ Resource figures come from the separate A/B-calibrated round documented in [reso
 - Filled values are medians; the resource card also carries p95 values, PSS deltas, process counts and fixture traffic.
 - A remote engine has no process tree on the measuring machine. An empty cell means unmeasurable, never zero.
 
-## Five engines and the calibers
+## The five-engine comparison
 
-The main branch reports four locally pinned binaries. This branch, `kitesurf-eval`, adds Kitesurf, a remote endpoint, and publishes its comparison under two explicit calibers: caliber A drops the subsets whose failures cannot be attributed across a remote boundary, and caliber B further drops subsets that are systematically blocked end to end. The caliber definitions, the adjudication rule and the five-engine table live in the [five-engine report](reports/five-engine-report-20260813.md); the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
+The main branch reports four locally pinned binaries. This branch, `kitesurf-eval`, adds Kitesurf, a remote endpoint, and publishes its comparison on explicitly defined task subsets: first dropping the subsets whose failures cannot be attributed across a remote boundary, then further dropping subsets that are systematically blocked end to end. The subset definitions, the adjudication rule and the five-engine table live in the [five-engine report](reports/five-engine-report-20260813.md); the short version is that a remote endpoint is only comparable inside an explicitly stated denominator.
 
 ## Why these mechanisms
 
@@ -72,6 +71,24 @@ The L2 mechanisms are the ones production pages lean on, with third-party usage 
 - Modern selectors are everyday load-bearing surface. Chrome's use counter has pages using `:has()` in 51.7% of page loads as of June 2026, up from 40.6% a year earlier ([chromestatus, bucket 4743](https://chromestatus.com/metrics/css/timeline/popularity/4743)). Project Wallace's 2026 crawl of top-site homepage CSS finds `:has()` in 41.3% of stylesheets, `:nth-child` in 76.8%, `:nth-of-type` in 53.2% ([The CSS Selection 2026](https://www.projectwallace.com/the-css-selection/2026)). A selector evaluated wrongly is a content or visibility state computed wrongly, not a cosmetic blemish.
 - Client-side storage is silent infrastructure. Chrome's last published counters had IndexedDB reads on 19.3% and writes on 16.6% of page loads ([bucket 3023](https://chromestatus.com/metrics/feature/timeline/popularity/3023), [bucket 3024](https://chromestatus.com/metrics/feature/timeline/popularity/3024)); Firestore's web offline persistence is IndexedDB ([docs](https://firebase.google.com/docs/firestore/manage-data/enable-offline)). The agent-relevant failure mode motivated these tasks: an engine that degrades a missing storage API gracefully renders the page anyway with empty data, and the agent confidently reports a wrong answer instead of an error. Only a storage-semantics task exposes that.
 - Driver interaction primitives consume layout and computed style directly. Playwright's actionability rules require a non-empty bounding box, computed visibility and hit-target checks before every click or fill ([playwright.dev/docs/actionability](https://playwright.dev/docs/actionability)). An engine with incomplete style or layout does not lose one task; it loses the framework's waiting and clicking substrate. Lightpanda's own documentation states its Web API coverage is incomplete ([lightpanda.io/docs](https://lightpanda.io/docs/)), consistent with where its L2 misses cluster.
+
+## Versioning
+
+Two numbers, two questions.
+
+**Dataset — `bench_version` in `manifest.json`, currently `0.4.2`.** What was measured: which tasks exist, and which drivers, graders, fixtures and capability assignments they run against. It exists to answer whether two runs are comparable, so it is bumped by what a change would do to a comparison:
+
+| Bump | What changed | Effect on published numbers |
+|:---|:---|:---|
+| MAJOR | Task membership, graders, fixtures, or capability assignments | Not comparable; the denominator moved |
+| MINOR | Additive — new tasks or subsets, existing ones untouched | Existing subsets stay comparable |
+| PATCH | Task descriptions and other non-executable metadata | Fully comparable |
+
+The fixture tree belongs to this axis: editing a fixture changes results, so it is a MAJOR bump. Every run records `runner.fixtures.tree_sha256`, which is what makes that claim checkable rather than declarative.
+
+**Harness — `runner/version.py`, currently `0.1.0`.** The code that runs the dataset, mirrored in `pyproject.toml` and `package.json`. Bumping it does not change what is being measured, so runs stay comparable across it. Runs record it as `harness_version`.
+
+Runs predating this scheme carry a dated label instead: the three published runs record `2026.08.02-v0_4.1`, which is `0.4.1` here, and its difference from `0.4.2` is PATCH — descriptions only, fully comparable. Neither number is what makes a run reproducible. `run_manifest.json` pins the manifest, fixture tree, runner source and capability map by sha256, and those digests are the identity a re-run is checked against; the versions are the labels that let a reader skip the check.
 
 ## Boundaries
 

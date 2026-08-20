@@ -60,7 +60,7 @@ Resource figures cover the four local engines only. Kitesurf runs on shared infr
   </picture>
 </div>
 
-Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
+Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU time per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
 
 ## Documentation
 

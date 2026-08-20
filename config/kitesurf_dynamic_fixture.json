@@ -8,7 +8,7 @@
       "schema": "abb.fixture_deployment.v1",
       "implementation": {
         "path": "runner/run.py",
-        "sha256": "989a85d7071815a806e00b9b9c376465d0c0a417b41f0c7a9471ed70ed61aa9f"
+        "sha256": "4e75c001834036ca4a919aea50750b0a31375639cfa4a7ea46d483cec4f8d618"
       },
       "fixture_root": "fixtures",
       "expected_answers": {
@@ -21,7 +21,7 @@
       }
     }
   },
-  "contract_sha256": "8f3bce264b1f37c5b3c1dc871aa50fd0c41a62c7d3da33ef4f957b00c9f60c58",
+  "contract_sha256": "5c16817f8c0029e5f2124eeca4dda8c9bf76c0f69d4013271594e6ee5aaccc49",
   "static_routes": [
     {
       "path": "/app.js",
@@ -1331,7 +1331,7 @@
       "expect": {
         "status": 200,
         "size": 28728,
-        "sha256": "64048602cdd88ba8162fc1603cf739f453ff01ba70e93efcdd4e332ab1a54e4e",
+        "sha256": "579f17024d0b9f9bafa1b538e493049ded8fc60558168cd7f211259712f371b7",
         "headers": {
           "content-type": "application/json",
           "cache-control": "no-store"
