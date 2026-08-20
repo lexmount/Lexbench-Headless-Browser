@@ -24,7 +24,7 @@
 
 你现在在 `kitesurf-eval`，也就是 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/) 的评测分支。完整的项目介绍与动机在 [`main`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/main/README.zh.md) 分支：这个 benchmark 为什么存在、四个本地固定二进制引擎的排行榜，以及资源测量。Kitesurf 目前只以远程端点的形态存在，没有二进制摘要，也没有可测量的进程树，证据等级与本地二进制不同（`formal_score_eligible: false`）。这个分支加上第五列、让远程引擎变得可测的那套机制，并在两个明确定义的任务子集上发布对比结果。其余一切（1,928 道任务集、driver、grader 和方法）与 `main` 完全一致。
 
-## Results
+## 结果
 
 <div align="center">
   <picture>
@@ -49,7 +49,7 @@
 
 全任务集上的四引擎排行榜（每个引擎都是本地固定二进制、不需要任何剔除的那份）在 [`main`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/main/README.zh.md#results)。
 
-## Resource Cost
+## 资源开销
 
 资源数字只覆盖四个本地引擎。Kitesurf 跑在这套框架并不拥有的共享基础设施上，所以它的 CPU、内存和进程数是无法测量，而不是零；空着的格子也绝不代表便宜。
 
@@ -60,9 +60,9 @@
   </picture>
 </div>
 
-单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 39 MiB、Moli 92 MiB、Chrome 697 MiB。同一批任务的单题引擎 CPU 中位数依次是 36 ms、38 ms、101 ms、687 ms。细节和校准记录见[资源卡片](docs/reports/resource-card-20260812.md)。
+单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 39 MiB、Moli 92 MiB、Chrome 697 MiB；同一批任务的单题引擎 CPU 时间中位数分别是 36 ms、38 ms、101 ms、687 ms。细节与校准记录见[资源卡片](docs/reports/resource-card-20260812.md)。
 
-## Documentation
+## 文档
 
 <div align="center">
 
@@ -86,6 +86,6 @@
 
 先读 [docs/kitesurf-deployment.zh.md](docs/kitesurf-deployment.zh.md)，里面是 fixture 的解析规则和四条命令的流程。等 Kitesurf 提供本地二进制，它就并入主名单，这个分支随之退役。
 
-## License
+## 许可证
 
 Apache-2.0，见 [LICENSE](LICENSE)。上游 task 与 fixture 的署名和许可信息集中保留在 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

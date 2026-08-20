@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The Kitesurf lane asserts that this branch descends from the main
+          # commit recorded in config/kitesurf_experiments.json. A shallow
+          # clone does not contain that commit, so the check errors out.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20

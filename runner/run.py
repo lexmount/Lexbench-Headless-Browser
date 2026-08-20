@@ -36,6 +36,7 @@ if __package__:
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
+    from runner.version import HARNESS_VERSION
 else:
     # Keep the historical direct-script entry point (`python3 runner/run.py`)
     # working as well as the preferred module form (`python3 -m runner.run`).
@@ -43,6 +44,7 @@ else:
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
+    from version import HARNESS_VERSION
 
 
 BENCH_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -2003,6 +2005,16 @@ def validate_manifest(
     for field in ["bench_id", "bench_version", "root_dir", "fallback_allowed", "default_k_runs", "site", "engines", "layers"]:
         if field not in suite:
             errors.append(f"{manifest_path}: missing required field `{field}`")
+    # The dataset version is the one number that tells a reader whether two runs
+    # are comparable, so its shape is enforced rather than left to convention.
+    # MAJOR: task membership, graders, fixtures or capability assignments moved.
+    # MINOR: additive, existing subsets unchanged. PATCH: descriptions and other
+    # non-executable metadata. See docs/RESULTS.md.
+    bench_version = suite.get("bench_version")
+    if "bench_version" in suite and not re.fullmatch(r"\d+\.\d+\.\d+", str(bench_version)):
+        errors.append(
+            f"{manifest_path}: bench_version must be MAJOR.MINOR.PATCH, got `{bench_version}`"
+        )
     if suite.get("fallback_allowed") is not False:
         errors.append(f"{manifest_path}: fallback_allowed must be false for native runs")
     if not isinstance(suite.get("layers"), list):
@@ -2276,6 +2288,7 @@ def run_manifest_payload(
         "argv": [sanitize_launch_part(part) for part in sys.argv],
         "bench_id": suite.get("bench_id"),
         "bench_version": suite.get("bench_version"),
+        "harness_version": HARNESS_VERSION,
         "bench_manifest": {
             "path": rel_to_repo(manifest_path),
             "sha256": sha256_file(manifest_path),
@@ -2339,9 +2352,11 @@ def run_manifest_payload(
             ),
             "affects_functional_score": False,
         },
+        # The fixture tree is part of what `bench_version` identifies; the run
+        # records its digest under `runner.fixtures`, so there is no second
+        # version label for it here.
         "site": {
             "base_url": fixture_base_url,
-            "site_version": suite.get("site", {}).get("site_version"),
         },
         "runner": {
             "python": sys.version.split()[0],
@@ -7684,7 +7699,7 @@ def build_run_digest_lines(
         "Agent Browser Bench run",
         "-----------------------",
         f"run_id      {run_id}",
-        f"bench       {suite.get('bench_id')} @ {suite.get('bench_version')}",
+        f"bench       {suite.get('bench_id')} @ {suite.get('bench_version')}; harness {HARNESS_VERSION}",
         f"manifest    {rel_to_repo(manifest_path)} sha12={sha256_file(manifest_path)[:12]}",
         f"dataset     selected_tasks={selected_count}{enabled_suffix}; layers {format_count_map(count_tasks_by(tasks, 'layer'))}",
         f"subsets     {format_count_map(count_tasks_by(tasks, 'subset_id'))}",
@@ -8909,6 +8924,7 @@ def summarize_results(run_manifest: dict[str, Any], rows: list[dict[str, Any]]) 
         "run_id": run_manifest.get("run_id"),
         "bench_id": run_manifest.get("bench_id") or "agent_browser_bench",
         "bench_version": run_manifest.get("bench_version") or "unknown",
+        "harness_version": run_manifest.get("harness_version") or "unknown",
         "score_eligible": bool(run_manifest.get("score_eligible")),
         "layers": layers,
         "evaluation_axes": evaluation_axes,
