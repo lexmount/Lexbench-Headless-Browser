@@ -72,6 +72,24 @@ The L2 mechanisms are the ones production pages lean on, with third-party usage 
 - Client-side storage is silent infrastructure. Chrome's last published counters had IndexedDB reads on 19.3% and writes on 16.6% of page loads ([bucket 3023](https://chromestatus.com/metrics/feature/timeline/popularity/3023), [bucket 3024](https://chromestatus.com/metrics/feature/timeline/popularity/3024)); Firestore's web offline persistence is IndexedDB ([docs](https://firebase.google.com/docs/firestore/manage-data/enable-offline)). The agent-relevant failure mode motivated these tasks: an engine that degrades a missing storage API gracefully renders the page anyway with empty data, and the agent confidently reports a wrong answer instead of an error. Only a storage-semantics task exposes that.
 - Driver interaction primitives consume layout and computed style directly. Playwright's actionability rules require a non-empty bounding box, computed visibility and hit-target checks before every click or fill ([playwright.dev/docs/actionability](https://playwright.dev/docs/actionability)). An engine with incomplete style or layout does not lose one task; it loses the framework's waiting and clicking substrate. Lightpanda's own documentation states its Web API coverage is incomplete ([lightpanda.io/docs](https://lightpanda.io/docs/)), consistent with where its L2 misses cluster.
 
+## Versioning
+
+Two numbers, two questions.
+
+**Dataset — `bench_version` in `manifest.json`, currently `0.4.2`.** What was measured: which tasks exist, and which drivers, graders, fixtures and capability assignments they run against. It exists to answer whether two runs are comparable, so it is bumped by what a change would do to a comparison:
+
+| Bump | What changed | Effect on published numbers |
+|:---|:---|:---|
+| MAJOR | Task membership, graders, fixtures, or capability assignments | Not comparable; the denominator moved |
+| MINOR | Additive — new tasks or subsets, existing ones untouched | Existing subsets stay comparable |
+| PATCH | Task descriptions and other non-executable metadata | Fully comparable |
+
+The fixture tree belongs to this axis: editing a fixture changes results, so it is a MAJOR bump. Every run records `runner.fixtures.tree_sha256`, which is what makes that claim checkable rather than declarative.
+
+**Harness — `runner/version.py`, currently `0.1.0`.** The code that runs the dataset, mirrored in `pyproject.toml` and `package.json`. Bumping it does not change what is being measured, so runs stay comparable across it. Runs record it as `harness_version`.
+
+Runs predating this scheme carry a dated label instead: the three published runs record `2026.08.02-v0_4.1`, which is `0.4.1` here, and its difference from `0.4.2` is PATCH — descriptions only, fully comparable. Neither number is what makes a run reproducible. `run_manifest.json` pins the manifest, fixture tree, runner source and capability map by sha256, and those digests are the identity a re-run is checked against; the versions are the labels that let a reader skip the check.
+
 ## Boundaries
 
 - Screenshot, PDF and raster output are outside the current measurement scope. This is a deferred boundary, not a permanent verdict: it predates candidate engines growing paint pipelines and is tracked for re-evaluation. Nothing here measures pixel correctness.

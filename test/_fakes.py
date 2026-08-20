@@ -371,11 +371,11 @@ def default_manifest() -> dict[str, Any]:
     """A minimal, valid suite manifest for tmp bench trees."""
     return {
         "bench_id": "unit_bench",
-        "bench_version": "0.0-test",
+        "bench_version": "0.0.0",
         "root_dir": "unit_bench",
         "fallback_allowed": False,
         "default_k_runs": 1,
-        "site": {"kind": "self_hosted_fixture", "site_version": "test"},
+        "site": {"kind": "self_hosted_fixture"},
         "engines": {
             "chrome": {"role": "gold_baseline"},
             "moli": {"role": "native_candidate"},

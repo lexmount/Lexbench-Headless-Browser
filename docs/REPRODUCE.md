@@ -12,7 +12,7 @@ Every number in the reports traces back to one of three runs. This page records 
 | `resource_baseline_20260812` | Resource round A | `l1.raw_cdp` + `l2.web_platform`, 557 tasks | 5 | 1 | off |
 | `resource_engine_20260812` | Resource round B | same 557 tasks | 5 | 1 | on |
 
-Run parameters: bench `2026.08.02-v0_4.1`, seed `official20260709`, `--score-mode independent --chrome-baseline best_effort`, engines `chrome,moli,lightpanda,obscura`. Engine pins (version and sha256) are listed in each report's provenance table and enforced by `doctor`; where to get each binary ([Moli](https://github.com/lexmount/moli), [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/), [Lightpanda](https://github.com/lightpanda-io/browser), [Obscura](https://github.com/h4ckf0r0day/obscura)) and where to place it are covered in [RUNNING.md](RUNNING.md). The commands below are taken verbatim from each run's recorded `argv` in its `run_manifest.json`.
+Run parameters: bench `2026.08.02-v0_4.1` — dataset `0.4.1` under the current scheme, see [Versioning](RESULTS.md#versioning) — seed `official20260709`, `--score-mode independent --chrome-baseline best_effort`, engines `chrome,moli,lightpanda,obscura`. Engine pins (version and sha256) are listed in each report's provenance table and enforced by `doctor`; where to get each binary ([Moli](https://github.com/lexmount/moli), [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/), [Lightpanda](https://github.com/lightpanda-io/browser), [Obscura](https://github.com/h4ckf0r0day/obscura)) and where to place it are covered in [RUNNING.md](RUNNING.md). The commands below are taken verbatim from each run's recorded `argv` in its `run_manifest.json`.
 
 The functional run:
 

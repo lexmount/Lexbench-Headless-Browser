@@ -127,7 +127,7 @@ A smoke round finishes in minutes, with per-task pass/fail in `runs/<run-id>/res
 
 ## Benchmark Composition
 
-Current bench version `2026.08.17-v0_4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above remains pinned to `2026.08.02-v0_4.1`; the current version changes task descriptions and non-executable metadata, not task membership, drivers, graders, fixtures, or capability assignments.
+Current dataset version `0.4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above remains pinned to `0.4.1` (recorded in its manifest as `2026.08.02-v0_4.1`, the dated label used before the version scheme was unified). The difference is a PATCH: task descriptions and non-executable metadata, not task membership, drivers, graders, fixtures, or capability assignments. How the dataset and harness versions are bumped: [Versioning](docs/RESULTS.md#versioning).
 
 **L1 measures protocol and driver compatibility (1,740 tasks) across two paths:**
 
