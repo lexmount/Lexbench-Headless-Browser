@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter, defaultdict
 import json
 from pathlib import Path
 import sys
@@ -97,6 +98,19 @@ def compare(reference: Path, candidate: Path) -> tuple[dict, dict]:
     return base, other
 
 
+def outcomes(rows: list[dict]) -> tuple[Counter, Counter]:
+    statuses = Counter(row["status"] for row in rows)
+    by_task = defaultdict(list)
+    for row in rows:
+        by_task[row["task_id"]].append(row["status"])
+    tasks = Counter({
+        "three_pass": sum(all(status == "pass" for status in attempts) for attempts in by_task.values()),
+        "any_pass": sum(any(status == "pass" for status in attempts) for attempts in by_task.values()),
+        "with_infra": sum(any(status == "infra" for status in attempts) for attempts in by_task.values()),
+    })
+    return statuses, tasks
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("reference_run_id")
@@ -109,6 +123,14 @@ def main() -> None:
     print("All recorded non-Moli run conditions and task attempts match.")
     print(f"Reference Moli: {base['engines']['moli']['version']} {base['engines']['moli']['sha256']}")
     print(f"Candidate Moli: {other['engines']['moli']['version']} {other['engines']['moli']['sha256']}")
+    _, base_rows = load_run(ROOT / "runs" / args.reference_run_id)
+    _, other_rows = load_run(ROOT / "runs" / args.candidate_run_id)
+    profile, _ = frozen_tasks()
+    for label, rows in (("Reference", base_rows), ("Candidate", other_rows)):
+        statuses, tasks = outcomes(rows)
+        print(f"{label}: three-pass tasks {tasks['three_pass']}/{profile['task_count']}; "
+              f"any-pass tasks {tasks['any_pass']}/{profile['task_count']}; "
+              f"attempts {dict(statuses)}; tasks with infra {tasks['with_infra']}")
 
 
 if __name__ == "__main__":
