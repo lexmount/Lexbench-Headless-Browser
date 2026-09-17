@@ -5246,6 +5246,121 @@ class _DriverProcessIdentity:
     leader_start_ticks: int
 
 
+@dataclass(frozen=True)
+class _DarwinDriverProcessIdentity:
+    leader_pid: int
+    pgid: int
+    session: int
+
+
+def _darwin_session_members(
+    identity: _DarwinDriverProcessIdentity,
+) -> tuple[tuple[int, str, int], ...] | None:
+    """Inspect the unreaped adapter session without Linux /proc or PID reuse."""
+    result = subprocess.run(
+        ["ps", "-A", "-o", "pid=,pgid=,stat="],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    members: list[tuple[int, str, int]] = []
+    leader_found = False
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) < 3:
+            continue
+        try:
+            pid, pgid = int(fields[0]), int(fields[1])
+        except ValueError:
+            continue
+        state = fields[2]
+        if pid == identity.leader_pid:
+            if pgid != identity.pgid:
+                return None
+            leader_found = True
+            members.append((pid, state, pgid))
+            continue
+        if state.startswith("Z"):
+            continue
+        try:
+            same_session = os.getsid(pid) == identity.session
+        except OSError:
+            same_session = False
+        if same_session:
+            members.append((pid, state, pgid))
+    if not leader_found:
+        return None
+    return tuple(sorted(members))
+
+
+def _darwin_leader_is_terminal(identity: _DarwinDriverProcessIdentity) -> bool:
+    members = _darwin_session_members(identity)
+    return members is not None and any(
+        pid == identity.leader_pid and state.startswith("Z")
+        for pid, state, _ in members
+    )
+
+
+def _darwin_session_is_clean(identity: _DarwinDriverProcessIdentity) -> bool:
+    members = _darwin_session_members(identity)
+    return members is not None and all(state.startswith("Z") for _, state, _ in members)
+
+
+def _signal_darwin_driver_group(
+    identity: _DarwinDriverProcessIdentity,
+    signal_number: int,
+) -> bool:
+    members = _darwin_session_members(identity)
+    if members is None:
+        return False
+    # The unreaped leader anchors this numeric process group. A descendant
+    # that moved to another group stays visible above and makes cleanup fail
+    # closed; there is no pidfd on Darwin to signal that PID without a race.
+    if any(
+        not state.startswith("Z") and pgid != identity.pgid
+        for _, state, pgid in members
+    ):
+        return False
+    if any(not state.startswith("Z") for _, state, _ in members):
+        try:
+            os.killpg(identity.pgid, signal_number)
+        except ProcessLookupError:
+            pass
+    return True
+
+
+def _cleanup_darwin_selenium_process_group(
+    proc: subprocess.Popen[str],
+    identity: _DarwinDriverProcessIdentity,
+    hard_deadline: float,
+    grace_s: float = 2.0,
+) -> bool:
+    clean = _darwin_session_is_clean(identity)
+    if not clean:
+        remaining = max(0.0, hard_deadline - time.monotonic())
+        kill_reserve = min(0.5, remaining / 2)
+        term_deadline = min(time.monotonic() + grace_s, hard_deadline - kill_reserve)
+        _signal_darwin_driver_group(identity, signal.SIGTERM)
+        while time.monotonic() < term_deadline:
+            if _darwin_session_is_clean(identity):
+                clean = True
+                break
+            time.sleep(min(0.02, max(0.0, term_deadline - time.monotonic())))
+    if not clean:
+        _signal_darwin_driver_group(identity, signal.SIGKILL)
+        while time.monotonic() < hard_deadline:
+            if _darwin_session_is_clean(identity):
+                clean = True
+                break
+            _signal_darwin_driver_group(identity, signal.SIGKILL)
+            time.sleep(min(0.02, max(0.0, hard_deadline - time.monotonic())))
+    if _darwin_leader_is_terminal(identity):
+        proc.wait(timeout=max(0.0, hard_deadline - time.monotonic()))
+    return clean
+
+
 def _read_driver_proc_stat(pid: int) -> _DriverProcStat | None:
     """Read the fields needed to identify one Linux process generation."""
     try:
@@ -5267,8 +5382,17 @@ def _read_driver_proc_stat(pid: int) -> _DriverProcStat | None:
 
 def _capture_driver_process_identity(
     proc: subprocess.Popen[str],
-) -> _DriverProcessIdentity | None:
+) -> _DriverProcessIdentity | _DarwinDriverProcessIdentity | None:
     """Capture the detached adapter session before it can be reaped."""
+    if sys.platform == "darwin":
+        try:
+            pgid = os.getpgid(proc.pid)
+            session_id = os.getsid(proc.pid)
+        except OSError:
+            return None
+        if proc.pid == pgid == session_id and pgid not in {0, 1, os.getpgrp()}:
+            return _DarwinDriverProcessIdentity(proc.pid, pgid, session_id)
+        return None
     if not pathlib.Path("/proc/self/stat").exists():
         return None
     stat = _read_driver_proc_stat(proc.pid)
@@ -5388,6 +5512,8 @@ def _driver_session_is_clean(identity: _DriverProcessIdentity) -> bool:
 
 
 def _driver_leader_is_terminal(identity: _DriverProcessIdentity) -> bool:
+    if isinstance(identity, _DarwinDriverProcessIdentity):
+        return _darwin_leader_is_terminal(identity)
     result = os.waitid(
         os.P_PID,
         identity.leader_pid,
@@ -5397,7 +5523,7 @@ def _driver_leader_is_terminal(identity: _DriverProcessIdentity) -> bool:
 
 
 def _wait_driver_without_reaping(
-    identity: _DriverProcessIdentity,
+    identity: _DriverProcessIdentity | _DarwinDriverProcessIdentity,
     deadline: float,
 ) -> bool:
     """Wait for terminal state while retaining the leader as a PID anchor."""
@@ -5508,6 +5634,23 @@ def _cleanup_unidentified_selenium_process_group(
     except OSError:
         pass
 
+    if sys.platform == "darwin":
+        if group_is_safe:
+            identity = _DarwinDriverProcessIdentity(
+                proc.pid, proc.pid, proc.pid
+            )
+            return _cleanup_darwin_selenium_process_group(
+                proc, identity, hard_deadline, grace_s=0
+            )
+        # Popen still owns this unreaped child, so signaling the child is
+        # safe. Descendants cannot be verified without a group identity.
+        try:
+            proc.kill()
+            proc.wait(timeout=max(0.05, hard_deadline - time.monotonic()))
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return False
+
     if group_is_safe:
         # Popen(start_new_session=True) created this still-unreaped leader, so
         # the numeric group cannot be reused before this one signal.
@@ -5564,11 +5707,15 @@ def _cleanup_unidentified_selenium_process_group(
 
 def _cleanup_selenium_process_group(
     proc: subprocess.Popen[str],
-    identity: _DriverProcessIdentity,
+    identity: _DriverProcessIdentity | _DarwinDriverProcessIdentity,
     hard_deadline: float,
     grace_s: float = 2.0,
 ) -> bool:
     """TERM, escalate, verify the session, and only then reap its leader."""
+    if isinstance(identity, _DarwinDriverProcessIdentity):
+        return _cleanup_darwin_selenium_process_group(
+            proc, identity, hard_deadline, grace_s
+        )
     if proc.returncode is not None:
         return True
 
