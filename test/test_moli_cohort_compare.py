@@ -7,7 +7,7 @@ import sys
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
-from compare_moli_failed372 import first_difference, normalized_manifest  # noqa: E402
+from compare_moli_cohort import first_difference, normalized_manifest  # noqa: E402
 
 
 def manifest():

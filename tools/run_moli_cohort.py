@@ -15,7 +15,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "benchmarks/moli-failed372.json"
+PROFILE = ROOT / "benchmarks/moli-chrome-qualified.json"
 
 
 def file_sha256(path: Path) -> str:
@@ -36,6 +36,25 @@ def frozen_tasks() -> tuple[dict, list[str]]:
         raise ValueError("frozen task list has missing, duplicate or unordered IDs")
     if file_sha256(ROOT / "manifest.json") != profile["bench_manifest_sha256"]:
         raise ValueError("benchmark dataset changed; make a new baseline profile")
+    source = ROOT / "runs" / profile["source_run_id"] / "results.jsonl"
+    if source.is_file():
+        if file_sha256(source) != profile["source_results_sha256"]:
+            raise ValueError("historical selection evidence changed")
+        chrome = {}
+        historical_moli = {}
+        for line in source.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row["engine"] == "chrome":
+                chrome.setdefault(row["task_id"], []).append(row["status"])
+            elif row["engine"] == "moli":
+                historical_moli.setdefault(row["task_id"], []).append(row["status"])
+        if any(chrome.get(task_id) != ["pass"] * 3 or len(historical_moli.get(task_id, [])) != 3
+               or "pass" in historical_moli[task_id] for task_id in task_ids):
+            raise ValueError("cohort is not historical Moli zero-pass and Chrome three-pass")
+        for item in profile["excluded_tasks"]:
+            task_id = item["task_id"]
+            if task_id in task_ids or chrome.get(task_id) not in (["fail"] * 3, ["unsupported"] * 3):
+                raise ValueError(f"invalid Chrome exclusion: {task_id}")
     return profile, task_ids
 
 
@@ -62,7 +81,7 @@ def main() -> None:
     if run_dir.exists() or receipt.exists():
         raise ValueError(f"run already exists: {run_dir}")
 
-    lock_path = ROOT / "runs/.moli-failed372.lock"
+    lock_path = ROOT / "runs/.moli-cohort.lock"
     lock_path.parent.mkdir(exist_ok=True)
     with lock_path.open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -89,7 +108,7 @@ def main() -> None:
         temporary_set.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         temporary_set.replace(active_set)
         conditions = {
-            "schema": "lexbench_moli_failed372_conditions/1",
+            "schema": "lexbench_moli_cohort_conditions/1",
             "run_id": args.run_id,
             "profile_sha256": file_sha256(PROFILE),
             "task_ids_sha256": profile["task_ids_sha256"],

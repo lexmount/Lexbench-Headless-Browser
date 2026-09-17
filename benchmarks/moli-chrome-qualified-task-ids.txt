@@ -12,9 +12,7 @@ ab_probe_click
 ab_probe_dialog_accept
 ab_probe_dialog_click_detect
 ab_probe_download
-pw_raw_browser_getbrowsercommandline
 pw_raw_input_dispatchmouseevent
-pw_raw_schema_getdomains
 r3_fv_geom_gbcr
 r3_fv_geom_offsetwidth
 r3_fv_geom_scrollheight
