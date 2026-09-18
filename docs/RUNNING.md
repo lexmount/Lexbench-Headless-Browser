@@ -131,3 +131,7 @@ Round B compares its task-duration distribution against round A to quantify how 
 - `doctor` reports a pin mismatch: the binary under `build_artifacts/` is not the pinned build. Activate the right set or update `active-set.json` deliberately.
 - Rows come back as `infra`: the identity gate failed, meaning the client did not reach the engine it was supposed to reach. This is an environment or routing problem, never a compatibility score.
 - A compiled adapter is missing: rebuild with the Go/Rust commands above; `doctor` prints the exact command it expects.
+
+## Moli layout rerun
+
+Layout is off by default. Add `--try-layout` to finish the normal three attempts first, then rerun failed cases with layout on for three attempts. Replace a case only when all three rerun attempts pass; otherwise keep its original failed result. `--moli-layout on` enables layout from the start. See [Moli layout rerun](MOLI_LAYOUT_POLICY.md).
