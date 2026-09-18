@@ -1,6 +1,6 @@
 # Moli 0.1.1 failure cases and versioned follow-up
 
-`benchmarks/moli-0.1.1-failure-cohort.json` defines the failure follow-up cohort. Its initial list contains 370 tasks from the 372 on which Moli 0.1.1 had no passing attempt in the three-attempt, four-engine `four_engine_full_20260812` run. Two diagnostic probes are excluded because Chrome failed all three source-run attempts: `Browser.getBrowserCommandLine` needs an undeclared `--enable-automation` launch flag; `Schema.getDomains` was sent to the browser connection by a harness routing error, although the task declares a page-target command. The routing error is fixed for new runs; the frozen selection still describes the historical source run. The profile binds the original results, exclusions, task list, and benchmark manifest by SHA-256. This is a diagnostic subset, not a fresh random sample or the full 1,928-task benchmark.
+`benchmarks/moli-0.1.1-failure-cohort.json` defines all 372 tasks that did not pass all three Moli 0.1.1 attempts in the four-engine `four_engine_full_20260812` run. Chrome outcomes do not filter this Moli follow-up cohort, and the follow-up runner disables Chrome baseline checks. The profile binds the original results, task list, and benchmark manifest by SHA-256. This is a historical failure subset, not a fresh random sample or the full 1,928-task benchmark. Both `Browser.getBrowserCommandLine` and `Schema.getDomains` remain included; the latter uses the corrected page-target routing in the current harness.
 
 The profile JSON records selection provenance and run settings. `benchmarks/moli-0.1.1-failure-task-ids.txt` is the exact, sorted case list; the profile binds its SHA-256. Both files are inputs to the rerun and comparison tools, not measured outputs.
 
@@ -13,9 +13,9 @@ To reproduce the all-layout automation cohort, explicitly pass `--moli-layout on
 From a Python environment satisfying the repository's dependencies:
 
 ```sh
-python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_qualified370 --moli-layout on
-python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_qualified370 --moli-layout on
-python tools/compare_moli_cohort.py moli_v1_qualified370 moli_v2_qualified370
+python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_failures372 --moli-layout on
+python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_failures372 --moli-layout on
+python tools/compare_moli_cohort.py moli_v1_failures372 moli_v2_failures372
 ```
 
 Each run produces 1,110 result rows under the ignored `runs/` directory and a sibling `<run-id>.conditions.json` receipt. The run tool refuses to overwrite an existing run, checks the frozen cohort and manifest before launch, records the Moli and ChromeDriver binary hashes, and verifies completion. The comparator checks every task and attempt plus all recorded non-Moli conditions. Report pass counts from `results.jsonl`, keeping `infra` and `unsupported` separate from task failure. A Moli upgrade may legitimately change task outcomes, timings, and its binary hash and version.
@@ -24,7 +24,7 @@ Add `--try-layout` to an off-mode cohort to rerun its failed cases with layout e
 
 ## Input cohort and run results
 
-`moli-0.1.1-failure-task-ids.txt` is the 370-case input cohort derived from Moli 0.1.1 failures. Its profile records `source_moli_version: 0.1.1`. The same input cohort can test later versions; passing with another version does not rewrite this historical input list.
+`moli-0.1.1-failure-task-ids.txt` is the 372-case input cohort derived from Moli 0.1.1 failures. Its profile records `source_moli_version: 0.1.1`. The same input cohort can test later versions; passing with another version does not rewrite this historical input list.
 
 Each run's final verdicts remain in `results.jsonl`, with the tested version, binary identity and selected task scope in `run_manifest.json`. Layout recovery retains original and rerun matrices separately. A partial regression run is not a new version-wide failure cohort.
 

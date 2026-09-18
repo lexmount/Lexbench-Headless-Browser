@@ -40,21 +40,20 @@ def frozen_tasks() -> tuple[dict, list[str]]:
     if source.is_file():
         if file_sha256(source) != profile["source_results_sha256"]:
             raise ValueError("historical selection evidence changed")
-        chrome = {}
         historical_moli = {}
         for line in source.read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
-            if row["engine"] == "chrome":
-                chrome.setdefault(row["task_id"], []).append(row["status"])
-            elif row["engine"] == "moli":
+            if row["engine"] == "moli":
                 historical_moli.setdefault(row["task_id"], []).append(row["status"])
-        if any(chrome.get(task_id) != ["pass"] * 3 or len(historical_moli.get(task_id, [])) != 3
-               or "pass" in historical_moli[task_id] for task_id in task_ids):
-            raise ValueError("cohort is not historical Moli zero-pass and Chrome three-pass")
-        for item in profile["excluded_tasks"]:
-            task_id = item["task_id"]
-            if task_id in task_ids or chrome.get(task_id) not in (["fail"] * 3, ["unsupported"] * 3):
-                raise ValueError(f"invalid Chrome exclusion: {task_id}")
+        attempts = profile["source_attempts_per_task"]
+        if not historical_moli or any(len(statuses) != attempts for statuses in historical_moli.values()):
+            raise ValueError("historical Moli attempt coverage is incomplete")
+        expected_ids = sorted(
+            task_id for task_id, statuses in historical_moli.items()
+            if any(status != "pass" for status in statuses)
+        )
+        if task_ids != expected_ids:
+            raise ValueError("cohort must contain all historical Moli cases that did not pass every attempt")
     return profile, task_ids
 
 
