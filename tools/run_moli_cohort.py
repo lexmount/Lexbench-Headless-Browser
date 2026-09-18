@@ -62,6 +62,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
+    parser.add_argument("--moli-layout", choices=("on", "off", "auto"), default="on")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
         parser.error("Moli must be an executable absolute path")
@@ -117,6 +118,7 @@ def main() -> None:
             "chromedriver_version": driver_version,
             "moli_sha256": binary_sha,
             "moli_version": version,
+            "moli_layout": args.moli_layout,
         }
         receipt.write_text(json.dumps(conditions, indent=2) + "\n", encoding="utf-8")
         env = dict(os.environ)
@@ -132,7 +134,7 @@ def main() -> None:
             sys.executable, "-m", "runner.run", "run",
             *(part for task_id in task_ids for part in ("--task", task_id)),
             "--engines", "moli", "--score-mode", profile["score_mode"],
-            "--moli-layout", "on",
+            "--moli-layout", args.moli_layout,
             "--chrome-baseline", profile["chrome_baseline"],
             "--seed", profile["seed"],
             "--k", str(profile["attempts_per_task"]),
@@ -151,9 +153,27 @@ def main() -> None:
             or manifest.get("completed_result_rows") != len(task_ids) * profile["attempts_per_task"]
             or manifest["engines"]["moli"]["sha256"] != binary_sha):
         raise ValueError("run did not produce the complete pinned Moli matrix")
-    if "--layout" not in manifest["engines"]["moli"].get("serve_args", []):
-        raise ValueError("Moli run omitted the required --layout flag")
-    print(f"Complete baseline: {run_dir}")
+    if manifest["engines"]["moli"].get("layout_mode") != args.moli_layout:
+        raise ValueError("Moli layout mode differs from the declared run")
+    has_global_layout = "--layout" in manifest["engines"]["moli"].get("serve_args", [])
+    if has_global_layout != (args.moli_layout == "on"):
+        raise ValueError("Moli global layout flag differs from the declared run")
+    if args.moli_layout == "auto":
+        receipt = manifest.get("moli_layout_policy") or {}
+        encoded = json.dumps(receipt.get("assignments", []), sort_keys=True, separators=(",", ":")).encode()
+        if hashlib.sha256(encoded).hexdigest() != receipt.get("assignments_sha256"):
+            raise ValueError("automatic layout assignment receipt hash does not match")
+        assignments = {item["task_id"]: item["layout"] for item in receipt.get("assignments", [])}
+        if set(assignments) != set(task_ids):
+            raise ValueError("automatic layout assignments do not cover the frozen cohort")
+        with (run_dir / "results.jsonl").open(encoding="utf-8") as handle:
+            for line in handle:
+                row = json.loads(line)
+                expected = assignments[row["task_id"]] == "on"
+                actual = row["engine_provenance"]["layout_enabled"]
+                if actual != expected:
+                    raise ValueError(f"Moli launched with the wrong layout mode: {row['task_id']}")
+    print(f"Complete cohort: {run_dir}")
 
 
 if __name__ == "__main__":

@@ -32,6 +32,7 @@ from typing import Any
 
 if __package__:
     from runner import bindings as binding_catalog
+    from runner import moli_layout_policy
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -40,6 +41,7 @@ else:
     # Keep the historical direct-script entry point (`python3 runner/run.py`)
     # working as well as the preferred module form (`python3 -m runner.run`).
     import bindings as binding_catalog
+    import moli_layout_policy
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -2215,6 +2217,7 @@ def run_manifest_payload(
             item["mode"] = "headless=new"
         if engine == "moli":
             item["resource_fetch_policy"] = "task_scoped_launch_profile"
+            item["layout_mode"] = getattr(args, "moli_layout", "off")
         if engine == "obscura":
             item.update(
                 {
@@ -2238,6 +2241,23 @@ def run_manifest_payload(
     resource_mode = str(getattr(args, "resource_profile", "off") or "off")
     host_telemetry_enabled = str(getattr(args, "host_telemetry", "on") or "on") == "on"
     calibration_baseline = getattr(args, "resource_calibration_baseline", None)
+
+    layout_receipt = None
+    if getattr(args, "moli_layout", "off") == "auto" and "moli" in selected_engines:
+        assignments = [
+            {
+                "task_id": task.task_id,
+                "task_sha256": task.sha256,
+                "layout": moli_layout_policy.choose_layout(task.task),
+            }
+            for task in sorted(tasks, key=lambda item: item.task_id)
+        ]
+        assignment_bytes = json.dumps(assignments, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        layout_receipt = {
+            "policy_id": moli_layout_policy.POLICY_ID,
+            "assignments_sha256": hashlib.sha256(assignment_bytes).hexdigest(),
+            "assignments": assignments,
+        }
 
     return {
         "run_id": run_id,
@@ -2275,6 +2295,7 @@ def run_manifest_payload(
             "manifest": rel_to_repo(ACTIVE_ENGINE_SET_PATH) if ACTIVE_ENGINE_SET else None,
         },
         "engines": engines,
+        **({"moli_layout_policy": layout_receipt} if layout_receipt is not None else {}),
         "host": resource_metrics.host_provenance(
             str(getattr(args, "provenance_level", "full") or "full")
         ),
@@ -2498,6 +2519,7 @@ def find_free_port() -> int:
 def engine_serve_args(
     engine: str,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     if launch_profile not in LAUNCH_PROFILES:
         raise BenchError(f"unsupported launch profile: {launch_profile}")
@@ -2507,7 +2529,9 @@ def engine_serve_args(
         str(arg)
         for arg in meta.get("launch_profile_args", {}).get(launch_profile, ())
     )
-    return base_args + profile_args
+    if extra_serve_args and engine != "moli":
+        raise BenchError("task-scoped serve arguments are only supported for Moli")
+    return base_args + profile_args + extra_serve_args
 
 
 def serve_engine_launch_command(
@@ -2515,6 +2539,7 @@ def serve_engine_launch_command(
     binary: pathlib.Path,
     port: int,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> list[str]:
     """Build the auditable serve command for a non-Chrome engine."""
     return [
@@ -2524,7 +2549,7 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
-        *engine_serve_args(engine, launch_profile),
+        *engine_serve_args(engine, launch_profile, extra_serve_args),
     ]
 
 
@@ -2556,14 +2581,15 @@ class BrowserManager:
         self,
         engine: str,
         launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+        extra_serve_args: tuple[str, ...] = (),
     ) -> BrowserProcess:
         with self._lock:
             if self._closed:
                 raise BenchError("browser manager is closed")
-            return self._launch_locked(engine, launch_profile)
+            return self._launch_locked(engine, launch_profile, extra_serve_args)
 
-    def _launch_locked(self, engine: str, launch_profile: str) -> BrowserProcess:
-        desired_serve_args = engine_serve_args(engine, launch_profile)
+    def _launch_locked(self, engine: str, launch_profile: str, extra_serve_args: tuple[str, ...]) -> BrowserProcess:
+        desired_serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine in self.processes:
             browser = self.processes[engine]
             proc = browser.process
@@ -2597,7 +2623,7 @@ class BrowserManager:
         for _ in range(attempts):
             port = find_free_port() if self.dynamic_ports else int(meta["cdp_port"])
             try:
-                return self._launch_on_port(engine, binary, port, launch_profile)
+                return self._launch_on_port(engine, binary, port, launch_profile, extra_serve_args)
             except BenchError as exc:
                 last_error = exc
                 if "already in use" not in str(exc):
@@ -2610,10 +2636,11 @@ class BrowserManager:
         binary: pathlib.Path,
         port: int,
         launch_profile: str,
+        extra_serve_args: tuple[str, ...],
     ) -> BrowserProcess:
         if port_is_open(port):
             raise BenchError(f"{engine}: port {port} is already in use")
-        serve_args = engine_serve_args(engine, launch_profile)
+        serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine == "chrome":
             profile_dir = pathlib.Path(tempfile.mkdtemp(prefix=f"abb-chrome-{port}-"))
             self._profile_dirs.append(profile_dir)
@@ -2645,7 +2672,7 @@ class BrowserManager:
                 "about:blank",
             ]
         else:
-            cmd = serve_engine_launch_command(engine, binary, port, launch_profile)
+            cmd = serve_engine_launch_command(engine, binary, port, launch_profile, extra_serve_args)
 
         # Browser output goes to spool files: PIPE would deadlock the engine
         # once the 64 KiB pipe buffer fills (nobody drains it during a run).
@@ -4143,7 +4170,7 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
     different local browser visible in every attempt row.
     """
     binary = browser.binary
-    return {
+    payload = {
         "engine": browser.engine,
         "pid": getattr(browser.process, "pid", None),
         "binary": rel_to_repo(binary) if binary is not None else None,
@@ -4156,6 +4183,9 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
         "browser_ws": browser.version_info.get("webSocketDebuggerUrl"),
         "http_identity": dict(browser.version_info),
     }
+    if browser.engine == "moli":
+        payload["layout_enabled"] = "--layout" in browser.serve_args
+    return payload
 
 
 def is_unsupported_error(exc: Exception) -> bool:
@@ -7071,10 +7101,16 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         ) -> None:
             self.manager = manager
             for engine in engines:
-                manager.launch(engine, initial_task.launch_profile)
+                manager.launch(engine, initial_task.launch_profile, self.extra_args(engine, initial_task))
+
+        @staticmethod
+        def extra_args(engine: str, task: ResolvedTask) -> tuple[str, ...]:
+            if engine == "moli" and args.moli_layout == "auto":
+                return ("--layout",) if moli_layout_policy.choose_layout(task.task) == "on" else ()
+            return ()
 
         def for_task(self, engine: str, task: ResolvedTask) -> BrowserProcess:
-            browser = self.manager.launch(engine, task.launch_profile)
+            browser = self.manager.launch(engine, task.launch_profile, self.extra_args(engine, task))
             browser.prev_task_id = self.manager.note_task(engine, task.task_id)
             return browser
 
@@ -8464,8 +8500,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
-        "--moli-layout", choices=("off", "on"), default="off",
-        help="Moli layout policy: off preserves its lightweight default; on enables on-demand real layout and coordinate input",
+        "--moli-layout", choices=("off", "on", "auto"), default="off",
+        help="Moli layout policy: off uses mock geometry; on enables on-demand layout; auto chooses from each frozen task contract",
     )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(

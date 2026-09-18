@@ -9,6 +9,7 @@ held to a single source of truth across pyproject.toml and package.json.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -17,6 +18,7 @@ import pytest
 
 from runner import run as runner_run
 from runner.version import HARNESS_VERSION
+from runner.moli_layout_policy import POLICY_ID, choose_layout
 
 REPO_ROOT = pathlib.Path(runner_run.REPO_ROOT)
 SEMVER = re.compile(r"\d+\.\d+\.\d+")
@@ -76,3 +78,32 @@ def test_run_manifest_records_both_axes():
     assert payload["bench_version"] == suite["bench_version"]
     assert payload["harness_version"] == HARNESS_VERSION
     assert "site_version" not in payload["site"]
+
+
+def test_auto_layout_receipt_binds_every_selected_task_before_calls():
+    manifest_path = REPO_ROOT / "manifest.json"
+    suite, tasks, errors = runner_run.validate_manifest(
+        manifest_path, requested_subsets=["l1.raw_cdp"]
+    )
+    assert errors == []
+    selected = [task for task in tasks if task.task_id in {
+        "pw_raw_schema_getdomains", "v2_diag_dispatchmouse_geometry"
+    }]
+    assert len(selected) == 2
+    args = argparse.Namespace(
+        chrome_gate="off", score_mode="independent", jobs=1, k=1,
+        seed="unit", moli_layout="auto",
+    )
+    payload = runner_run.run_manifest_payload(
+        args, suite, manifest_path, selected, ["moli"], "unit_auto_layout", True, [], None
+    )
+    receipt = payload["moli_layout_policy"]
+    assert receipt["policy_id"] == POLICY_ID
+    assert payload["engines"]["moli"]["layout_mode"] == "auto"
+    assert {item["task_id"]: item["layout"] for item in receipt["assignments"]} == {
+        task.task_id: choose_layout(task.task) for task in selected
+    }
+    for item in receipt["assignments"]:
+        assert item["task_sha256"] == next(task.sha256 for task in selected if task.task_id == item["task_id"])
+    encoded = json.dumps(receipt["assignments"], sort_keys=True, separators=(",", ":")).encode()
+    assert receipt["assignments_sha256"] == hashlib.sha256(encoded).hexdigest()

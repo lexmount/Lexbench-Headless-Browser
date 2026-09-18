@@ -477,14 +477,14 @@ def test_browser_manager_replaces_moli_when_task_profile_changes(
         def poll(self):
             return None
 
-    def fake_launch(engine, launched_binary, port, launch_profile):
+    def fake_launch(engine, launched_binary, port, launch_profile, extra_serve_args):
         browser = runner_run.BrowserProcess(
             engine=engine,
             port=port,
             process=Proc(1000 + len(launched)),
             version_info={},
             binary=launched_binary,
-            serve_args=runner_run.engine_serve_args(engine, launch_profile),
+            serve_args=runner_run.engine_serve_args(engine, launch_profile, extra_serve_args),
         )
         launched.append((launch_profile, browser))
         manager.processes[engine] = browser
@@ -504,6 +504,12 @@ def test_browser_manager_replaces_moli_when_task_profile_changes(
     ]
     assert killed == [default.process]
     assert manager.processes == {"moli": all_resources}
+
+    layout = manager.launch("moli", "all_resources", ("--layout",))
+    assert layout is not all_resources
+    assert layout.serve_args == ("--resource", "--layout")
+    assert manager.launch("moli", "all_resources", ("--layout",)) is layout
+    assert killed == [default.process, all_resources.process]
 
 
 # --- write_json / append_jsonl / read_jsonl (TESTING.md §6) ----------------------
