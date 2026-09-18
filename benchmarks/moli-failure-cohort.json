@@ -1,9 +1,9 @@
 {
-  "schema": "lexbench_moli_chrome_qualified_cohort/1",
+  "schema": "lexbench_moli_failure_cohort/1",
   "source_run_id": "four_engine_full_20260812",
   "source_results_sha256": "fe8e2094d6220429f77d877a6512195d4f122fe95df323ecb1da33e3108491e4",
   "selection": "Historical Moli 0.1.1 zero-pass tasks, excluding the two tasks that failed all three published Chrome attempts",
-  "task_ids_file": "benchmarks/moli-chrome-qualified-task-ids.txt",
+  "task_ids_file": "benchmarks/moli-failure-task-ids.txt",
   "task_ids_sha256": "79cc46d1be0ad8d5f8a631c23e1baf1facaff49ade59360bc755cfb0e1844cee",
   "task_count": 370,
   "bench_manifest_sha256": "0a0274af9cd88af2189c70d76232a00266646553283022aa89c91a9105e0c8a7",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the frozen historical Moli failure cohort with one supplied binary."""
+"""Run the current Moli failure cohort with one supplied binary."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "benchmarks/moli-chrome-qualified.json"
+PROFILE = ROOT / "benchmarks/moli-failure-cohort.json"
 
 
 def file_sha256(path: Path) -> str:

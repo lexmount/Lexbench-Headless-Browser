@@ -15,22 +15,13 @@ from run_moli_cohort import PROFILE, ROOT, file_sha256, frozen_tasks
 def normalized_manifest(manifest: dict) -> dict:
     """Remove run-local fields and the sole intended treatment variable."""
     result = json.loads(json.dumps(manifest))
-    for key in ("argv", "run_id", "started_at", "completed_at", "site", "layout_retry"):
+    for key in ("argv", "run_id", "started_at", "completed_at", "site", "layout_retry", "moli_failure_tasks"):
         result.pop(key, None)
     result.get("engine_set", {}).pop("name", None)
     moli = result["engines"]["moli"]
     for key in ("version", "sha256", "sha256_12", "expected_sha256", "expected_sha256_12"):
         moli.pop(key, None)
     result.get("host_telemetry", {}).pop("summary", None)
-    # With a fixed global override, version-specific annotations are metadata,
-    # not treatment changes. Keep every effective launch assignment comparable.
-    policy = result.get("moli_layout_policy")
-    if isinstance(policy, dict) and moli.get("layout_mode") in {"off", "on"}:
-        policy.pop("assignments_sha256", None)
-        policy["assignments"] = [
-            {key:item[key] for key in ("task_id", "task_sha256", "layout")}
-            for item in policy.get("assignments", [])
-        ]
     return result
 
 

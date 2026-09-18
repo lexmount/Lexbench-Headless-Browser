@@ -616,6 +616,18 @@ def append_result(path: pathlib.Path, payload: dict[str, Any]) -> None:
         append_jsonl(path, payload)
 
 
+
+def write_moli_failure_tasks(run_dir: pathlib.Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Export remaining failures in this run's selected scope, one ID per case."""
+    failed = sorted({
+        row["task_id"] for row in rows
+        if row["engine"] == "moli" and row["status"] != "pass"
+    })
+    path = run_dir / "moli-failure-task-ids.txt"
+    path.write_text("".join(task_id + "\n" for task_id in failed), encoding="utf-8")
+    return {"path": path.name, "sha256": sha256_file(path), "count": len(failed)}
+
+
 def read_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if not path.exists():
@@ -2245,7 +2257,6 @@ def run_manifest_payload(
     layout_receipt = None
     if "moli" in selected_engines:
         layout_receipt = layout_retry.policy(getattr(args, "moli_layout", "off"), getattr(args, "try_layout", False))
-
 
     return {
         "run_id": run_id,
@@ -6240,7 +6251,6 @@ def run_driver_attempt(
     fixture_server: FixtureServer | None = None,
     scenario_binding: dict[str, Any] | None = None,
     physical_variant: str | None = None,
-    persist_result: bool = True,
 ) -> dict[str, Any]:
     tmp_dir, final_dir, artifact_rel = artifact_paths(run_dir, task, engine, attempt)
     if physical_variant:
@@ -6664,8 +6674,7 @@ def run_driver_attempt(
     ensure_profile_files(tmp_dir, task.artifact_profile)
     final_dir.parent.mkdir(parents=True, exist_ok=True)
     tmp_dir.replace(final_dir)
-    if persist_result:
-        append_result(results_path, result)
+    append_result(results_path, result)
     return result
 
 
@@ -7095,14 +7104,10 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         ) -> None:
             self.manager = manager
             for engine in engines:
-                manager.launch(engine, initial_task.launch_profile, self.extra_args(engine, initial_task))
-
-        @staticmethod
-        def extra_args(engine: str, task: ResolvedTask) -> tuple[str, ...]:
-            return ()
+                manager.launch(engine, initial_task.launch_profile)
 
         def for_task(self, engine: str, task: ResolvedTask) -> BrowserProcess:
-            browser = self.manager.launch(engine, task.launch_profile, self.extra_args(engine, task))
+            browser = self.manager.launch(engine, task.launch_profile)
             browser.prev_task_id = self.manager.note_task(engine, task.task_id)
             return browser
 
@@ -7146,27 +7151,27 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         offset = (seed_rotation + position) % len(ordered)
         return ordered[offset:] + ordered[:offset]
 
+    def scenario_binding_for(engine: str, task: ResolvedTask) -> dict[str, Any] | None:
+        driver_kind = str(task.driver.get("kind") or "")
+        driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(driver_kind)
+        if driver_id is None:
+            return None
+        unavailable = unavailable_bindings.get((engine, driver_id))
+        if unavailable is not None:
+            return unavailable
+        if driver_id != "selenium":
+            return None
+        try:
+            return selenium_bindings[engine]
+        except KeyError as exc:
+            raise BenchError(
+                f"missing pre-resolved Selenium binding for ({engine}, selenium)"
+            ) from exc
+
     def run_one(task: ResolvedTask, attempt: int, browsers: EngineHandles) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         seed = seed_for_attempt(args.seed, task, attempt)
         gate_result: dict[str, Any]
-
-        def scenario_binding_for(engine: str) -> dict[str, Any] | None:
-            driver_kind = str(task.driver.get("kind") or "")
-            driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(driver_kind)
-            if driver_id is None:
-                return None
-            unavailable = unavailable_bindings.get((engine, driver_id))
-            if unavailable is not None:
-                return unavailable
-            if driver_id != "selenium":
-                return None
-            try:
-                return selenium_bindings[engine]
-            except KeyError as exc:
-                raise BenchError(
-                    f"missing pre-resolved Selenium binding for ({engine}, selenium)"
-                ) from exc
 
         if not gating_active:
             # Independent mode: no Chrome oracle. Every selected engine runs and
@@ -7190,7 +7195,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                         score_mode=score_mode,
                         resource_runtime=resource_runtime,
                         fixture_server=fixture_server,
-                        scenario_binding=scenario_binding_for(engine),
+                        scenario_binding=scenario_binding_for(engine, task),
                     )
                 )
             return rows
@@ -7208,7 +7213,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                 fixture_base_url,
                 resource_runtime=resource_runtime,
                 fixture_server=fixture_server,
-                scenario_binding=scenario_binding_for("chrome"),
+                scenario_binding=scenario_binding_for("chrome", task),
             )
             rows.append(chrome_row)
             if gate_result["status"] != "pass":
@@ -7236,7 +7241,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                     fixture_base_url=fixture_base_url,
                     resource_runtime=resource_runtime,
                     fixture_server=fixture_server,
-                    scenario_binding=scenario_binding_for("chrome"),
+                    scenario_binding=scenario_binding_for("chrome", task),
                 )
                 rows.append(chrome_result)
                 gate_result = {"required": False, "status": chrome_result["status"], "chrome_attempt_ref": ref}
@@ -7264,10 +7269,38 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                     score_mode=score_mode,
                     resource_runtime=resource_runtime,
                     fixture_server=fixture_server,
-                    scenario_binding=scenario_binding_for(engine),
+                    scenario_binding=scenario_binding_for(engine, task),
                 )
             )
         return rows
+
+    retry_manager: BrowserManager | None = None
+    tasks_by_id = {task.task_id: task for task in tasks}
+
+    def rerun_with_layout(original: dict[str, Any]) -> dict[str, Any]:
+        """Execute one original attempt with a fresh layout-enabled browser."""
+        nonlocal retry_manager
+        if retry_manager is None:
+            retry_manager = BrowserManager(
+                dynamic_ports=True, resource_runtime=resource_runtime,
+                worker_slot=len(managers) + 1,
+            )
+            managers.append(retry_manager)
+        task = tasks_by_id[original["task_id"]]
+        previous = retry_manager.processes.get("moli")
+        if previous is not None:
+            retry_manager._kill_process(previous.process)
+        browser = retry_manager.launch("moli", task.launch_profile, ("--layout",))
+        browser.prev_task_id = retry_manager.note_task("moli", task.task_id)
+        return run_driver_attempt(
+            run_dir, run_dir / "layout_retry_results.jsonl", run_id + "-layout-retry",
+            task, "moli", original["attempt"], original["seed"], browser,
+            original["chrome_gate"], score_eligible, fixture_base_url,
+            score_mode=score_mode, resource_runtime=resource_runtime,
+            fixture_server=fixture_server,
+            scenario_binding=scenario_binding_for("moli", task),
+            physical_variant="layout-on",
+        )
 
     shutdown_event = threading.Event()
     previous_signal_handlers: dict[int, Any] = {}
@@ -7332,52 +7365,17 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                 reporter.phase(f"Failed after {reporter.completed_rows}/{reporter.total_rows} result rows")
                 raise BenchError("parallel run failed for some attempts:\n" + "\n".join(errors[:10]))
         reporter.finish()
-        if "moli" in selected_engines and args.moli_layout == "off" and getattr(args, "try_layout", False):
-            initial_rows = read_jsonl(results_path)
-            failed_ids = layout_retry.failed_cases(initial_rows, args.k)
-            if failed_ids:
-                reporter.phase(f"Retrying {len(failed_ids)} failed Moli cases with layout on: {args.k} attempts each")
-                initial_path = run_dir / "initial_results.jsonl"
-                initial_path.write_bytes(results_path.read_bytes())
-                retry_path = run_dir / "layout_retry_results.jsonl"
-                retry_rows = []
-                manager = BrowserManager(dynamic_ports=True, resource_runtime=resource_runtime, worker_slot=len(managers) + 1)
-                managers.append(manager)
-                originals = {(row["task_id"], row["attempt"]): row for row in initial_rows if row["engine"] == "moli"}
-                for task in tasks:
-                    if task.task_id not in failed_ids:
-                        continue
-                    for attempt in range(1, args.k + 1):
-                        previous = manager.processes.get("moli")
-                        if previous is not None:
-                            manager._kill_process(previous.process)
-                        browser = manager.launch("moli", task.launch_profile, ("--layout",))
-                        browser.prev_task_id = manager.note_task("moli", task.task_id)
-                        old = originals[(task.task_id, attempt)]
-                        driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(str(task.driver.get("kind") or ""))
-                        binding = unavailable_bindings.get(("moli", driver_id))
-                        if binding is None and driver_id == "selenium":
-                            binding = selenium_bindings["moli"]
-                        row = run_driver_attempt(
-                            run_dir, retry_path, run_id + "-layout-retry", task, "moli", attempt,
-                            old["seed"], browser, old["chrome_gate"], score_eligible,
-                            fixture_base_url, score_mode, resource_runtime, fixture_server, binding,
-                            physical_variant="layout-on",
-                        )
-                        retry_rows.append(row)
-                final_rows = layout_retry.replace_cases(initial_rows, retry_rows, args.k, run_dir, run_id)
-                final_path = run_dir / ".final_results.jsonl"
-                final_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in final_rows), encoding="utf-8")
-                final_path.replace(results_path)
-                run_manifest["layout_retry"] = {
-                    "initial_results": "initial_results.jsonl", "initial_results_sha256": sha256_file(initial_path),
-                    "retry_results": "layout_retry_results.jsonl", "retry_results_sha256": sha256_file(retry_path),
-                    "final_results_sha256": sha256_file(results_path),
-                    "retried_cases": sorted(failed_ids), "extra_executions": len(retry_rows),
-                    "extra_execution_duration_ms": sum(row["duration_ms"] for row in retry_rows),
-                    "recovered_cases": sorted(task_id for task_id in failed_ids if all(row["status"] == "pass" for row in retry_rows if row["task_id"] == task_id)),
-                }
-                reporter.phase(f"Final Moli cases: {layout_retry.pass_count(final_rows)}/{len(tasks)} passed")
+        retry_policy = run_manifest.get("moli_layout_policy") or {}
+        if "moli" in selected_engines and retry_policy.get("retry_layout") == "on":
+            receipt = layout_retry.rerun_failed_cases(
+                run_dir, run_id, args.k, rerun_with_layout, reporter.phase,
+            )
+            if receipt is not None:
+                run_manifest["layout_retry"] = receipt
+        if "moli" in selected_engines:
+            run_manifest["moli_failure_tasks"] = write_moli_failure_tasks(
+                run_dir, read_jsonl(results_path),
+            )
         run_completed = True
     finally:
         for local_manager in managers:
