@@ -62,7 +62,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
-    parser.add_argument("--moli-layout", choices=("on", "off", "auto"), default="off")
+    parser.add_argument("--try-layout", action="store_true", help="Rerun failed cases with layout on for the same k attempts; replace only all-pass reruns")
+    parser.add_argument("--moli-layout", choices=("on", "off"), default="off")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
         parser.error("Moli must be an executable absolute path")
@@ -119,6 +120,7 @@ def main() -> None:
             "moli_sha256": binary_sha,
             "moli_version": version,
             "moli_layout": args.moli_layout,
+            "try_layout": args.try_layout,
         }
         receipt.write_text(json.dumps(conditions, indent=2) + "\n", encoding="utf-8")
         env = dict(os.environ)
@@ -145,6 +147,8 @@ def main() -> None:
             "--provenance-level", profile["provenance_level"], "--no-progress",
         ]
         print(f"Moli {version} sha256={binary_sha}; {len(task_ids)} tasks × {profile['attempts_per_task']} attempts", flush=True)
+        if args.try_layout:
+            command.append("--try-layout")
         subprocess.run(command, cwd=ROOT, env=env, check=True)
         if file_sha256(binary) != binary_sha or file_sha256(driver) != driver_sha:
             raise ValueError("Moli or ChromeDriver binary changed during the run")
@@ -158,21 +162,8 @@ def main() -> None:
     has_global_layout = "--layout" in manifest["engines"]["moli"].get("serve_args", [])
     if has_global_layout != (args.moli_layout == "on"):
         raise ValueError("Moli global layout flag differs from the declared run")
-    if args.moli_layout == "auto":
-        receipt = manifest.get("moli_layout_policy") or {}
-        encoded = json.dumps(receipt.get("assignments", []), sort_keys=True, separators=(",", ":")).encode()
-        if hashlib.sha256(encoded).hexdigest() != receipt.get("assignments_sha256"):
-            raise ValueError("automatic layout assignment receipt hash does not match")
-        assignments = {item["task_id"]: item["layout"] for item in receipt.get("assignments", [])}
-        if set(assignments) != set(task_ids):
-            raise ValueError("automatic layout assignments do not cover the frozen cohort")
-        with (run_dir / "results.jsonl").open(encoding="utf-8") as handle:
-            for line in handle:
-                row = json.loads(line)
-                expected = assignments[row["task_id"]] == "on"
-                actual = row["engine_provenance"]["layout_enabled"]
-                if actual != expected:
-                    raise ValueError(f"Moli launched with the wrong layout mode: {row['task_id']}")
+    if (manifest.get("moli_layout_policy") or {}).get("try_layout", False) != args.try_layout:
+        raise ValueError("Moli retry policy differs from the declared run")
     print(f"Complete cohort: {run_dir}")
 
 

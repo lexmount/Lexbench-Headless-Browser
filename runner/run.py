@@ -32,7 +32,7 @@ from typing import Any
 
 if __package__:
     from runner import bindings as binding_catalog
-    from runner import moli_layout_policy, layout_qualification
+    from runner import layout_retry
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -41,8 +41,7 @@ else:
     # Keep the historical direct-script entry point (`python3 runner/run.py`)
     # working as well as the preferred module form (`python3 -m runner.run`).
     import bindings as binding_catalog
-    import moli_layout_policy
-    import layout_qualification
+    import layout_retry
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -2245,21 +2244,8 @@ def run_manifest_payload(
 
     layout_receipt = None
     if "moli" in selected_engines:
-        frozen = getattr(args, "_layout_assignments", None)
-        if frozen is None:
-            registry = moli_layout_policy.load_registry(pathlib.Path(getattr(args, "moli_layout_requirements", None) or moli_layout_policy.DEFAULT_REGISTRY))
-            frozen = moli_layout_policy.assignments(tasks, engines["moli"]["sha256"], registry)
-            mode = getattr(args, "moli_layout", "off")
-            if mode != "auto":
-                frozen = {key:{**value,"layout":mode} for key,value in frozen.items()}
-        assignments = [frozen[task.task_id] for task in sorted(tasks, key=lambda item:item.task_id)]
-        assignment_bytes = json.dumps(assignments, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        layout_receipt = {
-            "policy_id": moli_layout_policy.POLICY_ID,
-            "assignments_sha256": hashlib.sha256(assignment_bytes).hexdigest(),
-            "assignments": assignments,
-            "qualification": getattr(args, "_layout_qualification", None),
-        }
+        layout_receipt = layout_retry.policy(getattr(args, "moli_layout", "off"), getattr(args, "try_layout", False))
+
 
     return {
         "run_id": run_id,
@@ -6253,8 +6239,13 @@ def run_driver_attempt(
     resource_runtime: ResourceRuntime | None = None,
     fixture_server: FixtureServer | None = None,
     scenario_binding: dict[str, Any] | None = None,
+    physical_variant: str | None = None,
+    persist_result: bool = True,
 ) -> dict[str, Any]:
     tmp_dir, final_dir, artifact_rel = artifact_paths(run_dir, task, engine, attempt)
+    if physical_variant:
+        final_dir = final_dir / physical_variant
+        artifact_rel = (pathlib.Path(artifact_rel) / physical_variant).as_posix()
     if final_dir.exists():
         raise BenchError(f"artifact directory already exists; refusing to overwrite: {final_dir}")
     tmp_dir.mkdir(parents=True, exist_ok=False)
@@ -6673,7 +6664,8 @@ def run_driver_attempt(
     ensure_profile_files(tmp_dir, task.artifact_profile)
     final_dir.parent.mkdir(parents=True, exist_ok=True)
     tmp_dir.replace(final_dir)
-    append_result(results_path, result)
+    if persist_result:
+        append_result(results_path, result)
     return result
 
 
@@ -7107,15 +7099,9 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
 
         @staticmethod
         def extra_args(engine: str, task: ResolvedTask) -> tuple[str, ...]:
-            if engine == "moli" and args.moli_layout == "auto":
-                return ("--layout",) if args._layout_assignments[task.task_id]["layout"] == "on" else ()
             return ()
 
         def for_task(self, engine: str, task: ResolvedTask) -> BrowserProcess:
-            if getattr(args, "_layout_fresh_attempts", False):
-                previous = self.manager.processes.get(engine)
-                if previous is not None:
-                    self.manager._kill_process(previous.process)
             browser = self.manager.launch(engine, task.launch_profile, self.extra_args(engine, task))
             browser.prev_task_id = self.manager.note_task(engine, task.task_id)
             return browser
@@ -7346,6 +7332,52 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                 reporter.phase(f"Failed after {reporter.completed_rows}/{reporter.total_rows} result rows")
                 raise BenchError("parallel run failed for some attempts:\n" + "\n".join(errors[:10]))
         reporter.finish()
+        if "moli" in selected_engines and args.moli_layout == "off" and getattr(args, "try_layout", False):
+            initial_rows = read_jsonl(results_path)
+            failed_ids = layout_retry.failed_cases(initial_rows, args.k)
+            if failed_ids:
+                reporter.phase(f"Retrying {len(failed_ids)} failed Moli cases with layout on: {args.k} attempts each")
+                initial_path = run_dir / "initial_results.jsonl"
+                initial_path.write_bytes(results_path.read_bytes())
+                retry_path = run_dir / "layout_retry_results.jsonl"
+                retry_rows = []
+                manager = BrowserManager(dynamic_ports=True, resource_runtime=resource_runtime, worker_slot=len(managers) + 1)
+                managers.append(manager)
+                originals = {(row["task_id"], row["attempt"]): row for row in initial_rows if row["engine"] == "moli"}
+                for task in tasks:
+                    if task.task_id not in failed_ids:
+                        continue
+                    for attempt in range(1, args.k + 1):
+                        previous = manager.processes.get("moli")
+                        if previous is not None:
+                            manager._kill_process(previous.process)
+                        browser = manager.launch("moli", task.launch_profile, ("--layout",))
+                        browser.prev_task_id = manager.note_task("moli", task.task_id)
+                        old = originals[(task.task_id, attempt)]
+                        driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(str(task.driver.get("kind") or ""))
+                        binding = unavailable_bindings.get(("moli", driver_id))
+                        if binding is None and driver_id == "selenium":
+                            binding = selenium_bindings["moli"]
+                        row = run_driver_attempt(
+                            run_dir, retry_path, run_id + "-layout-retry", task, "moli", attempt,
+                            old["seed"], browser, old["chrome_gate"], score_eligible,
+                            fixture_base_url, score_mode, resource_runtime, fixture_server, binding,
+                            physical_variant="layout-on",
+                        )
+                        retry_rows.append(row)
+                final_rows = layout_retry.replace_cases(initial_rows, retry_rows, args.k, run_dir, run_id)
+                final_path = run_dir / ".final_results.jsonl"
+                final_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in final_rows), encoding="utf-8")
+                final_path.replace(results_path)
+                run_manifest["layout_retry"] = {
+                    "initial_results": "initial_results.jsonl", "initial_results_sha256": sha256_file(initial_path),
+                    "retry_results": "layout_retry_results.jsonl", "retry_results_sha256": sha256_file(retry_path),
+                    "final_results_sha256": sha256_file(results_path),
+                    "retried_cases": sorted(failed_ids), "extra_executions": len(retry_rows),
+                    "extra_execution_duration_ms": sum(row["duration_ms"] for row in retry_rows),
+                    "recovered_cases": sorted(task_id for task_id in failed_ids if all(row["status"] == "pass" for row in retry_rows if row["task_id"] == task_id)),
+                }
+                reporter.phase(f"Final Moli cases: {layout_retry.pass_count(final_rows)}/{len(tasks)} passed")
         run_completed = True
     finally:
         for local_manager in managers:
@@ -7911,13 +7943,6 @@ def command_validate(args: argparse.Namespace) -> int:
     # slice and should not fail on unrelated scenario drift.
     if not args.layer and not args.subset and not args.task:
         errors = list(errors) + scenario_sync_errors()
-    if not args.layer and not args.subset and not args.task and manifest_path.resolve() == DEFAULT_MANIFEST.resolve():
-        try:
-            registry = moli_layout_policy.load_registry()
-            if set(registry) != {task.task_id for task in tasks} or any(registry[task.task_id]["task_sha256"] != task.sha256 for task in tasks):
-                errors = list(errors) + ["layout requirement coverage or task hash changed; run tools/update_moli_layout_requirements.py --write"]
-        except (ValueError, OSError) as exc:
-            errors = list(errors) + [f"layout requirements: {exc}"]
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
@@ -7941,7 +7966,6 @@ def command_list(args: argparse.Namespace) -> int:
     _semantic_path, _semantic_map, semantic_index = semantic_task_index(
         manifest_path, suite
     )
-    layout_registry = moli_layout_policy.load_registry()
     if args.kind == "subsets":
         rows = []
         counts: dict[str, int] = {}
@@ -7982,7 +8006,6 @@ def command_list(args: argparse.Namespace) -> int:
                     else "web_platform_workflow_semantic_correctness"
                 ),
                 "semantic_capability": semantic_index.get(task.task_id),
-                "layout_requirement": layout_registry.get(task.task_id, {"requirement":"unknown","reason":"unregistered_task"}),
             }
             for task in tasks
         ]
@@ -8010,20 +8033,6 @@ def command_run(args: argparse.Namespace) -> int:
     score_eligible, score_reasons = score_eligible_for_run(
         suite, tasks, selected_engines, args.chrome_gate, args.debug, score_mode
     )
-    if "moli" in selected_engines:
-        if getattr(args, "moli_layout", "off") == "auto" and not args.seed:
-            args.seed = secrets.token_hex(16)
-        registry_path = pathlib.Path(getattr(args, "moli_layout_requirements", None) or moli_layout_policy.DEFAULT_REGISTRY).resolve()
-        try:
-            registry = moli_layout_policy.load_registry(registry_path)
-            binary = pathlib.Path(ENGINE_DEFS["moli"]["binary"])
-            args._layout_assignments = moli_layout_policy.assignments(tasks, sha256_file(binary) if binary.is_file() else None, registry)
-        except (ValueError, OSError) as exc:
-            raise BenchError(f"invalid Moli layout requirements: {exc}") from exc
-        mode = getattr(args, "moli_layout", "off")
-        if mode != "auto":
-            args._layout_assignments = {key:{**value,"layout":mode} for key,value in args._layout_assignments.items()}
-        args._layout_qualification = None
     if args.dry_run:
         _semantic_path, _semantic_map, semantic_index = semantic_task_index(
             manifest_path, suite
@@ -8036,8 +8045,7 @@ def command_run(args: argparse.Namespace) -> int:
         payload = {
             "manifest": rel_to_repo(manifest_path),
             "seed": args.seed,
-            "moli_layout_assignments": list(getattr(args, "_layout_assignments", {}).values()),
-            "moli_layout_qualification_calls": 6 * sum(item["requirement"] == "unknown" for item in getattr(args, "_layout_assignments", {}).values()) if getattr(args,"moli_layout","off") == "auto" else 0,
+            "moli_layout_policy": layout_retry.policy(getattr(args, "moli_layout", "off"), getattr(args, "try_layout", False)),
             "selected_layers": sorted({task.layer for task in tasks}),
             "tasks": [
                 task.to_run_manifest(semantic_index.get(task.task_id))
@@ -8071,16 +8079,6 @@ def command_run(args: argparse.Namespace) -> int:
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
-    if "moli" in selected_engines and getattr(args, "moli_layout", "off") == "auto":
-        # Fail on a requested output collision before making qualification calls.
-        output = resolve_path(args.out, DEFAULT_RUNS_DIR) if args.out else DEFAULT_RUNS_DIR
-        requested = args.run_id or getattr(args, "label", None)
-        if requested and getattr(args, "run_id_conflict", "suffix") == "error" and (output / compact_run_id(requested)).exists():
-            raise BenchError("run already exists; qualification was not started")
-        try:
-            args._layout_assignments, args._layout_qualification = layout_qualification.qualify(sys.modules[__name__], args, suite, tasks, args._layout_assignments, registry_path)
-        except (ValueError, OSError) as exc:
-            raise BenchError(f"Moli layout qualification failed: {exc}") from exc
     run_dir = run_attempts(args, suite, tasks)
     if getattr(args, "report", True):
         generate_report_files(run_dir)
@@ -8219,6 +8217,12 @@ def write_scorecard(run_dir: pathlib.Path, run_manifest: dict[str, Any], rows: l
     lines.append(f"- score_eligible: `{run_manifest.get('score_eligible')}`")
     lines.append(f"- enabled_subsets: `{', '.join(run_manifest.get('enabled_subsets', []))}`")
     lines.append(f"- attempts: `{len(rows)}`")
+    if (run_manifest.get("moli_layout_policy") or {}).get("retry_layout") == "on":
+        receipt=run_manifest.get("layout_retry") or {}
+        lines.append(f"- Layout recovery: failed cases rerun {run_manifest['k_runs']} times with layout on; replace only all-pass reruns.")
+        lines.append(f"- Recovered cases: {len(receipt.get('recovered_cases', []))}; retried cases: {len(receipt.get('retried_cases', []))}; extra executions: {receipt.get('extra_executions', 0)}.")
+        lines.append(f"- Extra rerun driver duration: {receipt.get('extra_execution_duration_ms', 0)} ms (excluded from final-execution latency).")
+
     lines.append("")
     lines.append("| engine | binary | version | sha12 |")
     lines.append("|---|---|---|---|")
@@ -8384,6 +8388,7 @@ def generate_report_files(run_dir: pathlib.Path, emit: bool = True) -> None:
         raise BenchError(f"run directory not found: {run_dir}")
     run_manifest = load_json(run_dir / "run_manifest.json")
     rows = read_jsonl(run_dir / "results.jsonl")
+    layout_retry.verify(run_dir, run_manifest, rows)
     scores = summarize_results(run_manifest, rows)
     write_json(run_dir / "scores.json", scores)
     write_scorecard(run_dir, run_manifest, rows, scores)
@@ -8543,10 +8548,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
-        "--moli-layout", choices=("off", "on", "auto"), default="off",
-        help="Moli layout: off (default), on (all tasks), auto (three-state annotations; unknown tasks receive paired qualification before scored calls)",
+        "--moli-layout", choices=("off", "on"), default="off",
+        help="Moli layout: off (default), on (always enabled)",
     )
-    run.add_argument("--moli-layout-requirements", help="three-state requirement registry (default: config/moli_layout_requirements.json)")
+    run.add_argument("--try-layout", action="store_true", help="After the normal run, rerun each failed Moli case with layout on for the same k attempts; replace original results only when all rerun attempts pass")
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
         "--k",

@@ -132,6 +132,6 @@ Round B compares its task-duration distribution against round A to quantify how 
 - Rows come back as `infra`: the identity gate failed, meaning the client did not reach the engine it was supposed to reach. This is an environment or routing problem, never a compatibility score.
 - A compiled adapter is missing: rebuild with the Go/Rust commands above; `doctor` prints the exact command it expects.
 
-## Per-task Moli layout
+## Moli layout rerun
 
-`run --moli-layout off` is the default. Use `on` for all-layout runs, or `auto` for hash-bound per-task requirements and paired qualification of unknown tasks. `--moli-layout-requirements PATH` selects a reusable annotation file. See [Moli layout selection](MOLI_LAYOUT_POLICY.md) for the three-state labels, extra-call budget, clean-state qualification and evidence rules.
+Layout is off by default. Add `--try-layout` to finish the normal three attempts first, then rerun failed cases with layout on for three attempts. Replace a case only when all three rerun attempts pass; otherwise keep its original failed result. `--moli-layout on` enables layout from the start. See [Moli layout rerun](MOLI_LAYOUT_POLICY.md).

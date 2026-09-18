@@ -17,3 +17,5 @@ python tools/compare_moli_cohort.py moli_v1_qualified370 moli_v2_qualified370
 ```
 
 Each run produces 1,110 result rows under the ignored `runs/` directory and a sibling `<run-id>.conditions.json` receipt. The run tool refuses to overwrite an existing run, checks the frozen cohort and manifest before launch, records the Moli and ChromeDriver binary hashes, and verifies completion. The comparator checks every task and attempt plus all recorded non-Moli conditions. Report pass counts from `results.jsonl`, keeping `infra` and `unsupported` separate from task failure. A Moli upgrade may legitimately change task outcomes, timings, and its binary hash and version.
+
+Add `--try-layout` to an off-mode cohort to rerun its failed cases with layout enabled for all three attempts. Only cases passing all three rerun attempts replace their original results. Use the same retry policy for both version cohorts; original and rerun evidence are retained separately.
