@@ -1,47 +1,52 @@
-"""Pre-call Moli layout choice from the frozen task contract.
+"""Choose layout from an explicit allowlist of layout-independent contracts.
 
-The policy does not inspect results. Unknown driver shapes fail closed to
-on-demand layout, because the primary objective is task completion.
+The policy never reads measured outcomes. New features, commands, scripts,
+scenes, or grading contracts require layout until independently classified.
 """
 
 from __future__ import annotations
 
-import json
-import re
 from typing import Any
 
 
-POLICY_ID = "contract_layout_v1"
-CONTRACT_INSPECTABLE_DRIVERS = frozenset({"raw_cdp", "node_cdp_probe"})
-LAYOUT_FEATURE = re.compile(
-    r"(?:^|\.)(?:layout|geometry|input|mouse|touch|scroll|screenshot|"
-    r"hit_test|box_model|content_quads|computed_style|intersection|paint|pdf|"
-    r"highlight|overlay|window_bounds|contents_size)(?:\.|$)",
-    re.IGNORECASE,
-)
-LAYOUT_OPERATION = re.compile(
-    r"getBoundingClientRect|elementFromPoint|elementsFromPoint|"
-    r"(?:offset|client|scroll)(?:Width|Height|Top|Left)|"
-    r"dispatchMouseEvent|dispatchTouchEvent|captureScreenshot|printToPDF|"
-    r"getBoxModel|getContentQuads|getLayoutMetrics|scrollIntoView|"
-    r"highlight|setWindowBounds|getWindowBounds|setContentsSize|"
-    r"setDefaultBackgroundColorOverride|setEmulatedVisionDeficiency|setEmulatedOSTextScale",
-    re.IGNORECASE,
-)
+POLICY_ID = "contract_layout_v2"
+# Protocol metadata reads require neither page geometry nor script execution.
+LAYOUT_INDEPENDENT_OPERATIONS = {
+    "Browser.getVersion": "cdp.browser.get_version",
+    "Schema.getDomains": "cdp.schema.get_domains",
+}
+_STEP_FIELDS = frozenset({"method", "params", "optional", "save_as", "session"})
 
 
 def choose_layout(task: dict[str, Any]) -> str:
-    """Return ``on`` or ``off`` before any attempt is executed."""
+    """Use mock layout only for a completely recognized metadata-read contract."""
     driver = task.get("driver")
-    if not isinstance(driver, dict) or driver.get("kind") not in CONTRACT_INSPECTABLE_DRIVERS:
+    if not isinstance(driver, dict) or driver.get("kind") != "raw_cdp":
+        return "on"
+    if set(driver) != {"kind", "steps"}:
+        return "on"
+    if task.get("scene") != {"kind": "about_blank"}:
+        return "on"
+    if task.get("grader") != {"kind": "inline_assertions", "checks": [{"kind": "no_error"}]}:
         return "on"
     features = task.get("features")
     if not isinstance(features, list) or not features or any(not isinstance(item, str) for item in features):
         return "on"
-    if any(item.startswith("tool.agent_browser.") for item in features):
+    steps = driver["steps"]
+    if not isinstance(steps, list) or not steps:
         return "on"
-    if any(LAYOUT_FEATURE.search(item) for item in features):
-        return "on"
-    if LAYOUT_OPERATION.search(json.dumps(driver, ensure_ascii=False, sort_keys=True)):
-        return "on"
-    return "off"
+    recognized_features: set[str] = set()
+    for step in steps:
+        if not isinstance(step, dict) or not set(step).issubset(_STEP_FIELDS):
+            return "on"
+        method = step.get("method")
+        if not isinstance(method, str) or method not in LAYOUT_INDEPENDENT_OPERATIONS:
+            return "on"
+        if step.get("params", {}) != {} or step.get("session", "page") not in ("page", "browser"):
+            return "on"
+        if "optional" in step and not isinstance(step["optional"], bool):
+            return "on"
+        if "save_as" in step and not isinstance(step["save_as"], str):
+            return "on"
+        recognized_features.add(LAYOUT_INDEPENDENT_OPERATIONS[method])
+    return "off" if set(features) == recognized_features else "on"
