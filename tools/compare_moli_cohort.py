@@ -22,6 +22,15 @@ def normalized_manifest(manifest: dict) -> dict:
     for key in ("version", "sha256", "sha256_12", "expected_sha256", "expected_sha256_12"):
         moli.pop(key, None)
     result.get("host_telemetry", {}).pop("summary", None)
+    # With a fixed global override, version-specific annotations are metadata,
+    # not treatment changes. Keep every effective launch assignment comparable.
+    policy = result.get("moli_layout_policy")
+    if isinstance(policy, dict) and moli.get("layout_mode") in {"off", "on"}:
+        policy.pop("assignments_sha256", None)
+        policy["assignments"] = [
+            {key:item[key] for key in ("task_id", "task_sha256", "layout")}
+            for item in policy.get("assignments", [])
+        ]
     return result
 
 

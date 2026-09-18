@@ -6,13 +6,13 @@ Run on the **same prepared host** for both Moli versions. The runner records hos
 
 The tested macOS arm64 setup uses Python 3.11, Node 24, the pinned harness drivers, and ChromeDriver 150.0.7871.49. Resource profiling and host telemetry are disabled for functional comparisons. The general resource benchmark still requires Linux with cgroup v2.
 
-The official automation cohort explicitly passes `--moli-layout on`, which starts Moli with `serve --layout`. Real coordinate input and hit testing require that flag in current Moli releases. The runner's general default remains Moli's lightweight mock-layout mode; it deliberately rejects coordinate mouse and touch dispatch. Optional visual/media resource fetching is separately task-scoped through `launch_profile=all_resources`. Compare version candidates with the same launch flags and frozen run profile; a default-mode run and a layout-enabled run test different runtime configurations.
+To reproduce the all-layout automation cohort, explicitly pass `--moli-layout on`, which starts Moli with `serve --layout`. Real coordinate input and hit testing require that flag in current Moli releases. The runner's general default remains Moli's lightweight mock-layout mode; it deliberately rejects coordinate mouse and touch dispatch. Optional visual/media resource fetching is separately task-scoped through `launch_profile=all_resources`. Compare version candidates with the same launch flags and frozen run profile; a default-mode run and a layout-enabled run test different runtime configurations.
 
 From a Python environment satisfying the repository's dependencies:
 
 ```sh
-python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_qualified370
-python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_qualified370
+python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_qualified370 --moli-layout on
+python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_qualified370 --moli-layout on
 python tools/compare_moli_cohort.py moli_v1_qualified370 moli_v2_qualified370
 ```
 

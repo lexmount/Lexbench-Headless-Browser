@@ -1,11 +1,56 @@
-# Moli task-scoped layout policy
+# Moli layout selection
 
-`--moli-layout auto` selects a Moli launch mode from each frozen task definition before any attempt runs. The policy ID is `contract_layout_v2`. The run manifest records every task ID, definition SHA-256, chosen mode, and a hash of the full assignment list. Each result records the actual `--layout` launch flag. Earlier `contract_layout_v1` receipts retain their original assignments and must not be interpreted using this policy.
+Layout is page geometry and hit testing, not an instruction to continuously render every page. Resource fetching remains controlled separately by `launch_profile`.
 
-Mock layout is allowed only for recognized raw CDP metadata reads: `Browser.getVersion` and `Schema.getDomains`, with their matching feature declarations, empty command parameters, an `about:blank` scene, and protocol-error-only grading. The complete driver and step shapes must be recognized. Additional features, operations, script hooks, scenes, or grading requirements select real layout. In the current 1,928-task corpus, exactly two metadata probes meet this contract.
+## Run modes
 
-All Node scripts, framework, WebDriver, MCP, agent-tool, geometry, visibility, computed-style and device-metrics tasks select real layout. An unmatched feature or command is not proof that layout is unnecessary. Extending the allowlist requires an independently justified contract and regression coverage; task names and measured outcomes do not determine eligibility. Optional image, font, and media fetching remains controlled independently by the task's `launch_profile`.
+| `--moli-layout` | Behavior |
+| --- | --- |
+| `off` (default) | Disable layout for every task. No qualification calls. |
+| `on` | Enable layout for every task. No qualification calls. |
+| `auto` | Use each task's requirement. Qualify unknown requirements before the measured run, then freeze the selected mode. |
 
-`--layout` computes layout on demand. Changing a worker's launch flags restarts its Moli process; comparisons must include that cold-start cost as well as warm task CPU, memory, traffic, latency, and success.
+Both `runner/run.py run` and `tools/run_moli_cohort.py` default to `off`. Pass `on` explicitly to reproduce an all-layout cohort. `auto` is a distinct execution policy, not a reinterpretation of an existing off/on score.
 
-This conservative policy is a benchmark candidate, not an engine capability or resource-saving claim. Before adopting it for a benchmark, compare it prospectively against all-layout Moli and Chromium on the same frozen tasks, host, seed, and driver pins. Keep the common-denominator all-call resource distribution separate from each engine's successful-call distribution.
+## Three-state requirements
+
+Every enabled task has an entry in `config/moli_layout_requirements.json`. Keeping annotations separate preserves the frozen task files and historical task hashes.
+
+| `requirement` | Meaning | Auto behavior |
+| --- | --- | --- |
+| `required` | A recognized mandatory geometry operation, or stable off-fail/on-pass evidence for this exact binary and task | Enable layout |
+| `not_required` | A completely recognized layout-independent contract, or stable off-pass evidence for this exact binary and task | Disable layout |
+| `unknown` | Unclassified, changed, unstable, or unsuccessful in both modes | Run paired qualification |
+
+Explicit coordinate mouse/touch input, coordinate hit testing, box geometry and real screenshot/print operations establish a layout dependency. An optional probe does not establish a requirement for the whole task. A framework name, `click` label, or arbitrary JavaScript string does not establish its actual execution path. Such contracts remain unknown unless qualified. The selector never replaces coordinate input with DOM activation.
+
+Empirical annotations bind the complete task SHA-256 and Moli binary SHA-256. Their scope is acceptance under that specific task contract, not a claim that a driver or website never needs layout. A binary change invalidates empirical labels; independently recognized geometry operations can still establish a requirement. A task change makes the old annotation unknown. `list --kind tasks --json` exposes annotations; full `validate` rejects missing, extra or stale task entries. `tools/update_moli_layout_requirements.py --write` regenerates new/changed entries without dropping valid existing evidence labels.
+
+## Unknown-task qualification
+
+```mermaid
+flowchart TD
+    A[Resolve frozen task requirements] --> B{Requirement known?}
+    B -->|Required or not required| C[Select on or off]
+    B -->|Unknown| D[Same tasks and seeds: off three times, on three times]
+    D --> E[Check complete evidence and unchanged inputs]
+    E --> F[Classify and select mode]
+    F --> C
+    C --> G[Freeze assignments]
+    G --> H[Run the declared measured matrix]
+```
+
+Qualification uses only controlled `about_blank` or `self_hosted_fixture` scenes. Each mode gets a fresh fixture server; each physical attempt starts a fresh Moli process. Both modes use the same frozen tasks, seeds, driver and grader, one worker, and three attempts per task. If `--seed` is omitted, auto generates and records one seed before either mode runs. Engine, source, fixture, manifest, registry and task hashes are checked before and after qualification. No network error string is treated as proof of layout dependence; the ordinary task evaluator decides acceptance.
+
+- All three off attempts pass: `not_required`, use off.
+- All three off attempts fail and all three on attempts pass: `required`, use on.
+- Both fail, either side is unstable, or infrastructure evidence is present: retain `unknown`.
+- For an unresolved task, use the mode with more passing attempts; ties use off. This is a provisional execution choice, not a confirmed requirement.
+
+Interrupted or incomplete qualification fails closed and preserves its evidence. No partial matrix supplies a confirmed label. A missing method that fails in both modes remains unresolved.
+
+The qualification directory contains a frozen protocol, complete off/on runs, artifact hashes, `qualification.json`, and an updated `requirements.json`. Reuse the latter with `--moli-layout-requirements PATH`. Entries that remain unknown will be compared again on the next auto run. The checked-in registry is never silently edited by a benchmark execution.
+
+The formal run records policy `task_layout_v3`, the selected assignments and their hash, and the qualification receipt reference. Each result records the actual launch flag. Qualification has six physical calls per unknown task; these and their accumulated driver duration are retained separately in the manifest and score summary. They never add tasks or attempts to the formal matrix. A successful qualification does not guarantee that a later formal attempt passes; the formal score uses only its own results.
+
+`--dry-run` shows assignments and the number of additional qualification calls without starting browsers. Historical `contract_layout_v1` and `contract_layout_v2` receipts retain their original meanings.

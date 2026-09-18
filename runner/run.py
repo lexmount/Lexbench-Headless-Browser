@@ -32,7 +32,7 @@ from typing import Any
 
 if __package__:
     from runner import bindings as binding_catalog
-    from runner import moli_layout_policy
+    from runner import moli_layout_policy, layout_qualification
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -42,6 +42,7 @@ else:
     # working as well as the preferred module form (`python3 -m runner.run`).
     import bindings as binding_catalog
     import moli_layout_policy
+    import layout_qualification
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -2243,20 +2244,21 @@ def run_manifest_payload(
     calibration_baseline = getattr(args, "resource_calibration_baseline", None)
 
     layout_receipt = None
-    if getattr(args, "moli_layout", "off") == "auto" and "moli" in selected_engines:
-        assignments = [
-            {
-                "task_id": task.task_id,
-                "task_sha256": task.sha256,
-                "layout": moli_layout_policy.choose_layout(task.task),
-            }
-            for task in sorted(tasks, key=lambda item: item.task_id)
-        ]
+    if "moli" in selected_engines:
+        frozen = getattr(args, "_layout_assignments", None)
+        if frozen is None:
+            registry = moli_layout_policy.load_registry(pathlib.Path(getattr(args, "moli_layout_requirements", None) or moli_layout_policy.DEFAULT_REGISTRY))
+            frozen = moli_layout_policy.assignments(tasks, engines["moli"]["sha256"], registry)
+            mode = getattr(args, "moli_layout", "off")
+            if mode != "auto":
+                frozen = {key:{**value,"layout":mode} for key,value in frozen.items()}
+        assignments = [frozen[task.task_id] for task in sorted(tasks, key=lambda item:item.task_id)]
         assignment_bytes = json.dumps(assignments, sort_keys=True, separators=(",", ":")).encode("utf-8")
         layout_receipt = {
             "policy_id": moli_layout_policy.POLICY_ID,
             "assignments_sha256": hashlib.sha256(assignment_bytes).hexdigest(),
             "assignments": assignments,
+            "qualification": getattr(args, "_layout_qualification", None),
         }
 
     return {
@@ -7106,10 +7108,14 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         @staticmethod
         def extra_args(engine: str, task: ResolvedTask) -> tuple[str, ...]:
             if engine == "moli" and args.moli_layout == "auto":
-                return ("--layout",) if moli_layout_policy.choose_layout(task.task) == "on" else ()
+                return ("--layout",) if args._layout_assignments[task.task_id]["layout"] == "on" else ()
             return ()
 
         def for_task(self, engine: str, task: ResolvedTask) -> BrowserProcess:
+            if getattr(args, "_layout_fresh_attempts", False):
+                previous = self.manager.processes.get(engine)
+                if previous is not None:
+                    self.manager._kill_process(previous.process)
             browser = self.manager.launch(engine, task.launch_profile, self.extra_args(engine, task))
             browser.prev_task_id = self.manager.note_task(engine, task.task_id)
             return browser
@@ -7905,6 +7911,13 @@ def command_validate(args: argparse.Namespace) -> int:
     # slice and should not fail on unrelated scenario drift.
     if not args.layer and not args.subset and not args.task:
         errors = list(errors) + scenario_sync_errors()
+    if not args.layer and not args.subset and not args.task and manifest_path.resolve() == DEFAULT_MANIFEST.resolve():
+        try:
+            registry = moli_layout_policy.load_registry()
+            if set(registry) != {task.task_id for task in tasks} or any(registry[task.task_id]["task_sha256"] != task.sha256 for task in tasks):
+                errors = list(errors) + ["layout requirement coverage or task hash changed; run tools/update_moli_layout_requirements.py --write"]
+        except (ValueError, OSError) as exc:
+            errors = list(errors) + [f"layout requirements: {exc}"]
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
@@ -7928,6 +7941,7 @@ def command_list(args: argparse.Namespace) -> int:
     _semantic_path, _semantic_map, semantic_index = semantic_task_index(
         manifest_path, suite
     )
+    layout_registry = moli_layout_policy.load_registry()
     if args.kind == "subsets":
         rows = []
         counts: dict[str, int] = {}
@@ -7968,6 +7982,7 @@ def command_list(args: argparse.Namespace) -> int:
                     else "web_platform_workflow_semantic_correctness"
                 ),
                 "semantic_capability": semantic_index.get(task.task_id),
+                "layout_requirement": layout_registry.get(task.task_id, {"requirement":"unknown","reason":"unregistered_task"}),
             }
             for task in tasks
         ]
@@ -7995,6 +8010,20 @@ def command_run(args: argparse.Namespace) -> int:
     score_eligible, score_reasons = score_eligible_for_run(
         suite, tasks, selected_engines, args.chrome_gate, args.debug, score_mode
     )
+    if "moli" in selected_engines:
+        if getattr(args, "moli_layout", "off") == "auto" and not args.seed:
+            args.seed = secrets.token_hex(16)
+        registry_path = pathlib.Path(getattr(args, "moli_layout_requirements", None) or moli_layout_policy.DEFAULT_REGISTRY).resolve()
+        try:
+            registry = moli_layout_policy.load_registry(registry_path)
+            binary = pathlib.Path(ENGINE_DEFS["moli"]["binary"])
+            args._layout_assignments = moli_layout_policy.assignments(tasks, sha256_file(binary) if binary.is_file() else None, registry)
+        except (ValueError, OSError) as exc:
+            raise BenchError(f"invalid Moli layout requirements: {exc}") from exc
+        mode = getattr(args, "moli_layout", "off")
+        if mode != "auto":
+            args._layout_assignments = {key:{**value,"layout":mode} for key,value in args._layout_assignments.items()}
+        args._layout_qualification = None
     if args.dry_run:
         _semantic_path, _semantic_map, semantic_index = semantic_task_index(
             manifest_path, suite
@@ -8006,6 +8035,9 @@ def command_run(args: argparse.Namespace) -> int:
         }
         payload = {
             "manifest": rel_to_repo(manifest_path),
+            "seed": args.seed,
+            "moli_layout_assignments": list(getattr(args, "_layout_assignments", {}).values()),
+            "moli_layout_qualification_calls": 6 * sum(item["requirement"] == "unknown" for item in getattr(args, "_layout_assignments", {}).values()) if getattr(args,"moli_layout","off") == "auto" else 0,
             "selected_layers": sorted({task.layer for task in tasks}),
             "tasks": [
                 task.to_run_manifest(semantic_index.get(task.task_id))
@@ -8039,6 +8071,16 @@ def command_run(args: argparse.Namespace) -> int:
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
+    if "moli" in selected_engines and getattr(args, "moli_layout", "off") == "auto":
+        # Fail on a requested output collision before making qualification calls.
+        output = resolve_path(args.out, DEFAULT_RUNS_DIR) if args.out else DEFAULT_RUNS_DIR
+        requested = args.run_id or getattr(args, "label", None)
+        if requested and getattr(args, "run_id_conflict", "suffix") == "error" and (output / compact_run_id(requested)).exists():
+            raise BenchError("run already exists; qualification was not started")
+        try:
+            args._layout_assignments, args._layout_qualification = layout_qualification.qualify(sys.modules[__name__], args, suite, tasks, args._layout_assignments, registry_path)
+        except (ValueError, OSError) as exc:
+            raise BenchError(f"Moli layout qualification failed: {exc}") from exc
     run_dir = run_attempts(args, suite, tasks)
     if getattr(args, "report", True):
         generate_report_files(run_dir)
@@ -8158,6 +8200,7 @@ def summarize_results(run_manifest: dict[str, Any], rows: list[dict[str, Any]]) 
         "harness_version": run_manifest.get("harness_version") or "unknown",
         "score_eligible": bool(run_manifest.get("score_eligible")),
         "layers": layers,
+        "moli_layout_policy": run_manifest.get("moli_layout_policy"),
         "evaluation_axes": evaluation_axes,
         "chrome_baseline": chrome_gate,
         "chrome_gate": chrome_gate,
@@ -8501,8 +8544,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
         "--moli-layout", choices=("off", "on", "auto"), default="off",
-        help="Moli layout policy: off uses mock geometry; on enables on-demand layout; auto chooses from each frozen task contract",
+        help="Moli layout: off (default), on (all tasks), auto (three-state annotations; unknown tasks receive paired qualification before scored calls)",
     )
+    run.add_argument("--moli-layout-requirements", help="three-state requirement registry (default: config/moli_layout_requirements.json)")
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
         "--k",

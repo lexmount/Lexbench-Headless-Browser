@@ -62,7 +62,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
-    parser.add_argument("--moli-layout", choices=("on", "off", "auto"), default="on")
+    parser.add_argument("--moli-layout", choices=("on", "off", "auto"), default="off")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
         parser.error("Moli must be an executable absolute path")
