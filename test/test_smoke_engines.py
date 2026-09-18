@@ -200,6 +200,8 @@ def test_moli_native_webdriver_selenium(tmp_path):
             "sc_cs_url_surface__se",
             "--engines",
             "moli",
+            "--moli-layout",
+            "on",
             "--k",
             "1",
             "--chrome-baseline",
@@ -221,6 +223,7 @@ def test_moli_native_webdriver_selenium(tmp_path):
     assert rows[0]["engine"] == "moli"
     assert rows[0]["status"] == "pass"
     assert rows[0]["launch_profile"] == "default"
+    assert "--layout" in rows[0]["engine_provenance"]["launch_command"]
     assert "--resource" not in rows[0]["engine_provenance"]["launch_command"]
 
     manifest = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))

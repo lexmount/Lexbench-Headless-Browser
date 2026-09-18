@@ -414,7 +414,7 @@ def test_find_free_port_returns_bindable_port():
         sock.bind(("127.0.0.1", port))  # still free
 
 
-def test_moli_default_serve_command_keeps_crawler_resource_policy():
+def test_moli_default_serve_command_keeps_lightweight_mode():
     command = runner_run.serve_engine_launch_command(
         "moli", pathlib.Path("/tmp/moli"), 9333
     )

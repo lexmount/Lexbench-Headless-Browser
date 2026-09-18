@@ -52,7 +52,11 @@ DEFAULT_MANIFEST = BENCH_ROOT / "manifest.json"
 DEFAULT_RUNS_DIR = BENCH_ROOT / "runs"
 DEFAULT_K_RUNS = 1
 LOCAL_HOST = "127.0.0.1"
-DEFAULT_AGENT_BROWSER_SOCKET_DIR = pathlib.Path(tempfile.gettempdir()) / "ab"
+# macOS's per-user tempfile directory can make Unix socket paths exceed the
+# agent-browser limit once namespace and session components are appended.
+DEFAULT_AGENT_BROWSER_SOCKET_DIR = (
+    pathlib.Path("/tmp/ab") if os.name == "posix" else pathlib.Path(tempfile.gettempdir()) / "ab"
+)
 
 STATUS_VALUES = {
     "pass",
@@ -184,9 +188,8 @@ ENGINE_DEFS = {
         "upstream_commit": "63eb3d6bc284950e2eb7f8a4dadd813208a22818",
         "cdp_port": 9222,
         "role": "native_candidate",
-        # Most tasks intentionally use Moli's crawler-oriented default. Tasks
-        # whose observable contract requires visual resources opt into this
-        # profile explicitly.
+        # The crawler-oriented default deliberately avoids real layout.
+        # Automation cohorts opt into on-demand layout explicitly.
         "launch_profile_args": {
             "all_resources": ("--resource",),
         },
@@ -8458,6 +8461,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--feature", action="append")
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
+    run.add_argument(
+        "--moli-layout", choices=("off", "on"), default="off",
+        help="Moli layout policy: off preserves its lightweight default; on enables on-demand real layout and coordinate input",
+    )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
         "--k",
@@ -8569,11 +8576,19 @@ def main(argv: list[str] | None = None) -> int:
             args.k = int(suite.get("default_k_runs", DEFAULT_K_RUNS))
         except Exception:
             args.k = DEFAULT_K_RUNS
+    prior_moli_args = ENGINE_DEFS["moli"].get("serve_args")
+    if hasattr(args, "moli_layout"):
+        ENGINE_DEFS["moli"]["serve_args"] = ("--layout",) if args.moli_layout == "on" else ()
     try:
         return int(args.func(args))
     except BenchError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if prior_moli_args is None:
+            ENGINE_DEFS["moli"].pop("serve_args", None)
+        else:
+            ENGINE_DEFS["moli"]["serve_args"] = prior_moli_args
 
 
 if __name__ == "__main__":

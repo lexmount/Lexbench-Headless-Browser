@@ -6,6 +6,8 @@ Run on the **same prepared host** for both Moli versions. The runner records hos
 
 The tested macOS arm64 setup uses Python 3.11, Node 24, the pinned harness drivers, and ChromeDriver 150.0.7871.49. Resource profiling and host telemetry are disabled for functional comparisons. The general resource benchmark still requires Linux with cgroup v2.
 
+The official automation cohort explicitly passes `--moli-layout on`, which starts Moli with `serve --layout`. Real coordinate input and hit testing require that flag in current Moli releases. The runner's general default remains Moli's lightweight mock-layout mode; it deliberately rejects coordinate mouse and touch dispatch. Optional visual/media resource fetching is separately task-scoped through `launch_profile=all_resources`. Compare version candidates with the same launch flags and frozen run profile; a default-mode run and a layout-enabled run test different runtime configurations.
+
 From a Python environment satisfying the repository's dependencies:
 
 ```sh

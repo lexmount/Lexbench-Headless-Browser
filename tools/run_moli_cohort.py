@@ -132,6 +132,7 @@ def main() -> None:
             sys.executable, "-m", "runner.run", "run",
             *(part for task_id in task_ids for part in ("--task", task_id)),
             "--engines", "moli", "--score-mode", profile["score_mode"],
+            "--moli-layout", "on",
             "--chrome-baseline", profile["chrome_baseline"],
             "--seed", profile["seed"],
             "--k", str(profile["attempts_per_task"]),
@@ -150,6 +151,8 @@ def main() -> None:
             or manifest.get("completed_result_rows") != len(task_ids) * profile["attempts_per_task"]
             or manifest["engines"]["moli"]["sha256"] != binary_sha):
         raise ValueError("run did not produce the complete pinned Moli matrix")
+    if "--layout" not in manifest["engines"]["moli"].get("serve_args", []):
+        raise ValueError("Moli run omitted the required --layout flag")
     print(f"Complete baseline: {run_dir}")
 
 

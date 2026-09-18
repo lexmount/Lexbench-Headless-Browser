@@ -15,7 +15,7 @@ commands, and truth tables follow `runner/run.py`, which is the source of truth.
 | grader                    | Inline checks (value_equals/value_type/value_truthy/value_contains/eval_no_exception/eval_has_exception/no_error; empty checks fail); server-side `/__grade__/expected_answer` (equals/contains/contains_all) | L1 and L2 grading paths |
 | `default_k_runs`          | Both the manifest and the runner fallback are 1                                                                    | Development, smoke, and non-release results uniformly use k=1; only official release evidence uses an explicit `--k 3` |
 | Chrome environment        | Launch carries hermetic flags (host-resolver blackhole, background networking and HTTP cache disabled) plus `DBUS_*=/dev/null`; browser logs go to a spool file | Background traffic is controlled and log backpressure cannot freeze the browser process |
-| Moli environment          | Resource-frugal by default; only tasks with `launch_profile=all_resources` append `--resource` | Resource dependencies are declared explicitly by the task; a profile switch replaces the current process — two concurrent processes must never pollute memory results; profile and flags must enter provenance |
+| Moli environment          | The default keeps Moli's lightweight mock layout; `run --moli-layout on` opts an automation cohort into real geometry and coordinate input. Only tasks with `launch_profile=all_resources` append `--resource` | Layout and resource fetching are separate controls. A profile switch replaces the current process — two concurrent processes must never pollute memory results; flags must enter provenance |
 
 > **Testing stance**: the framework truth tables (§5/§6/§7) are locked down by `test/`; correctness is anchored to Chrome gold rather than historical run snapshots.
 
@@ -43,7 +43,7 @@ Directly `from runner import run` and assert on pure functions; no browser neede
 | `should_include_score`          | See the §5 table                                                                                          |
 | `seed_for_attempt`              | Same `(base_seed, task_id, attempt)` → stable 12 digits; different attempt → different; `base_seed=None` → random but recorded for that round          |
 | `is_unsupported_error`          | "method not found"/"not found"/"unsupported"/"unknown method" → True; anything else → False                 |
-| `serve_engine_launch_command`   | Moli has no extra resource flags by default; only `all_resources` appends `--resource`; Obscura keeps `--allow-private-network`; flags must not leak into other engines |
+| `serve_engine_launch_command`   | Moli gets `--layout` only when the run opts in; only `all_resources` appends `--resource`; Obscura keeps `--allow-private-network`; flags must not leak into other engines |
 | `BrowserManager.launch`         | Identical effective args reuse the process; when the task profile changes, the old process is killed before launching, and `processes` holds at most one instance per engine at all times |
 | `grade_inline`                  | `value_equals_3` / `result_type_number` hit; unknown check → fail                                      |
 | `FixtureServer.expected_count`  | Pure and deterministic: `10 + int(sha256(seed)[:2],16)%90` ∈ [10,99]                                            |
