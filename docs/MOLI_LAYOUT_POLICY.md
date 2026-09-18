@@ -16,4 +16,4 @@ The original matrix is retained as `initial_results.jsonl`; the full rerun is re
 
 Primary duration and resource fields describe the selected final executions. Failed recovery batches remain in the retry matrix, and the manifest retains total extra execution count and duration. `layout_retry.total_execution_duration_ms` on each replaced row includes its original and rerun durations; resource evidence for both remains in the artifacts. The manifest declares `failed_case_layout_rerun_v1`, records retried/recovered cases and hashes of all three matrices. Reports must disclose this recovery policy separately from fixed-layout runs.
 
-Each completed run also exports `moli-failure-task-ids.txt` from the selected final results. Recovered cases disappear from this remaining-failure list; unsuccessful reruns remain.
+Each completed run also exports a versioned failure list, such as `moli-1.1.7-failure-task-ids.txt`, from the selected final results. Recovered cases are omitted and unsuccessful reruns remain. The manifest binds the version and binary identity; historical lists from other versions stay unchanged.

@@ -15,7 +15,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "benchmarks/moli-failure-cohort.json"
+PROFILE = ROOT / "benchmarks/moli-0.1.1-failure-cohort.json"
 
 
 def file_sha256(path: Path) -> str:

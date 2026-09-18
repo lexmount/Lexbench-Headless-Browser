@@ -1,8 +1,8 @@
-# Moli failure cases and repeated verification
+# Moli 0.1.1 failure cases and versioned follow-up
 
-`benchmarks/moli-failure-cohort.json` defines the failure follow-up cohort. Its initial list contains 370 tasks from the 372 on which Moli 0.1.1 had no passing attempt in the three-attempt, four-engine `four_engine_full_20260812` run. Two diagnostic probes are excluded because Chrome failed all three source-run attempts: `Browser.getBrowserCommandLine` needs an undeclared `--enable-automation` launch flag; `Schema.getDomains` was sent to the browser connection by a harness routing error, although the task declares a page-target command. The routing error is fixed for new runs; the frozen selection still describes the historical source run. The profile binds the original results, exclusions, task list, and benchmark manifest by SHA-256. This is a diagnostic subset, not a fresh random sample or the full 1,928-task benchmark.
+`benchmarks/moli-0.1.1-failure-cohort.json` defines the failure follow-up cohort. Its initial list contains 370 tasks from the 372 on which Moli 0.1.1 had no passing attempt in the three-attempt, four-engine `four_engine_full_20260812` run. Two diagnostic probes are excluded because Chrome failed all three source-run attempts: `Browser.getBrowserCommandLine` needs an undeclared `--enable-automation` launch flag; `Schema.getDomains` was sent to the browser connection by a harness routing error, although the task declares a page-target command. The routing error is fixed for new runs; the frozen selection still describes the historical source run. The profile binds the original results, exclusions, task list, and benchmark manifest by SHA-256. This is a diagnostic subset, not a fresh random sample or the full 1,928-task benchmark.
 
-The profile JSON records selection provenance and run settings. `benchmarks/moli-failure-task-ids.txt` is the exact, sorted case list; the profile binds its SHA-256. Both files are inputs to the rerun and comparison tools, not measured outputs.
+The profile JSON records selection provenance and run settings. `benchmarks/moli-0.1.1-failure-task-ids.txt` is the exact, sorted case list; the profile binds its SHA-256. Both files are inputs to the rerun and comparison tools, not measured outputs.
 
 Run on the **same prepared host** for both Moli versions. The runner records host identity, fixture and runner source hashes, adapter hashes, dependency pins, task contracts, seed, repetitions, concurrency, ChromeDriver, and resource settings. The comparator rejects a changed non-Moli condition. It cannot prove that external operating-system load or network conditions were identical; keep those stable and inspect infrastructure failures before interpreting a success-rate difference.
 
@@ -22,8 +22,10 @@ Each run produces 1,110 result rows under the ignored `runs/` directory and a si
 
 Add `--try-layout` to an off-mode cohort to rerun its failed cases with layout enabled for all three attempts. Only cases passing all three rerun attempts replace their original results. Use the same retry policy for both version cohorts; original and rerun evidence are retained separately.
 
-## Updating the remaining failure list
+## Versioned failure lists
 
-Every completed Moli run writes `moli-failure-task-ids.txt` beside its result matrix. This lists remaining failed cases after any layout recovery, once per case; an empty file means all selected cases passed. Its count and hash are recorded in the run manifest. The file covers only that run's selected tasks.
+The checked-in `moli-0.1.1-failure-task-ids.txt` is the historical 0.1.1 failure cohort. Its profile explicitly records `source_moli_version: 0.1.1`. Passing those cases with another version does not remove them from the historical list.
 
-The checked-in list starts with 370 historical failures and can shrink as fixes are verified. Remove a listed task only after all required final attempts pass. Retain untested tasks when a run covers only part of the list. Update the profile's task count and list hash together. Each completed run retains its original resolved task list, task hashes and measured results; shrinking the next run's list does not change earlier reports. Version comparisons must use the same task-list revision.
+Every completed run exports a failure list named after the version actually tested, for example `moli-1.1.7-failure-task-ids.txt`. It contains each remaining failed case once, after layout recovery; an empty file means all selected cases passed. The manifest records the version, binary SHA-256, list hash and count. Different runs remain in separate directories, including different builds of the same version.
+
+Each list covers only its run's selected cases. Do not discard untested cases when following up on a subset. Keep failure lists for different Moli versions separate; preserve each run's frozen task scope and results. Version comparisons must use the same input cohort, even when their resulting failure lists differ.

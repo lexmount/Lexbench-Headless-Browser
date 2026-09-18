@@ -3,7 +3,7 @@
   "source_run_id": "four_engine_full_20260812",
   "source_results_sha256": "fe8e2094d6220429f77d877a6512195d4f122fe95df323ecb1da33e3108491e4",
   "selection": "Historical Moli 0.1.1 zero-pass tasks, excluding the two tasks that failed all three published Chrome attempts",
-  "task_ids_file": "benchmarks/moli-failure-task-ids.txt",
+  "task_ids_file": "benchmarks/moli-0.1.1-failure-task-ids.txt",
   "task_ids_sha256": "79cc46d1be0ad8d5f8a631c23e1baf1facaff49ade59360bc755cfb0e1844cee",
   "task_count": 370,
   "bench_manifest_sha256": "0a0274af9cd88af2189c70d76232a00266646553283022aa89c91a9105e0c8a7",
@@ -28,5 +28,6 @@
       "task_id": "pw_raw_schema_getdomains",
       "reason": "Chrome unsupported 3/3 in the source run; the harness routed a page-target Schema.getDomains command to the browser connection"
     }
-  ]
+  ],
+  "source_moli_version": "0.1.1"
 }
