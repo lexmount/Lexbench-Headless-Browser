@@ -47,3 +47,12 @@ def test_runner_fixture_task_host_and_jobs_changes_are_rejected():
             target = target[part]
         target[path[-1]] = "changed"
         assert first_difference(normalized_manifest(left), normalized_manifest(right))
+
+def test_fixed_layout_ignores_annotation_drift_but_not_launch_drift():
+    left=manifest();left['engines']['moli']['layout_mode']='on'
+    left['moli_layout_policy']={'policy_id':'task_layout_v3','qualification':None,'assignments_sha256':'first','assignments':[{'task_id':'one','task_sha256':'frozen','layout':'on','requirement':'required','reason':'evidence'}]}
+    right=copy.deepcopy(left);right['moli_layout_policy']['assignments_sha256']='second'
+    right['moli_layout_policy']['assignments'][0].update(requirement='unknown',reason='different_binary')
+    assert first_difference(normalized_manifest(left),normalized_manifest(right)) is None
+    right['moli_layout_policy']['assignments'][0]['layout']='off'
+    assert first_difference(normalized_manifest(left),normalized_manifest(right))

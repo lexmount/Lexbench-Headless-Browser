@@ -62,6 +62,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
+    parser.add_argument("--try-layout", action="store_true", help="Rerun failed cases with layout on for the same k attempts; replace only all-pass reruns")
+    parser.add_argument("--moli-layout", choices=("on", "off"), default="off")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
         parser.error("Moli must be an executable absolute path")
@@ -117,6 +119,8 @@ def main() -> None:
             "chromedriver_version": driver_version,
             "moli_sha256": binary_sha,
             "moli_version": version,
+            "moli_layout": args.moli_layout,
+            "try_layout": args.try_layout,
         }
         receipt.write_text(json.dumps(conditions, indent=2) + "\n", encoding="utf-8")
         env = dict(os.environ)
@@ -132,7 +136,7 @@ def main() -> None:
             sys.executable, "-m", "runner.run", "run",
             *(part for task_id in task_ids for part in ("--task", task_id)),
             "--engines", "moli", "--score-mode", profile["score_mode"],
-            "--moli-layout", "on",
+            "--moli-layout", args.moli_layout,
             "--chrome-baseline", profile["chrome_baseline"],
             "--seed", profile["seed"],
             "--k", str(profile["attempts_per_task"]),
@@ -143,6 +147,8 @@ def main() -> None:
             "--provenance-level", profile["provenance_level"], "--no-progress",
         ]
         print(f"Moli {version} sha256={binary_sha}; {len(task_ids)} tasks × {profile['attempts_per_task']} attempts", flush=True)
+        if args.try_layout:
+            command.append("--try-layout")
         subprocess.run(command, cwd=ROOT, env=env, check=True)
         if file_sha256(binary) != binary_sha or file_sha256(driver) != driver_sha:
             raise ValueError("Moli or ChromeDriver binary changed during the run")
@@ -151,9 +157,14 @@ def main() -> None:
             or manifest.get("completed_result_rows") != len(task_ids) * profile["attempts_per_task"]
             or manifest["engines"]["moli"]["sha256"] != binary_sha):
         raise ValueError("run did not produce the complete pinned Moli matrix")
-    if "--layout" not in manifest["engines"]["moli"].get("serve_args", []):
-        raise ValueError("Moli run omitted the required --layout flag")
-    print(f"Complete baseline: {run_dir}")
+    if manifest["engines"]["moli"].get("layout_mode") != args.moli_layout:
+        raise ValueError("Moli layout mode differs from the declared run")
+    has_global_layout = "--layout" in manifest["engines"]["moli"].get("serve_args", [])
+    if has_global_layout != (args.moli_layout == "on"):
+        raise ValueError("Moli global layout flag differs from the declared run")
+    if (manifest.get("moli_layout_policy") or {}).get("try_layout", False) != args.try_layout:
+        raise ValueError("Moli retry policy differs from the declared run")
+    print(f"Complete cohort: {run_dir}")
 
 
 if __name__ == "__main__":

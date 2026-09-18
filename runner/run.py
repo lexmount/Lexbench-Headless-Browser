@@ -32,6 +32,7 @@ from typing import Any
 
 if __package__:
     from runner import bindings as binding_catalog
+    from runner import layout_retry
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -40,6 +41,7 @@ else:
     # Keep the historical direct-script entry point (`python3 runner/run.py`)
     # working as well as the preferred module form (`python3 -m runner.run`).
     import bindings as binding_catalog
+    import layout_retry
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -2215,6 +2217,7 @@ def run_manifest_payload(
             item["mode"] = "headless=new"
         if engine == "moli":
             item["resource_fetch_policy"] = "task_scoped_launch_profile"
+            item["layout_mode"] = getattr(args, "moli_layout", "off")
         if engine == "obscura":
             item.update(
                 {
@@ -2238,6 +2241,11 @@ def run_manifest_payload(
     resource_mode = str(getattr(args, "resource_profile", "off") or "off")
     host_telemetry_enabled = str(getattr(args, "host_telemetry", "on") or "on") == "on"
     calibration_baseline = getattr(args, "resource_calibration_baseline", None)
+
+    layout_receipt = None
+    if "moli" in selected_engines:
+        layout_receipt = layout_retry.policy(getattr(args, "moli_layout", "off"), getattr(args, "try_layout", False))
+
 
     return {
         "run_id": run_id,
@@ -2275,6 +2283,7 @@ def run_manifest_payload(
             "manifest": rel_to_repo(ACTIVE_ENGINE_SET_PATH) if ACTIVE_ENGINE_SET else None,
         },
         "engines": engines,
+        **({"moli_layout_policy": layout_receipt} if layout_receipt is not None else {}),
         "host": resource_metrics.host_provenance(
             str(getattr(args, "provenance_level", "full") or "full")
         ),
@@ -2498,6 +2507,7 @@ def find_free_port() -> int:
 def engine_serve_args(
     engine: str,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     if launch_profile not in LAUNCH_PROFILES:
         raise BenchError(f"unsupported launch profile: {launch_profile}")
@@ -2507,7 +2517,9 @@ def engine_serve_args(
         str(arg)
         for arg in meta.get("launch_profile_args", {}).get(launch_profile, ())
     )
-    return base_args + profile_args
+    if extra_serve_args and engine != "moli":
+        raise BenchError("task-scoped serve arguments are only supported for Moli")
+    return base_args + profile_args + extra_serve_args
 
 
 def serve_engine_launch_command(
@@ -2515,6 +2527,7 @@ def serve_engine_launch_command(
     binary: pathlib.Path,
     port: int,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> list[str]:
     """Build the auditable serve command for a non-Chrome engine."""
     return [
@@ -2524,7 +2537,7 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
-        *engine_serve_args(engine, launch_profile),
+        *engine_serve_args(engine, launch_profile, extra_serve_args),
     ]
 
 
@@ -2556,14 +2569,15 @@ class BrowserManager:
         self,
         engine: str,
         launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+        extra_serve_args: tuple[str, ...] = (),
     ) -> BrowserProcess:
         with self._lock:
             if self._closed:
                 raise BenchError("browser manager is closed")
-            return self._launch_locked(engine, launch_profile)
+            return self._launch_locked(engine, launch_profile, extra_serve_args)
 
-    def _launch_locked(self, engine: str, launch_profile: str) -> BrowserProcess:
-        desired_serve_args = engine_serve_args(engine, launch_profile)
+    def _launch_locked(self, engine: str, launch_profile: str, extra_serve_args: tuple[str, ...]) -> BrowserProcess:
+        desired_serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine in self.processes:
             browser = self.processes[engine]
             proc = browser.process
@@ -2597,7 +2611,7 @@ class BrowserManager:
         for _ in range(attempts):
             port = find_free_port() if self.dynamic_ports else int(meta["cdp_port"])
             try:
-                return self._launch_on_port(engine, binary, port, launch_profile)
+                return self._launch_on_port(engine, binary, port, launch_profile, extra_serve_args)
             except BenchError as exc:
                 last_error = exc
                 if "already in use" not in str(exc):
@@ -2610,10 +2624,11 @@ class BrowserManager:
         binary: pathlib.Path,
         port: int,
         launch_profile: str,
+        extra_serve_args: tuple[str, ...],
     ) -> BrowserProcess:
         if port_is_open(port):
             raise BenchError(f"{engine}: port {port} is already in use")
-        serve_args = engine_serve_args(engine, launch_profile)
+        serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine == "chrome":
             profile_dir = pathlib.Path(tempfile.mkdtemp(prefix=f"abb-chrome-{port}-"))
             self._profile_dirs.append(profile_dir)
@@ -2645,7 +2660,7 @@ class BrowserManager:
                 "about:blank",
             ]
         else:
-            cmd = serve_engine_launch_command(engine, binary, port, launch_profile)
+            cmd = serve_engine_launch_command(engine, binary, port, launch_profile, extra_serve_args)
 
         # Browser output goes to spool files: PIPE would deadlock the engine
         # once the 64 KiB pipe buffer fills (nobody drains it during a run).
@@ -4143,7 +4158,7 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
     different local browser visible in every attempt row.
     """
     binary = browser.binary
-    return {
+    payload = {
         "engine": browser.engine,
         "pid": getattr(browser.process, "pid", None),
         "binary": rel_to_repo(binary) if binary is not None else None,
@@ -4156,6 +4171,9 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
         "browser_ws": browser.version_info.get("webSocketDebuggerUrl"),
         "http_identity": dict(browser.version_info),
     }
+    if browser.engine == "moli":
+        payload["layout_enabled"] = "--layout" in browser.serve_args
+    return payload
 
 
 def is_unsupported_error(exc: Exception) -> bool:
@@ -6221,8 +6239,13 @@ def run_driver_attempt(
     resource_runtime: ResourceRuntime | None = None,
     fixture_server: FixtureServer | None = None,
     scenario_binding: dict[str, Any] | None = None,
+    physical_variant: str | None = None,
+    persist_result: bool = True,
 ) -> dict[str, Any]:
     tmp_dir, final_dir, artifact_rel = artifact_paths(run_dir, task, engine, attempt)
+    if physical_variant:
+        final_dir = final_dir / physical_variant
+        artifact_rel = (pathlib.Path(artifact_rel) / physical_variant).as_posix()
     if final_dir.exists():
         raise BenchError(f"artifact directory already exists; refusing to overwrite: {final_dir}")
     tmp_dir.mkdir(parents=True, exist_ok=False)
@@ -6641,7 +6664,8 @@ def run_driver_attempt(
     ensure_profile_files(tmp_dir, task.artifact_profile)
     final_dir.parent.mkdir(parents=True, exist_ok=True)
     tmp_dir.replace(final_dir)
-    append_result(results_path, result)
+    if persist_result:
+        append_result(results_path, result)
     return result
 
 
@@ -7071,10 +7095,14 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         ) -> None:
             self.manager = manager
             for engine in engines:
-                manager.launch(engine, initial_task.launch_profile)
+                manager.launch(engine, initial_task.launch_profile, self.extra_args(engine, initial_task))
+
+        @staticmethod
+        def extra_args(engine: str, task: ResolvedTask) -> tuple[str, ...]:
+            return ()
 
         def for_task(self, engine: str, task: ResolvedTask) -> BrowserProcess:
-            browser = self.manager.launch(engine, task.launch_profile)
+            browser = self.manager.launch(engine, task.launch_profile, self.extra_args(engine, task))
             browser.prev_task_id = self.manager.note_task(engine, task.task_id)
             return browser
 
@@ -7304,6 +7332,52 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                 reporter.phase(f"Failed after {reporter.completed_rows}/{reporter.total_rows} result rows")
                 raise BenchError("parallel run failed for some attempts:\n" + "\n".join(errors[:10]))
         reporter.finish()
+        if "moli" in selected_engines and args.moli_layout == "off" and getattr(args, "try_layout", False):
+            initial_rows = read_jsonl(results_path)
+            failed_ids = layout_retry.failed_cases(initial_rows, args.k)
+            if failed_ids:
+                reporter.phase(f"Retrying {len(failed_ids)} failed Moli cases with layout on: {args.k} attempts each")
+                initial_path = run_dir / "initial_results.jsonl"
+                initial_path.write_bytes(results_path.read_bytes())
+                retry_path = run_dir / "layout_retry_results.jsonl"
+                retry_rows = []
+                manager = BrowserManager(dynamic_ports=True, resource_runtime=resource_runtime, worker_slot=len(managers) + 1)
+                managers.append(manager)
+                originals = {(row["task_id"], row["attempt"]): row for row in initial_rows if row["engine"] == "moli"}
+                for task in tasks:
+                    if task.task_id not in failed_ids:
+                        continue
+                    for attempt in range(1, args.k + 1):
+                        previous = manager.processes.get("moli")
+                        if previous is not None:
+                            manager._kill_process(previous.process)
+                        browser = manager.launch("moli", task.launch_profile, ("--layout",))
+                        browser.prev_task_id = manager.note_task("moli", task.task_id)
+                        old = originals[(task.task_id, attempt)]
+                        driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(str(task.driver.get("kind") or ""))
+                        binding = unavailable_bindings.get(("moli", driver_id))
+                        if binding is None and driver_id == "selenium":
+                            binding = selenium_bindings["moli"]
+                        row = run_driver_attempt(
+                            run_dir, retry_path, run_id + "-layout-retry", task, "moli", attempt,
+                            old["seed"], browser, old["chrome_gate"], score_eligible,
+                            fixture_base_url, score_mode, resource_runtime, fixture_server, binding,
+                            physical_variant="layout-on",
+                        )
+                        retry_rows.append(row)
+                final_rows = layout_retry.replace_cases(initial_rows, retry_rows, args.k, run_dir, run_id)
+                final_path = run_dir / ".final_results.jsonl"
+                final_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in final_rows), encoding="utf-8")
+                final_path.replace(results_path)
+                run_manifest["layout_retry"] = {
+                    "initial_results": "initial_results.jsonl", "initial_results_sha256": sha256_file(initial_path),
+                    "retry_results": "layout_retry_results.jsonl", "retry_results_sha256": sha256_file(retry_path),
+                    "final_results_sha256": sha256_file(results_path),
+                    "retried_cases": sorted(failed_ids), "extra_executions": len(retry_rows),
+                    "extra_execution_duration_ms": sum(row["duration_ms"] for row in retry_rows),
+                    "recovered_cases": sorted(task_id for task_id in failed_ids if all(row["status"] == "pass" for row in retry_rows if row["task_id"] == task_id)),
+                }
+                reporter.phase(f"Final Moli cases: {layout_retry.pass_count(final_rows)}/{len(tasks)} passed")
         run_completed = True
     finally:
         for local_manager in managers:
@@ -7970,6 +8044,8 @@ def command_run(args: argparse.Namespace) -> int:
         }
         payload = {
             "manifest": rel_to_repo(manifest_path),
+            "seed": args.seed,
+            "moli_layout_policy": layout_retry.policy(getattr(args, "moli_layout", "off"), getattr(args, "try_layout", False)),
             "selected_layers": sorted({task.layer for task in tasks}),
             "tasks": [
                 task.to_run_manifest(semantic_index.get(task.task_id))
@@ -8122,6 +8198,7 @@ def summarize_results(run_manifest: dict[str, Any], rows: list[dict[str, Any]]) 
         "harness_version": run_manifest.get("harness_version") or "unknown",
         "score_eligible": bool(run_manifest.get("score_eligible")),
         "layers": layers,
+        "moli_layout_policy": run_manifest.get("moli_layout_policy"),
         "evaluation_axes": evaluation_axes,
         "chrome_baseline": chrome_gate,
         "chrome_gate": chrome_gate,
@@ -8140,6 +8217,12 @@ def write_scorecard(run_dir: pathlib.Path, run_manifest: dict[str, Any], rows: l
     lines.append(f"- score_eligible: `{run_manifest.get('score_eligible')}`")
     lines.append(f"- enabled_subsets: `{', '.join(run_manifest.get('enabled_subsets', []))}`")
     lines.append(f"- attempts: `{len(rows)}`")
+    if (run_manifest.get("moli_layout_policy") or {}).get("retry_layout") == "on":
+        receipt=run_manifest.get("layout_retry") or {}
+        lines.append(f"- Layout recovery: failed cases rerun {run_manifest['k_runs']} times with layout on; replace only all-pass reruns.")
+        lines.append(f"- Recovered cases: {len(receipt.get('recovered_cases', []))}; retried cases: {len(receipt.get('retried_cases', []))}; extra executions: {receipt.get('extra_executions', 0)}.")
+        lines.append(f"- Extra rerun driver duration: {receipt.get('extra_execution_duration_ms', 0)} ms (excluded from final-execution latency).")
+
     lines.append("")
     lines.append("| engine | binary | version | sha12 |")
     lines.append("|---|---|---|---|")
@@ -8305,6 +8388,7 @@ def generate_report_files(run_dir: pathlib.Path, emit: bool = True) -> None:
         raise BenchError(f"run directory not found: {run_dir}")
     run_manifest = load_json(run_dir / "run_manifest.json")
     rows = read_jsonl(run_dir / "results.jsonl")
+    layout_retry.verify(run_dir, run_manifest, rows)
     scores = summarize_results(run_manifest, rows)
     write_json(run_dir / "scores.json", scores)
     write_scorecard(run_dir, run_manifest, rows, scores)
@@ -8465,8 +8549,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
         "--moli-layout", choices=("off", "on"), default="off",
-        help="Moli layout policy: off preserves its lightweight default; on enables on-demand real layout and coordinate input",
+        help="Moli layout: off (default), on (always enabled)",
     )
+    run.add_argument("--try-layout", action="store_true", help="After the normal run, rerun each failed Moli case with layout on for the same k attempts; replace original results only when all rerun attempts pass")
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
         "--k",
