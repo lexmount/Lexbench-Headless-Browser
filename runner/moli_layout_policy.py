@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-POLICY_ID = "task_layout_v3"
+POLICY_ID = "task_layout_v4"
 REQUIREMENTS = frozenset({"required", "not_required", "unknown"})
 DEFAULT_REGISTRY = Path(__file__).resolve().parents[1] / "config/moli_layout_requirements.json"
 LAYOUT_INDEPENDENT_OPERATIONS = {"Browser.getVersion": "cdp.browser.get_version", "Schema.getDomains": "cdp.schema.get_domains"}
@@ -67,14 +67,16 @@ def load_registry(path: Path = DEFAULT_REGISTRY) -> dict[str, dict]:
             raise ValueError("invalid layout requirement entry")
         if entry["task_id"] in by_id:
             raise ValueError("duplicate layout requirement")
-        if entry.get("basis") not in {"contract", "paired_evidence", "unclassified"}:
+        if entry.get("basis") not in {"contract", "paired_evidence", "off_pass_evidence", "unclassified"}:
             raise ValueError("invalid layout requirement basis")
-        if entry["basis"] == "paired_evidence" and not re.fullmatch(r"[0-9a-f]{64}", str(entry.get("moli_sha256", ""))):
+        if entry["basis"] in {"paired_evidence", "off_pass_evidence"} and not re.fullmatch(r"[0-9a-f]{64}", str(entry.get("moli_sha256", ""))):
             raise ValueError("unbound empirical layout requirement")
         if entry["basis"] == "unclassified" and entry["requirement"] != "unknown":
             raise ValueError("unclassified requirement must remain unknown")
-        if entry["basis"] == "paired_evidence" and not re.fullmatch(r"[0-9a-f]{64}", str(entry.get("evidence_sha256", ""))):
+        if entry["basis"] in {"paired_evidence", "off_pass_evidence"} and not re.fullmatch(r"[0-9a-f]{64}", str(entry.get("evidence_sha256", ""))):
             raise ValueError("missing empirical evidence identity")
+        if entry["basis"] == "off_pass_evidence" and entry["requirement"] != "not_required":
+            raise ValueError("off-pass evidence only establishes not_required")
         by_id[entry["task_id"]] = entry
     return by_id
 
@@ -82,6 +84,10 @@ def requirement(task: dict, task_sha256: str, binary_sha256: str | None, registr
     entry = registry.get(task["task_id"])
     if entry is None or entry["task_sha256"] != task_sha256:
         return {"requirement": "unknown", "reason": "missing_or_changed_task"}
+    # Successful layout-off evidence remains useful across engine upgrades.
+    # Its original binary identity is retained; this selects a mode, not a score.
+    if entry["basis"] in {"paired_evidence", "off_pass_evidence"} and entry["requirement"] == "not_required":
+        return {"requirement": "not_required", "reason": entry.get("reason", entry["basis"])}
     if entry["basis"] == "paired_evidence":
         if entry["moli_sha256"] != binary_sha256:
             inferred, reason = classify_contract(task)

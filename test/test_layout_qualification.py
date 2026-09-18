@@ -34,12 +34,12 @@ def test_all_registered_cases_have_hash_bound_three_state_labels():
     assert set(e['requirement'] for e in registry.values())==policy.REQUIREMENTS
     assert all(registry[t.task_id]['task_sha256']==t.sha256 for t in tasks)
 
-def test_changed_task_or_binary_does_not_reuse_empirical_negative():
+def test_off_success_survives_binary_upgrade_but_not_task_change():
     _,tasks,_=run.validate_manifest(ROOT/'manifest.json');registry=policy.load_registry()
     t=next(t for t in tasks if registry[t.task_id]['basis']=='paired_evidence' and registry[t.task_id]['requirement']=='not_required')
     e=registry[t.task_id]
     assert policy.requirement(t.task,t.sha256,e['moli_sha256'],registry)['requirement']=='not_required'
-    assert policy.requirement(t.task,t.sha256,'different',registry)['requirement']=='unknown'
+    assert policy.requirement(t.task,t.sha256,'different',registry)['requirement']=='not_required'
     assert policy.requirement(t.task,'changed',e['moli_sha256'],registry)['requirement']=='unknown'
 
 def test_invalid_registry_values_and_duplicates_fail(tmp_path):
@@ -133,3 +133,17 @@ def test_auto_without_seed_freezes_one_before_any_calls(capsys):
     payload=json.loads(capsys.readouterr().out)
     assert len(args.seed)==32 and payload['seed']==args.seed
     assert payload['moli_layout_qualification_calls']==0
+
+
+def test_historical_off_success_overrides_geometry_guess():
+    task={'task_id':'coordinate','driver':{'kind':'raw_cdp','steps':[{'method':'Input.dispatchMouseEvent'}]}}
+    entry={'task_sha256':'same','requirement':'not_required','basis':'off_pass_evidence','moli_sha256':'old','reason':'historical_off_pass'}
+    assert policy.classify_contract(task)[0]=='required'
+    assert policy.requirement(task,'same','new',{'coordinate':entry})['requirement']=='not_required'
+    assert policy.requirement(task,'changed','new',{'coordinate':entry})['requirement']=='unknown'
+
+
+def test_required_evidence_does_not_become_cross_version_success():
+    task={'task_id':'opaque','driver':{'kind':'playwright'}}
+    entry={'task_sha256':'same','requirement':'required','basis':'paired_evidence','moli_sha256':'old'}
+    assert policy.requirement(task,'same','new',{'opaque':entry})['requirement']=='unknown'

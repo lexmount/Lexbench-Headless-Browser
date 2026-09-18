@@ -19,12 +19,12 @@ Every enabled task has an entry in `config/moli_layout_requirements.json`. Keepi
 | `requirement` | Meaning | Auto behavior |
 | --- | --- | --- |
 | `required` | A recognized mandatory geometry operation, or stable off-fail/on-pass evidence for this exact binary and task | Enable layout |
-| `not_required` | A completely recognized layout-independent contract, or stable off-pass evidence for this exact binary and task | Disable layout |
+| `not_required` | A completely recognized layout-independent contract, or stable off-pass evidence for the unchanged task | Disable layout |
 | `unknown` | Unclassified, changed, unstable, or unsuccessful in both modes | Run paired qualification |
 
 Explicit coordinate mouse/touch input, coordinate hit testing, box geometry and real screenshot/print operations establish a layout dependency. An optional probe does not establish a requirement for the whole task. A framework name, `click` label, or arbitrary JavaScript string does not establish its actual execution path. Such contracts remain unknown unless qualified. The selector never replaces coordinate input with DOM activation.
 
-Empirical annotations bind the complete task SHA-256 and Moli binary SHA-256. Their scope is acceptance under that specific task contract, not a claim that a driver or website never needs layout. A binary change invalidates empirical labels; independently recognized geometry operations can still establish a requirement. A task change makes the old annotation unknown. `list --kind tasks --json` exposes annotations; full `validate` rejects missing, extra or stale task entries. `tools/update_moli_layout_requirements.py --write` regenerates new/changed entries without dropping valid existing evidence labels.
+Empirical annotations bind the complete task SHA-256 and Moli binary SHA-256. Their scope is acceptance under that specific task contract, not a claim that a driver or website never needs layout. An engine upgrade retains `not_required` when the unchanged task has passed with layout off. The original engine and evidence hashes remain recorded; this reuse chooses the execution mode and does not claim a pass on the new engine. Newer paired evidence that demonstrates off-fail/on-pass takes precedence over historical off success. Other empirical labels remain binary-scoped; independently recognized geometry operations can still establish a requirement. A task change makes the old annotation unknown. `list --kind tasks --json` exposes annotations; full `validate` rejects missing, extra or stale task entries. `tools/update_moli_layout_requirements.py --write` regenerates new/changed entries without dropping valid existing evidence labels.
 
 ## Unknown-task qualification
 
@@ -51,6 +51,10 @@ Interrupted or incomplete qualification fails closed and preserves its evidence.
 
 The qualification directory contains a frozen protocol, complete off/on runs, artifact hashes, `qualification.json`, and an updated `requirements.json`. Reuse the latter with `--moli-layout-requirements PATH`. Entries that remain unknown will be compared again on the next auto run. The checked-in registry is never silently edited by a benchmark execution.
 
-The formal run records policy `task_layout_v3`, the selected assignments and their hash, and the qualification receipt reference. Each result records the actual launch flag. Qualification has six physical calls per unknown task; these and their accumulated driver duration are retained separately in the manifest and score summary. They never add tasks or attempts to the formal matrix. A successful qualification does not guarantee that a later formal attempt passes; the formal score uses only its own results.
+The formal run records policy `task_layout_v4`, the selected assignments and their hash, and the qualification receipt reference. Each result records the actual launch flag. Qualification has six physical calls per unknown task; these and their accumulated driver duration are retained separately in the manifest and score summary. They never add tasks or attempts to the formal matrix. A successful qualification does not guarantee that a later formal attempt passes; the formal score uses only its own results.
 
 `--dry-run` shows assignments and the number of additional qualification calls without starting browsers. Historical `contract_layout_v1` and `contract_layout_v2` receipts retain their original meanings.
+
+Historical off-pass annotations are imported from the checksum-verified `evidence-four_engine_full_20260812.tar.gz` release asset. They require all three Moli attempts to pass, no fallback, launch commands without layout, and matching task ID, task version, driver, grader, scene and feature declarations. Historical and current task hashes are both retained because published task prose has changed; historical reuse supplies a mode-selection baseline, not current-version test results. Original versions and evidence hashes are retained in each annotation.
+
+Rebuild these annotations with `python tools/import_moli_layout_history.py /path/to/evidence-four_engine_full_20260812.tar.gz`. The importer checks the published archive checksum and preserves newer confirmed paired decisions.
