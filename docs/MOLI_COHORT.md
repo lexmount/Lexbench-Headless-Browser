@@ -22,10 +22,10 @@ Each run produces 1,110 result rows under the ignored `runs/` directory and a si
 
 Add `--try-layout` to an off-mode cohort to rerun its failed cases with layout enabled for all three attempts. Only cases passing all three rerun attempts replace their original results. Use the same retry policy for both version cohorts; original and rerun evidence are retained separately.
 
-## Versioned failure lists
+## Input cohort and run results
 
-The checked-in `moli-0.1.1-failure-task-ids.txt` is the historical 0.1.1 failure cohort. Its profile explicitly records `source_moli_version: 0.1.1`. Passing those cases with another version does not remove them from the historical list.
+`moli-0.1.1-failure-task-ids.txt` is the 370-case input cohort derived from Moli 0.1.1 failures. Its profile records `source_moli_version: 0.1.1`. The same input cohort can test later versions; passing with another version does not rewrite this historical input list.
 
-Every completed run exports a failure list named after the version actually tested, for example `moli-1.1.7-failure-task-ids.txt`. It contains each remaining failed case once, after layout recovery; an empty file means all selected cases passed. The manifest records the version, binary SHA-256, list hash and count. Different runs remain in separate directories, including different builds of the same version.
+Each run's final verdicts remain in `results.jsonl`, with the tested version, binary identity and selected task scope in `run_manifest.json`. Layout recovery retains original and rerun matrices separately. A partial regression run is not a new version-wide failure cohort.
 
-Each list covers only its run's selected cases. Do not discard untested cases when following up on a subset. Keep failure lists for different Moli versions separate; preserve each run's frozen task scope and results. Version comparisons must use the same input cohort, even when their resulting failure lists differ.
+If a future version needs a dedicated input cohort, record that source version and selection evidence in a separate profile and task list. Compare versions on the same input cohort and keep historical runs unchanged.

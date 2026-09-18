@@ -617,24 +617,6 @@ def append_result(path: pathlib.Path, payload: dict[str, Any]) -> None:
 
 
 
-def write_moli_failure_tasks(
-    run_dir: pathlib.Path, rows: list[dict[str, Any]], engine: dict[str, Any],
-) -> dict[str, Any]:
-    """Export remaining failures in this run's selected scope, one ID per case."""
-    failed = sorted({
-        row["task_id"] for row in rows
-        if row["engine"] == "moli" and row["status"] != "pass"
-    })
-    version = str(engine.get("version") or "unknown").removeprefix("moli ")
-    version_label = re.sub(r"[^A-Za-z0-9._-]+", "-", version).strip(".-") or "unknown"
-    path = run_dir / f"moli-{version_label}-failure-task-ids.txt"
-    path.write_text("".join(task_id + "\n" for task_id in failed), encoding="utf-8")
-    return {
-        "path": path.name, "sha256": sha256_file(path), "count": len(failed),
-        "moli_version": version, "moli_sha256": engine.get("sha256"),
-    }
-
-
 def read_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if not path.exists():
@@ -7379,10 +7361,6 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
             )
             if receipt is not None:
                 run_manifest["layout_retry"] = receipt
-        if "moli" in selected_engines:
-            run_manifest["moli_failure_tasks"] = write_moli_failure_tasks(
-                run_dir, read_jsonl(results_path), run_manifest["engines"]["moli"],
-            )
         run_completed = True
     finally:
         for local_manager in managers:

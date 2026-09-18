@@ -86,7 +86,6 @@ def test_recovery_metadata_is_not_a_version_comparison_control():
     }
     candidate = copy.deepcopy(base)
     candidate["layout_retry"] = {"retried_cases": ["one"]}
-    candidate["moli_failure_tasks"] = {"count": 1, "sha256": "outcome"}
     assert normalized_manifest(base) == normalized_manifest(candidate)
     candidate["moli_layout_policy"] = layout_retry.policy("off", False)
     assert normalized_manifest(base) != normalized_manifest(candidate)
@@ -171,26 +170,3 @@ def test_all_pass_batch_does_not_execute_or_create_recovery_files(tmp_path):
 
     assert layout_retry.rerun_failed_cases(tmp_path, "logical", 3, unexpected, lambda _: None) is None
     assert not (tmp_path / "initial_results.jsonl").exists()
-
-
-def test_remaining_failures_use_final_results_once_per_case(tmp_path):
-    rows = batch(tmp_path, "recovered", ["pass"] * 3)
-    rows += batch(tmp_path, "failed", ["fail", "pass", "fail"])
-    engine = {"version": "moli 1.1.7", "sha256": "binary117"}
-    receipt = run.write_moli_failure_tasks(tmp_path, rows, engine)
-    assert receipt["count"] == 1
-    assert (tmp_path / receipt["path"]).read_text() == "failed\n"
-    receipt = run.write_moli_failure_tasks(tmp_path, rows[:3], engine)
-    assert receipt["count"] == 0
-    assert (tmp_path / receipt["path"]).read_text() == ""
-
-
-def test_failure_lists_are_separate_by_version(tmp_path):
-    rows = batch(tmp_path, "old-failure", ["fail"] * 3)
-    old = run.write_moli_failure_tasks(tmp_path, rows, {"version": "moli 0.1.1", "sha256": "old"})
-    new = run.write_moli_failure_tasks(tmp_path, [], {"version": "moli 1.1.7", "sha256": "new"})
-    assert old["path"] == "moli-0.1.1-failure-task-ids.txt"
-    assert new["path"] == "moli-1.1.7-failure-task-ids.txt"
-    assert old["moli_version"] == "0.1.1" and old["moli_sha256"] == "old"
-    assert (tmp_path / old["path"]).read_text() == "old-failure\n"
-    assert (tmp_path / new["path"]).read_text() == ""
