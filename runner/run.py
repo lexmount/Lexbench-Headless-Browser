@@ -2869,7 +2869,9 @@ def create_page_ws(browser: BrowserProcess) -> str:
     return create_page_target(browser, "about:blank")[0]
 
 
-BROWSER_SCOPE_DOMAINS = ("Browser.", "Target.", "Schema.", "SystemInfo.", "Security.")
+# Schema.getDomains belongs to the page target in Chrome. Routing it to the
+# root browser connection makes a supported command look unsupported.
+BROWSER_SCOPE_DOMAINS = ("Browser.", "Target.", "SystemInfo.", "Security.")
 
 
 def open_page_session(

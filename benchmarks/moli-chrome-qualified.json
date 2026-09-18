@@ -26,7 +26,7 @@
     },
     {
       "task_id": "pw_raw_schema_getdomains",
-      "reason": "Chrome unsupported 3/3; pinned Chrome protocol no longer exposes Schema.getDomains"
+      "reason": "Chrome unsupported 3/3 in the source run; the harness routed a page-target Schema.getDomains command to the browser connection"
     }
   ]
 }
