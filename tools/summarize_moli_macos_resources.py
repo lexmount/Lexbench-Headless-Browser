@@ -89,9 +89,8 @@ def _change_pct(candidate: float, baseline: float) -> float:
     return (candidate / baseline - 1) * 100
 
 
-def summarize_fixed_pairs(
-    off_profiled_dir: Path,
-    on_profiled_dir: Path,
+def summarize_fixed_runs(
+    profiled_dirs: dict[str, Path],
     binary_receipt_path: Path,
     comparison_protocol_path: Path,
     *,
@@ -109,10 +108,9 @@ def summarize_fixed_pairs(
     if len(frozen_keys) != expected_frozen_calls:
         raise ValueError("historical comparison keys are invalid or duplicated")
 
-    run_specs = {
-        ("off", "profiled"): off_profiled_dir,
-        ("on", "profiled"): on_profiled_dir,
-    }
+    if not profiled_dirs or set(profiled_dirs) - {"off", "on"}:
+        raise ValueError("provide fixed off and/or on resource runs")
+    run_specs = {(layout, "profiled"): path for layout, path in profiled_dirs.items()}
     loaded: dict[tuple[str, str], tuple[Path, dict[str, Any], list[dict[str, Any]]]] = {}
     common_tasks: list[tuple[str, str]] | None = None
     common_controls: dict[str, Any] | None = None
@@ -164,7 +162,7 @@ def summarize_fixed_pairs(
 
     configurations: dict[str, Any] = {}
     quality_reasons: list[str] = []
-    for layout in ("off", "on"):
+    for layout in profiled_dirs:
         profiled_dir, profiled_manifest, profiled_rows = loaded[(layout, "profiled")]
         profiled_by_key = {(row["task_id"], row["attempt"]): row for row in profiled_rows}
         profiled_host = _json(profiled_dir / "host_summary.json")
@@ -200,7 +198,7 @@ def summarize_fixed_pairs(
         quality_reasons.extend(f"layout {layout}: {reason}" for reason in reasons)
 
     comparisons: dict[str, Any] = {}
-    for population in ("all_predeclared_calls", "frozen_historical_common_pass_calls"):
+    for population in (("all_predeclared_calls", "frozen_historical_common_pass_calls") if set(configurations) == {"off", "on"} else ()):
         off = configurations["off"]["metrics"][population]
         on = configurations["on"]["metrics"][population]
         comparisons[population] = {
@@ -213,7 +211,7 @@ def summarize_fixed_pairs(
         }
 
     task_ids_bytes = "".join(task_id + "\n" for task_id, _ in sorted(common_tasks or [])).encode()
-    profiled_manifest = loaded[("off", "profiled")][1]
+    profiled_manifest = next(iter(loaded.values()))[1]
     return {
         "schema": "lexbench_moli_macos_fixed_resource_summary/1",
         "candidate": {
@@ -224,11 +222,11 @@ def summarize_fixed_pairs(
             "profile": receipt["profile"],
         },
         "method": {
-            "configurations": ["layout_off", "layout_on"],
+            "configurations": [f"layout_{layout}" for layout in profiled_dirs],
             "attempts_per_case": 5,
             "resource_sample_interval_ms": (profiled_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
             "layout_retry": False,
-            "resource_runs": 2,
+            "resource_runs": len(profiled_dirs),
             "observer_calibration": "not_requested",
         },
         "population": {
@@ -257,18 +255,27 @@ def summarize_fixed_pairs(
     }
 
 
+def summarize_fixed_pairs(off_profiled_dir: Path, on_profiled_dir: Path,
+                          binary_receipt_path: Path, comparison_protocol_path: Path,
+                          *, expected_tasks: int = 557, expected_frozen_calls: int = 1045) -> dict[str, Any]:
+    return summarize_fixed_runs(
+        {"off": off_profiled_dir, "on": on_profiled_dir}, binary_receipt_path,
+        comparison_protocol_path, expected_tasks=expected_tasks,
+        expected_frozen_calls=expected_frozen_calls,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--off-profiled-run", required=True, type=Path)
+    parser.add_argument("--off-profiled-run", type=Path)
     parser.add_argument("--on-profiled-run", required=True, type=Path)
     parser.add_argument("--binary-receipt", required=True, type=Path)
     parser.add_argument("--comparison-protocol", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     try:
-        summary = summarize_fixed_pairs(
-            args.off_profiled_run,
-            args.on_profiled_run,
+        summary = summarize_fixed_runs(
+            {layout: path for layout, path in (("off", args.off_profiled_run), ("on", args.on_profiled_run)) if path is not None},
             args.binary_receipt,
             args.comparison_protocol,
         )

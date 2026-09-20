@@ -11,7 +11,7 @@ import pytest
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
-from summarize_moli_macos_resources import summarize_fixed_pairs  # noqa: E402
+from summarize_moli_macos_resources import summarize_fixed_pairs, summarize_fixed_runs  # noqa: E402
 from runner import layout_retry  # noqa: E402
 
 MOLI_SHA = "9" * 64
@@ -171,3 +171,15 @@ def test_summary_rejects_layout_retry_or_missing_macos_rss(tmp_path):
             off_profiled, on_profiled,
             _receipt(tmp_path), _protocol(tmp_path), expected_tasks=2, expected_frozen_calls=5,
         )
+
+
+def test_official_on_only_does_not_require_an_unrequested_off_run(tmp_path):
+    summary = summarize_fixed_runs(
+        {"on": _run(tmp_path, "on", True)}, _receipt(tmp_path), _protocol(tmp_path),
+        expected_tasks=2, expected_frozen_calls=5,
+    )
+    assert summary["method"]["resource_runs"] == 1
+    assert summary["method"]["configurations"] == ["layout_on"]
+    assert set(summary["configurations"]) == {"on"}
+    assert summary["comparisons"] == {}
+    assert summary["configurations"]["on"]["metrics"]["all_predeclared_calls"]["cpu_time_ms"]["n"] == 10
