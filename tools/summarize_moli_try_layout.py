@@ -128,6 +128,9 @@ def summarize_run(run_dir: Path, contract: dict[str, Any]) -> dict[str, Any]:
     for key in ("chromedriver_sha256", "chromedriver_version"):
         if not conditions.get(key):
             raise ValueError(f"conditions receipt is missing: {key}")
+    moli_commit = conditions.get("moli_commit")
+    if not isinstance(moli_commit, str) or len(moli_commit) != 40 or any(c not in "0123456789abcdef" for c in moli_commit):
+        raise ValueError("conditions receipt is missing a valid Moli source commit")
 
     unrecovered = retried - recovered
     return {
@@ -161,6 +164,7 @@ def summarize_run(run_dir: Path, contract: dict[str, Any]) -> dict[str, Any]:
         "provenance": {
             "moli_version": moli.get("version"),
             "moli_sha256": moli.get("sha256"),
+            "moli_commit": moli_commit,
             "bench_manifest_sha256": contract["bench_manifest_sha256"],
             "profile_sha256": contract["profile_sha256"],
             "run_manifest_sha256": _sha256(manifest_path),

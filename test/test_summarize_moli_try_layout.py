@@ -76,6 +76,7 @@ def fixture(tmp_path: Path) -> tuple[Path, dict]:
         "bench_manifest_sha256": "bench-sha", "moli_sha256": "moli-sha",
         "moli_version": "moli 1.2.0", "moli_layout": "off", "try_layout": True,
         "chromedriver_sha256": "driver-sha", "chromedriver_version": "140.0",
+        "moli_commit": "7" * 40,
     }
     run_dir.with_suffix(".conditions.json").write_text(json.dumps(conditions), encoding="utf-8")
     contract = {
@@ -125,6 +126,7 @@ def test_all_pass_initial_matrix_is_valid_without_retry_files(tmp_path):
         "bench_manifest_sha256": "bench-sha", "moli_sha256": "moli-sha",
         "moli_version": "moli 1.2.0", "moli_layout": "off", "try_layout": True,
         "chromedriver_sha256": "driver-sha", "chromedriver_version": "140.0",
+        "moli_commit": "7" * 40,
     }
     run_dir.with_suffix(".conditions.json").write_text(json.dumps(conditions), encoding="utf-8")
     contract = {

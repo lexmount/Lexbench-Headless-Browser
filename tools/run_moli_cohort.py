@@ -63,11 +63,14 @@ def main() -> None:
     parser.add_argument("run_id", help="new result directory name")
     parser.add_argument("--try-layout", action="store_true", help="Rerun failed cases with layout on for the same k attempts; replace only all-pass reruns")
     parser.add_argument("--moli-layout", choices=("on", "off"), default="off")
+    parser.add_argument("--moli-commit", help="40-character source commit for candidate binaries")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
         parser.error("Moli must be an executable absolute path")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("run_id must contain only letters, digits, underscore or hyphen")
+    if args.moli_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", args.moli_commit):
+        parser.error("--moli-commit must be a 40-character lowercase hexadecimal commit")
     profile, task_ids = frozen_tasks()
     binary = args.moli_binary.resolve()
     version = subprocess.check_output([str(binary), "--version"], text=True).strip()
@@ -118,6 +121,7 @@ def main() -> None:
             "chromedriver_version": driver_version,
             "moli_sha256": binary_sha,
             "moli_version": version,
+            "moli_commit": args.moli_commit,
             "moli_layout": args.moli_layout,
             "try_layout": args.try_layout,
         }
