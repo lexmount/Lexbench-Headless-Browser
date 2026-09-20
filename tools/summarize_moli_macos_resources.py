@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Certify one baseline/profiled Moli try-layout resource pair on macOS."""
+"""Certify fixed layout-off/on Moli resource cohorts measured on macOS."""
 
 from __future__ import annotations
 
@@ -34,27 +34,25 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _percentile(values: list[float], percentile: float) -> float:
-    ordered = sorted(values)
-    position = (len(ordered) - 1) * percentile
-    low = int(position)
-    high = min(low + 1, len(ordered) - 1)
-    return ordered[low] + (ordered[high] - ordered[low]) * (position - low)
-
-
 def _stats(values: list[float]) -> dict[str, float | int]:
-    if not values:
-        raise ValueError("resource population is empty")
-    if any(not math.isfinite(value) for value in values):
-        raise ValueError("resource population contains a non-finite value")
+    if not values or any(not math.isfinite(value) for value in values):
+        raise ValueError("resource population is empty or contains a non-finite value")
+    ordered = sorted(values)
+
+    def percentile(q: float) -> float:
+        position = (len(ordered) - 1) * q
+        low = int(position)
+        high = min(low + 1, len(ordered) - 1)
+        return ordered[low] + (ordered[high] - ordered[low]) * (position - low)
+
     return {
         "n": len(values),
         "sum": sum(values),
         "mean": statistics.mean(values),
-        "p50": _percentile(values, 0.50),
-        "p95": _percentile(values, 0.95),
-        "min": min(values),
-        "max": max(values),
+        "p50": percentile(0.50),
+        "p95": percentile(0.95),
+        "min": ordered[0],
+        "max": ordered[-1],
     }
 
 
@@ -63,22 +61,6 @@ def _matrix(rows: list[dict[str, Any]], task_ids: list[str], attempts: int, labe
     expected = {(task_id, attempt) for task_id in task_ids for attempt in range(1, attempts + 1)}
     if len(keys) != len(expected) or set(keys) != expected:
         raise ValueError(f"{label} has missing, duplicate or unexpected task attempts")
-
-
-def _physical(run_dir: Path, manifest: dict[str, Any], final: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    layout_retry.verify(run_dir, manifest, final)
-    receipt = manifest.get("layout_retry")
-    if not receipt:
-        if layout_retry.failed_cases(final, int(manifest["k_runs"])):
-            raise ValueError("layout retry receipt is missing for failed initial cases")
-        return final, []
-    initial = _rows(run_dir / receipt["initial_results"])
-    retry = _rows(run_dir / receipt["retry_results"])
-    if _sha(run_dir / receipt["initial_results"]) != receipt["initial_results_sha256"]:
-        raise ValueError("initial result hash mismatch")
-    if _sha(run_dir / receipt["retry_results"]) != receipt["retry_results_sha256"]:
-        raise ValueError("retry result hash mismatch")
-    return initial, retry
 
 
 def _resource_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -102,201 +84,205 @@ def _resource_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {"rss_peak_mib": _stats(rss), "cpu_time_ms": _stats(cpu)}
 
 
-def _effective_logical_rows(
-    initial_rows: list[dict[str, Any]], retry_rows: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
-    """Fold physical retries into one end-to-end resource row per logical call."""
-    retry_by_key = {(row["task_id"], row["attempt"]): row for row in retry_rows}
-    effective: list[dict[str, Any]] = []
-    for initial in initial_rows:
-        retry = retry_by_key.get((initial["task_id"], initial["attempt"]))
-        initial_resource = initial.get("resource") or {}
-        resource = dict(initial_resource)
-        if retry is not None:
-            retry_resource = retry.get("resource") or {}
-            resource["cpu_total_ms"] = (
-                float(initial_resource.get("cpu_total_ms") or 0)
-                + float(retry_resource.get("cpu_total_ms") or 0)
-            )
-            peaks = [
-                value
-                for value in (
-                    initial_resource.get("rss_peak_bytes"),
-                    retry_resource.get("rss_peak_bytes"),
-                )
-                if isinstance(value, (int, float)) and not isinstance(value, bool)
-            ]
-            resource["rss_peak_bytes"] = max(peaks) if len(peaks) == 2 else None
-        effective.append({**initial, "resource": resource})
-    return effective
+def _change_pct(candidate: float, baseline: float) -> float:
+    if baseline == 0:
+        raise ValueError("cannot compute a percentage change from zero")
+    return (candidate / baseline - 1) * 100
 
 
-def summarize_pair(
-    baseline_dir: Path,
-    engine_dir: Path,
+def summarize_fixed_pairs(
+    off_baseline_dir: Path,
+    off_profiled_dir: Path,
+    on_baseline_dir: Path,
+    on_profiled_dir: Path,
     binary_receipt_path: Path,
     comparison_protocol_path: Path,
     *,
     expected_tasks: int = 557,
     expected_frozen_calls: int = 1045,
 ) -> dict[str, Any]:
-    binary_receipt = _json(binary_receipt_path)
-    if binary_receipt.get("schema") != "moli-binary-receipt/v1":
+    receipt = _json(binary_receipt_path)
+    if receipt.get("schema") != "moli-binary-receipt/v1":
         raise ValueError("unsupported Moli binary receipt")
-    comparison_protocol = _json(comparison_protocol_path)
-    frozen_items = comparison_protocol.get("historical_common_pass_keys")
+    protocol = _json(comparison_protocol_path)
+    frozen_items = protocol.get("historical_common_pass_keys")
     if not isinstance(frozen_items, list) or len(frozen_items) != expected_frozen_calls:
         raise ValueError(f"historical protocol must contain {expected_frozen_calls} frozen comparison keys")
     frozen_keys = {(str(item.get("task_id")), int(item.get("attempt", 0))) for item in frozen_items}
     if len(frozen_keys) != expected_frozen_calls:
         raise ValueError("historical comparison keys are invalid or duplicated")
-    loaded: dict[str, tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]] = {}
-    for label, run_dir, mode in (("baseline", baseline_dir, "baseline"), ("engine", engine_dir, "engine")):
-        manifest_path = run_dir / "run_manifest.json"
-        results_path = run_dir / "results.jsonl"
-        manifest = _json(manifest_path)
-        final = _rows(results_path)
+
+    run_specs = {
+        ("off", "baseline"): off_baseline_dir,
+        ("off", "profiled"): off_profiled_dir,
+        ("on", "baseline"): on_baseline_dir,
+        ("on", "profiled"): on_profiled_dir,
+    }
+    loaded: dict[tuple[str, str], tuple[Path, dict[str, Any], list[dict[str, Any]]]] = {}
+    common_tasks: list[tuple[str, str]] | None = None
+    common_controls: dict[str, Any] | None = None
+    for (layout, phase), run_dir in run_specs.items():
+        manifest = _json(run_dir / "run_manifest.json")
+        rows = _rows(run_dir / "results.jsonl")
+        label = f"layout-{layout} {phase}"
         if manifest.get("completion_status") != "completed":
             raise ValueError(f"{label} run is not complete")
         if manifest.get("selected_engines") != ["moli"] or manifest.get("k_runs") != 5:
             raise ValueError(f"{label} run must contain Moli with k=5")
         if (manifest.get("runner") or {}).get("jobs") != 1:
             raise ValueError(f"{label} run must use one worker")
-        if (manifest.get("resource_profile") or {}).get("mode") != mode:
+        expected_mode = "baseline" if phase == "baseline" else "engine"
+        if (manifest.get("resource_profile") or {}).get("mode") != expected_mode:
             raise ValueError(f"{label} resource profile mode mismatch")
-        if (manifest.get("moli_layout_policy") or {}) != layout_retry.policy("off", True):
-            raise ValueError(f"{label} run must use the try-layout policy")
+        if (manifest.get("moli_layout_policy") or {}) != layout_retry.policy(layout, False):
+            raise ValueError(f"{label} run must use fixed layout {layout}")
+        if manifest.get("layout_retry") or (run_dir / "layout_retry_results.jsonl").exists():
+            raise ValueError(f"{label} must not contain layout retries")
         moli = (manifest.get("engines") or {}).get("moli") or {}
-        if moli.get("sha256") != binary_receipt.get("sha256") or moli.get("version") != binary_receipt.get("version"):
+        if moli.get("sha256") != receipt.get("sha256") or moli.get("version") != receipt.get("version"):
             raise ValueError(f"{label} Moli binary identity mismatch")
-        task_ids = [str(item["task_id"]) for item in manifest.get("resolved_tasks") or []]
-        if len(task_ids) != expected_tasks or len(set(task_ids)) != expected_tasks:
+        tasks = [(str(item["task_id"]), str(item["sha256"])) for item in manifest.get("resolved_tasks") or []]
+        if len(tasks) != expected_tasks or len({task_id for task_id, _ in tasks}) != expected_tasks:
             raise ValueError(f"{label} run must contain {expected_tasks} unique tasks")
-        _matrix(final, task_ids, 5, f"{label} final matrix")
+        task_ids = [task_id for task_id, _ in tasks]
+        _matrix(rows, task_ids, 5, label)
         expected_calls = expected_tasks * 5
-        if len(final) != expected_calls or manifest.get("completed_result_rows") != expected_calls:
-            raise ValueError(f"{label} final matrix must contain {expected_calls} rows")
-        initial, retry = _physical(run_dir, manifest, final)
-        _matrix(initial, task_ids, 5, f"{label} initial matrix")
-        retried = sorted(layout_retry.failed_cases(initial, 5))
-        _matrix(retry, retried, 5, f"{label} retry matrix")
-        loaded[label] = (manifest, final, initial, retry)
+        if len(rows) != expected_calls or manifest.get("completed_result_rows") != expected_calls:
+            raise ValueError(f"{label} must contain {expected_calls} rows")
+        if any((row.get("engine_provenance") or {}).get("layout_enabled") != (layout == "on") for row in rows):
+            raise ValueError(f"{label} row layout provenance mismatch")
+        controls = {
+            "seed": manifest.get("seed"),
+            "score_mode": manifest.get("score_mode"),
+            "source": (manifest.get("runner") or {}).get("source"),
+            "fixtures": (manifest.get("runner") or {}).get("fixtures"),
+            "harness_pins": (manifest.get("runner") or {}).get("harness_pins"),
+        }
+        if common_tasks is None:
+            common_tasks, common_controls = tasks, controls
+        elif tasks != common_tasks or controls != common_controls:
+            raise ValueError("fixed-layout resource runs do not share frozen tasks and controls")
+        loaded[(layout, phase)] = (run_dir, manifest, rows)
 
-    baseline_manifest, baseline_final, baseline_initial, baseline_retry = loaded["baseline"]
-    engine_manifest, engine_final, engine_initial, engine_retry = loaded["engine"]
-    baseline_tasks = [(item["task_id"], item["sha256"]) for item in baseline_manifest["resolved_tasks"]]
-    engine_tasks = [(item["task_id"], item["sha256"]) for item in engine_manifest["resolved_tasks"]]
-    if baseline_tasks != engine_tasks:
-        raise ValueError("baseline and profiled task manifests differ")
-    for key in ("seed", "k_runs", "score_mode"):
-        if baseline_manifest.get(key) != engine_manifest.get(key):
-            raise ValueError(f"baseline and profiled runs differ in {key}")
-    baseline_runner = baseline_manifest.get("runner") or {}
-    engine_runner = engine_manifest.get("runner") or {}
-    for key in ("source", "fixtures", "harness_pins"):
-        if baseline_runner.get(key) != engine_runner.get(key):
-            raise ValueError(f"baseline and profiled runner {key} differ")
-    calibration = duration_calibration(
-        engine_final,
-        baseline_final,
-        float((engine_manifest.get("resource_profile") or {}).get("max_observer_effect_pct") or 20),
-        profiled_manifest=engine_manifest,
-        baseline_manifest=baseline_manifest,
-    )
-    host_summary = _json(engine_dir / "host_summary.json")
-    initial_metrics = _resource_metrics(engine_initial)
-    retry_metrics = _resource_metrics(engine_retry)
-    all_physical = engine_initial + engine_retry
-    all_metrics = _resource_metrics(all_physical)
-    effective_rows = _effective_logical_rows(engine_initial, engine_retry)
-    effective_metrics = _resource_metrics(effective_rows)
-    effective_by_key = {(row["task_id"], row["attempt"]): row for row in effective_rows}
-    if not frozen_keys.issubset(effective_by_key):
-        raise ValueError("historical comparison keys are not covered by the candidate run")
-    frozen_metrics = _resource_metrics([effective_by_key[key] for key in sorted(frozen_keys)])
-    baseline_retried = set(layout_retry.failed_cases(baseline_initial, 5))
-    engine_retried = set(layout_retry.failed_cases(engine_initial, 5))
+    all_keys = {(task_id, attempt) for task_id, _ in common_tasks or [] for attempt in range(1, 6)}
+    if not frozen_keys.issubset(all_keys):
+        raise ValueError("historical comparison keys are not covered by the candidate runs")
+
+    configurations: dict[str, Any] = {}
     quality_reasons: list[str] = []
-    if host_summary.get("polluted"):
-        quality_reasons.append("host telemetry pollution gate failed")
-    if not calibration.get("acceptable"):
-        quality_reasons.append("profiler observer-effect gate failed")
-    logical_calls = expected_tasks * 5
-    if calibration.get("matched_attempts") != logical_calls or not calibration.get("complete_pairing"):
-        quality_reasons.append("baseline/profiled logical pairing is incomplete")
-    if calibration.get("provenance_mismatches"):
-        quality_reasons.append("baseline/profiled provenance differs")
-    baseline_by_key = {(row["task_id"], row["attempt"]): row for row in baseline_final}
-    engine_by_key = {(row["task_id"], row["attempt"]): row for row in engine_final}
-    task_ids_bytes = "".join(task_id + "\n" for task_id, _ in sorted(engine_tasks)).encode()
+    for layout in ("off", "on"):
+        baseline_dir, baseline_manifest, baseline_rows = loaded[(layout, "baseline")]
+        profiled_dir, profiled_manifest, profiled_rows = loaded[(layout, "profiled")]
+        baseline_by_key = {(row["task_id"], row["attempt"]): row for row in baseline_rows}
+        profiled_by_key = {(row["task_id"], row["attempt"]): row for row in profiled_rows}
+        calibration = duration_calibration(
+            profiled_rows,
+            baseline_rows,
+            float((profiled_manifest.get("resource_profile") or {}).get("max_observer_effect_pct") or 20),
+            profiled_manifest=profiled_manifest,
+            baseline_manifest=baseline_manifest,
+        )
+        baseline_host = _json(baseline_dir / "host_summary.json")
+        profiled_host = _json(profiled_dir / "host_summary.json")
+        reasons: list[str] = []
+        if baseline_host.get("polluted") or profiled_host.get("polluted"):
+            reasons.append("host telemetry pollution gate failed")
+        if not calibration.get("acceptable"):
+            reasons.append("profiler observer-effect gate failed")
+        if calibration.get("matched_attempts") != len(all_keys) or not calibration.get("complete_pairing"):
+            reasons.append("baseline/profiled logical pairing is incomplete")
+        if calibration.get("provenance_mismatches"):
+            reasons.append("baseline/profiled provenance differs")
+        status_mismatches = sum(
+            baseline_by_key[key]["status"] != profiled_by_key[key]["status"] for key in all_keys
+        )
+        all_metrics = _resource_metrics([profiled_by_key[key] for key in sorted(all_keys)])
+        frozen_metrics = _resource_metrics([profiled_by_key[key] for key in sorted(frozen_keys)])
+        configurations[layout] = {
+            "layout": layout,
+            "metrics": {
+                "all_predeclared_calls": all_metrics,
+                "frozen_historical_common_pass_calls": frozen_metrics,
+            },
+            "outcomes": {
+                "baseline_status_counts": dict(sorted(Counter(row["status"] for row in baseline_rows).items())),
+                "profiled_status_counts": dict(sorted(Counter(row["status"] for row in profiled_rows).items())),
+                "baseline_profile_status_mismatches": status_mismatches,
+            },
+            "quality": {
+                "publishable": not reasons,
+                "reasons": reasons,
+                "baseline_host": baseline_host,
+                "profiled_host": profiled_host,
+                "observer_effect": calibration,
+            },
+            "provenance": {
+                "baseline": {
+                    "run_id": baseline_manifest["run_id"],
+                    "manifest_sha256": _sha(baseline_dir / "run_manifest.json"),
+                    "results_sha256": _sha(baseline_dir / "results.jsonl"),
+                    "host_summary_sha256": _sha(baseline_dir / "host_summary.json"),
+                },
+                "profiled": {
+                    "run_id": profiled_manifest["run_id"],
+                    "manifest_sha256": _sha(profiled_dir / "run_manifest.json"),
+                    "results_sha256": _sha(profiled_dir / "results.jsonl"),
+                    "host_summary_sha256": _sha(profiled_dir / "host_summary.json"),
+                },
+            },
+        }
+        quality_reasons.extend(f"layout {layout}: {reason}" for reason in reasons)
+
+    comparisons: dict[str, Any] = {}
+    for population in ("all_predeclared_calls", "frozen_historical_common_pass_calls"):
+        off = configurations["off"]["metrics"][population]
+        on = configurations["on"]["metrics"][population]
+        comparisons[population] = {
+            "layout_on_vs_off_rss_p50_change_pct": _change_pct(
+                on["rss_peak_mib"]["p50"], off["rss_peak_mib"]["p50"]
+            ),
+            "layout_on_vs_off_cpu_mean_change_pct": _change_pct(
+                on["cpu_time_ms"]["mean"], off["cpu_time_ms"]["mean"]
+            ),
+        }
+
+    task_ids_bytes = "".join(task_id + "\n" for task_id, _ in sorted(common_tasks or [])).encode()
+    profiled_manifest = loaded[("off", "profiled")][1]
     return {
-        "schema": "lexbench_moli_macos_resource_summary/1",
+        "schema": "lexbench_moli_macos_fixed_resource_summary/1",
         "candidate": {
-            "version": binary_receipt["version"],
-            "source_commit": binary_receipt["source_commit"],
-            "binary_sha256": binary_receipt["sha256"],
-            "target": binary_receipt["target"],
-            "profile": binary_receipt["profile"],
+            "version": receipt["version"],
+            "source_commit": receipt["source_commit"],
+            "binary_sha256": receipt["sha256"],
+            "target": receipt["target"],
+            "profile": receipt["profile"],
         },
         "method": {
-            "policy_id": layout_retry.POLICY_ID,
-            "initial_layout": "off",
-            "retry_layout": "on",
+            "configurations": ["layout_off", "layout_on"],
             "attempts_per_case": 5,
-            "replacement_rule": "replace_only_when_all_retry_attempts_pass",
-            "resource_sample_interval_ms": (engine_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
+            "resource_sample_interval_ms": (profiled_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
+            "layout_retry": False,
         },
         "population": {
             "tasks": expected_tasks,
             "attempts_per_task": 5,
-            "logical_calls": logical_calls,
-            "initial_physical_calls": len(engine_initial),
-            "retry_physical_calls": len(engine_retry),
-            "total_physical_calls": len(all_physical),
+            "calls_per_configuration": len(all_keys),
             "frozen_comparison_calls": len(frozen_keys),
             "frozen_comparison_tasks": len({task_id for task_id, _ in frozen_keys}),
         },
-        "outcomes": {
-            "final_status_counts": dict(sorted(Counter(row["status"] for row in engine_final).items())),
-            "baseline_profile_status_mismatches": sum(
-                baseline_by_key[key]["status"] != engine_by_key[key]["status"]
-                for key in baseline_by_key
-            ),
-            "baseline_retried_cases": len(baseline_retried),
-            "profiled_retried_cases": len(engine_retried),
-            "layout_decision_mismatch_cases": len(baseline_retried ^ engine_retried),
-        },
-        "metrics": {
-            "effective_logical_calls": effective_metrics,
-            "frozen_historical_common_pass_calls": frozen_metrics,
-            "initial_physical_calls": initial_metrics,
-            "retry_physical_calls": retry_metrics,
-            "all_physical_calls": all_metrics,
-        },
+        "configurations": configurations,
+        "comparisons": comparisons,
         "quality": {
             "publishable": not quality_reasons,
             "reasons": quality_reasons,
             "memory_metric": "process_tree_rss",
             "pss_available": False,
-            "host": host_summary,
-            "observer_effect": calibration,
         },
         "provenance": {
             "task_ids_sha256": hashlib.sha256(task_ids_bytes).hexdigest(),
-            "runner_source": engine_runner.get("source"),
-            "fixtures": engine_runner.get("fixtures"),
-            "host": engine_manifest.get("host"),
-            "baseline": {
-                "run_id": baseline_manifest["run_id"],
-                "manifest_sha256": _sha(baseline_dir / "run_manifest.json"),
-                "results_sha256": _sha(baseline_dir / "results.jsonl"),
-            },
-            "profiled": {
-                "run_id": engine_manifest["run_id"],
-                "manifest_sha256": _sha(engine_dir / "run_manifest.json"),
-                "results_sha256": _sha(engine_dir / "results.jsonl"),
-                "host_summary_sha256": _sha(engine_dir / "host_summary.json"),
-            },
+            "runner_source": (common_controls or {}).get("source"),
+            "fixtures": (common_controls or {}).get("fixtures"),
+            "host": profiled_manifest.get("host"),
             "binary_receipt_sha256": _sha(binary_receipt_path),
             "comparison_protocol_sha256": _sha(comparison_protocol_path),
         },
@@ -305,16 +291,20 @@ def summarize_pair(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--baseline-run", required=True, type=Path)
-    parser.add_argument("--profiled-run", required=True, type=Path)
+    parser.add_argument("--off-baseline-run", required=True, type=Path)
+    parser.add_argument("--off-profiled-run", required=True, type=Path)
+    parser.add_argument("--on-baseline-run", required=True, type=Path)
+    parser.add_argument("--on-profiled-run", required=True, type=Path)
     parser.add_argument("--binary-receipt", required=True, type=Path)
     parser.add_argument("--comparison-protocol", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     try:
-        summary = summarize_pair(
-            args.baseline_run,
-            args.profiled_run,
+        summary = summarize_fixed_pairs(
+            args.off_baseline_run,
+            args.off_profiled_run,
+            args.on_baseline_run,
+            args.on_profiled_run,
             args.binary_receipt,
             args.comparison_protocol,
         )
