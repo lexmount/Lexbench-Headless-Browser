@@ -176,6 +176,10 @@ def summarize_run(run_dir: Path, contract: dict[str, Any]) -> dict[str, Any]:
             "final_results_sha256": receipt["final_results_sha256"] if receipt else _sha256(results_path),
             "runner_source": (manifest.get("runner") or {}).get("source"),
             "fixtures": (manifest.get("runner") or {}).get("fixtures"),
+            "host": {
+                key: (manifest.get("host") or {}).get(key)
+                for key in ("platform", "machine", "kernel", "cpu_count", "provenance_level")
+            },
         },
     }
 

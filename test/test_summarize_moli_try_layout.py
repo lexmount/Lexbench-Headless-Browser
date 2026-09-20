@@ -67,6 +67,7 @@ def fixture(tmp_path: Path) -> tuple[Path, dict]:
         "bench_manifest": {"sha256": "bench-sha"},
         "moli_layout_policy": layout_retry.policy("off", True), "layout_retry": receipt,
         "engines": {"moli": {"version": "moli 1.2.0", "sha256": "moli-sha"}},
+        "host": {"platform": "macOS-test", "machine": "arm64", "kernel": "test-kernel", "cpu_count": 8, "provenance_level": "minimal"},
         "runner": {"source": {"tree_sha256": "runner-sha"}, "fixtures": {"tree_sha256": "fixtures-sha"}},
     }
     (run_dir / "run_manifest.json").write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
@@ -105,6 +106,10 @@ def test_summary_keeps_case_denominator_and_separates_retry_cost(tmp_path):
         "unrecovered": ["remain-fail"],
     }
     assert summary["provenance"]["chromedriver_sha256"] == "driver-sha"
+    assert summary["provenance"]["host"] == {
+        "platform": "macOS-test", "machine": "arm64", "kernel": "test-kernel",
+        "cpu_count": 8, "provenance_level": "minimal",
+    }
 
 
 def test_all_pass_initial_matrix_is_valid_without_retry_files(tmp_path):
