@@ -199,6 +199,7 @@ def summarize_pair(
             "retry_layout": "on",
             "attempts_per_case": 5,
             "replacement_rule": "replace_only_when_all_retry_attempts_pass",
+            "resource_sample_interval_ms": (engine_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
         },
         "population": {
             "tasks": expected_tasks,
@@ -233,6 +234,7 @@ def summarize_pair(
             "task_ids_sha256": hashlib.sha256(task_ids_bytes).hexdigest(),
             "runner_source": engine_runner.get("source"),
             "fixtures": engine_runner.get("fixtures"),
+            "host": engine_manifest.get("host"),
             "baseline": {
                 "run_id": baseline_manifest["run_id"],
                 "manifest_sha256": _sha(baseline_dir / "run_manifest.json"),

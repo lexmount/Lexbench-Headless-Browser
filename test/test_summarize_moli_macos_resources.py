@@ -109,6 +109,7 @@ def _run(tmp_path: Path, name: str, profiled: bool) -> Path:
             "engine_order": "balanced_rotation",
             "engine_order_algorithm": "sha256",
             "max_observer_effect_pct": 20,
+            "sample_interval_ms": 250,
         },
         "moli_layout_policy": layout_retry.policy("off", True),
         "layout_retry": receipt,
@@ -147,6 +148,7 @@ def test_summary_separates_final_logical_and_retry_physical_cost(tmp_path):
     assert summary["metrics"]["retry_physical_calls"]["cpu_time_ms"]["sum"] == 50
     assert summary["quality"]["publishable"] is True
     assert summary["quality"]["pss_available"] is False
+    assert summary["method"]["resource_sample_interval_ms"] == 250
 
 
 def test_summary_rejects_pss_or_missing_macos_rss(tmp_path):
