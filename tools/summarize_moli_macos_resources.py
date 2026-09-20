@@ -16,7 +16,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from runner import layout_retry  # noqa: E402
-from runner.resources import duration_calibration  # noqa: E402
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -91,9 +90,7 @@ def _change_pct(candidate: float, baseline: float) -> float:
 
 
 def summarize_fixed_pairs(
-    off_baseline_dir: Path,
     off_profiled_dir: Path,
-    on_baseline_dir: Path,
     on_profiled_dir: Path,
     binary_receipt_path: Path,
     comparison_protocol_path: Path,
@@ -113,9 +110,7 @@ def summarize_fixed_pairs(
         raise ValueError("historical comparison keys are invalid or duplicated")
 
     run_specs = {
-        ("off", "baseline"): off_baseline_dir,
         ("off", "profiled"): off_profiled_dir,
-        ("on", "baseline"): on_baseline_dir,
         ("on", "profiled"): on_profiled_dir,
     }
     loaded: dict[tuple[str, str], tuple[Path, dict[str, Any], list[dict[str, Any]]]] = {}
@@ -131,8 +126,7 @@ def summarize_fixed_pairs(
             raise ValueError(f"{label} run must contain Moli with k=5")
         if (manifest.get("runner") or {}).get("jobs") != 1:
             raise ValueError(f"{label} run must use one worker")
-        expected_mode = "baseline" if phase == "baseline" else "engine"
-        if (manifest.get("resource_profile") or {}).get("mode") != expected_mode:
+        if (manifest.get("resource_profile") or {}).get("mode") != "engine":
             raise ValueError(f"{label} resource profile mode mismatch")
         if (manifest.get("moli_layout_policy") or {}) != layout_retry.policy(layout, False):
             raise ValueError(f"{label} run must use fixed layout {layout}")
@@ -171,31 +165,12 @@ def summarize_fixed_pairs(
     configurations: dict[str, Any] = {}
     quality_reasons: list[str] = []
     for layout in ("off", "on"):
-        baseline_dir, baseline_manifest, baseline_rows = loaded[(layout, "baseline")]
         profiled_dir, profiled_manifest, profiled_rows = loaded[(layout, "profiled")]
-        baseline_by_key = {(row["task_id"], row["attempt"]): row for row in baseline_rows}
         profiled_by_key = {(row["task_id"], row["attempt"]): row for row in profiled_rows}
-        calibration = duration_calibration(
-            profiled_rows,
-            baseline_rows,
-            float((profiled_manifest.get("resource_profile") or {}).get("max_observer_effect_pct") or 20),
-            profiled_manifest=profiled_manifest,
-            baseline_manifest=baseline_manifest,
-        )
-        baseline_host = _json(baseline_dir / "host_summary.json")
         profiled_host = _json(profiled_dir / "host_summary.json")
         reasons: list[str] = []
-        if baseline_host.get("polluted") or profiled_host.get("polluted"):
+        if profiled_host.get("polluted"):
             reasons.append("host telemetry pollution gate failed")
-        if not calibration.get("acceptable"):
-            reasons.append("profiler observer-effect gate failed")
-        if calibration.get("matched_attempts") != len(all_keys) or not calibration.get("complete_pairing"):
-            reasons.append("baseline/profiled logical pairing is incomplete")
-        if calibration.get("provenance_mismatches"):
-            reasons.append("baseline/profiled provenance differs")
-        status_mismatches = sum(
-            baseline_by_key[key]["status"] != profiled_by_key[key]["status"] for key in all_keys
-        )
         all_metrics = _resource_metrics([profiled_by_key[key] for key in sorted(all_keys)])
         frozen_metrics = _resource_metrics([profiled_by_key[key] for key in sorted(frozen_keys)])
         configurations[layout] = {
@@ -205,24 +180,15 @@ def summarize_fixed_pairs(
                 "frozen_historical_common_pass_calls": frozen_metrics,
             },
             "outcomes": {
-                "baseline_status_counts": dict(sorted(Counter(row["status"] for row in baseline_rows).items())),
                 "profiled_status_counts": dict(sorted(Counter(row["status"] for row in profiled_rows).items())),
-                "baseline_profile_status_mismatches": status_mismatches,
             },
             "quality": {
                 "publishable": not reasons,
                 "reasons": reasons,
-                "baseline_host": baseline_host,
                 "profiled_host": profiled_host,
-                "observer_effect": calibration,
+                "observer_effect": {"measured": False},
             },
             "provenance": {
-                "baseline": {
-                    "run_id": baseline_manifest["run_id"],
-                    "manifest_sha256": _sha(baseline_dir / "run_manifest.json"),
-                    "results_sha256": _sha(baseline_dir / "results.jsonl"),
-                    "host_summary_sha256": _sha(baseline_dir / "host_summary.json"),
-                },
                 "profiled": {
                     "run_id": profiled_manifest["run_id"],
                     "manifest_sha256": _sha(profiled_dir / "run_manifest.json"),
@@ -262,6 +228,8 @@ def summarize_fixed_pairs(
             "attempts_per_case": 5,
             "resource_sample_interval_ms": (profiled_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
             "layout_retry": False,
+            "resource_runs": 2,
+            "observer_calibration": "not_requested",
         },
         "population": {
             "tasks": expected_tasks,
@@ -291,9 +259,7 @@ def summarize_fixed_pairs(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--off-baseline-run", required=True, type=Path)
     parser.add_argument("--off-profiled-run", required=True, type=Path)
-    parser.add_argument("--on-baseline-run", required=True, type=Path)
     parser.add_argument("--on-profiled-run", required=True, type=Path)
     parser.add_argument("--binary-receipt", required=True, type=Path)
     parser.add_argument("--comparison-protocol", required=True, type=Path)
@@ -301,9 +267,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         summary = summarize_fixed_pairs(
-            args.off_baseline_run,
             args.off_profiled_run,
-            args.on_baseline_run,
             args.on_profiled_run,
             args.binary_receipt,
             args.comparison_protocol,

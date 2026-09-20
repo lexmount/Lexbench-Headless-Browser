@@ -116,9 +116,7 @@ def _protocol(tmp_path: Path) -> Path:
 
 def _summary(tmp_path: Path) -> dict:
     return summarize_fixed_pairs(
-        _run(tmp_path, "off", False),
         _run(tmp_path, "off", True),
-        _run(tmp_path, "on", False),
         _run(tmp_path, "on", True),
         _receipt(tmp_path),
         _protocol(tmp_path),
@@ -138,6 +136,9 @@ def test_summary_reports_two_fixed_configurations_and_signed_changes(tmp_path):
         "frozen_comparison_tasks": 1,
     }
     assert summary["method"]["layout_retry"] is False
+    assert summary["method"]["resource_runs"] == 2
+    assert summary["method"]["observer_calibration"] == "not_requested"
+    assert all(set(c["provenance"]) == {"profiled"} for c in summary["configurations"].values())
     assert summary["configurations"]["off"]["metrics"]["all_predeclared_calls"]["rss_peak_mib"]["p50"] == 100
     assert summary["configurations"]["on"]["metrics"]["all_predeclared_calls"]["rss_peak_mib"]["p50"] == 110
     comparison = summary["comparisons"]["all_predeclared_calls"]
@@ -148,16 +149,14 @@ def test_summary_reports_two_fixed_configurations_and_signed_changes(tmp_path):
 
 
 def test_summary_rejects_layout_retry_or_missing_macos_rss(tmp_path):
-    off_baseline = _run(tmp_path, "off", False)
     off_profiled = _run(tmp_path, "off", True)
-    on_baseline = _run(tmp_path, "on", False)
     on_profiled = _run(tmp_path, "on", True)
     rows = [json.loads(line) for line in off_profiled.joinpath("results.jsonl").read_text().splitlines()]
     rows[0]["resource"]["rss_peak_bytes"] = None
     _write_jsonl(off_profiled / "results.jsonl", rows)
     with pytest.raises(ValueError, match="missing peak RSS"):
         summarize_fixed_pairs(
-            off_baseline, off_profiled, on_baseline, on_profiled,
+            off_profiled, on_profiled,
             _receipt(tmp_path), _protocol(tmp_path), expected_tasks=2, expected_frozen_calls=5,
         )
 
@@ -169,6 +168,6 @@ def test_summary_rejects_layout_retry_or_missing_macos_rss(tmp_path):
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="must not contain layout retries"):
         summarize_fixed_pairs(
-            off_baseline, off_profiled, on_baseline, on_profiled,
+            off_profiled, on_profiled,
             _receipt(tmp_path), _protocol(tmp_path), expected_tasks=2, expected_frozen_calls=5,
         )
