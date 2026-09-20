@@ -361,10 +361,20 @@ def test_process_diagnostic_preserves_core_dump_evidence(monkeypatch):
         def poll(self):
             return -signal.SIGABRT
 
+    platform_constants = {
+        "P_PID": 1,
+        "WEXITED": 2,
+        "WNOHANG": 4,
+        "WNOWAIT": 8,
+        "CLD_DUMPED": 9,
+    }
+    for name, value in platform_constants.items():
+        monkeypatch.setattr(runner_run.os, name, value, raising=False)
     monkeypatch.setattr(
         runner_run.os,
         "waitid",
         lambda *_args: types.SimpleNamespace(si_code=runner_run.os.CLD_DUMPED),
+        raising=False,
     )
 
     process = runner_run.process_diagnostic("engine", ExitedProc())

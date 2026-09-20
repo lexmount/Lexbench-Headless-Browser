@@ -213,6 +213,9 @@ ENGINE_DEFS = {
         "cdp_port": 9224,
         "role": "gold_baseline",
         "mode": "headless=new",
+        "launch_profile_args": {
+            "browser_automation": ("--enable-automation",),
+        },
     },
     "obscura": {
         "binary": REPO_ROOT / "build_artifacts/obscura/bin/obscura",
@@ -2541,6 +2544,38 @@ def serve_engine_launch_command(
     ]
 
 
+def chrome_launch_command(
+    binary: pathlib.Path,
+    port: int,
+    profile_dir: pathlib.Path,
+    launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+) -> list[str]:
+    """Build Chrome's pinned launch command, including task-scoped flags."""
+    return [
+        str(binary),
+        "--headless=new",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--no-proxy-server",
+        f"--user-data-dir={profile_dir}",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-sync",
+        "--disable-features=NetworkPrediction,OptimizationHints",
+        # Keep non-loopback Chrome background traffic away from the network;
+        # benchmark fixtures remain reachable on localhost.
+        "--host-resolver-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
+        # A fresh profile must not inherit an HTTP cache between attempts.
+        "--disable-http-cache",
+        f"--remote-debugging-port={port}",
+        f"--remote-debugging-address={LOCAL_HOST}",
+        *engine_serve_args("chrome", launch_profile),
+        "about:blank",
+    ]
+
+
 class BrowserManager:
     def __init__(
         self,
@@ -2632,33 +2667,9 @@ class BrowserManager:
         if engine == "chrome":
             profile_dir = pathlib.Path(tempfile.mkdtemp(prefix=f"abb-chrome-{port}-"))
             self._profile_dirs.append(profile_dir)
-            cmd = [
-                str(binary),
-                "--headless=new",
-                "--no-sandbox",
-                "--disable-gpu",
-                "--no-proxy-server",
-                f"--user-data-dir={profile_dir}",
-                "--no-first-run",
-                "--no-default-browser-check",
-                "--disable-background-networking",
-                "--disable-component-update",
-                "--disable-sync",
-                "--disable-features=NetworkPrediction,OptimizationHints",
-                # Hermetic bench: every non-loopback host resolves to a dead
-                # local port so stray Chrome-internal requests fail instantly
-                # instead of stalling the first fixture navigation ~25s on a
-                # network-blackholed machine (QUIC to clients2.google.com).
-                "--host-resolver-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
-                # No HTTP cache: the first navigation on a fresh profile can
-                # deadlock ~25s against its own speculative preconnect on the
-                # cache-entry lock (netlog: HTTP_CACHE_ADD_TO_ENTRY), and a
-                # benchmark wants uncached fetches anyway.
-                "--disable-http-cache",
-                f"--remote-debugging-port={port}",
-                f"--remote-debugging-address={LOCAL_HOST}",
-                "about:blank",
-            ]
+            cmd = chrome_launch_command(
+                binary, port, profile_dir, launch_profile
+            )
         else:
             cmd = serve_engine_launch_command(engine, binary, port, launch_profile, extra_serve_args)
 

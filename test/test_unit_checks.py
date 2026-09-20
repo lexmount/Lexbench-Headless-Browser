@@ -446,6 +446,22 @@ def test_moli_all_resources_profile_enables_full_resource_fetch():
     ]
 
 
+def test_browser_automation_profile_is_chrome_only():
+    automation = runner_run.chrome_launch_command(
+        pathlib.Path("/tmp/chrome"),
+        9336,
+        pathlib.Path("/tmp/profile"),
+        "browser_automation",
+    )
+    default = runner_run.chrome_launch_command(
+        pathlib.Path("/tmp/chrome"), 9336, pathlib.Path("/tmp/profile")
+    )
+    assert "--enable-automation" in automation
+    assert "--enable-automation" not in default
+    assert automation[-1] == "about:blank"
+    assert runner_run.engine_serve_args("moli", "browser_automation") == ()
+
+
 def test_serve_command_keeps_engine_specific_flags_isolated():
     lightpanda = runner_run.serve_engine_launch_command(
         "lightpanda", pathlib.Path("/tmp/lightpanda"), 9334

@@ -453,7 +453,7 @@ def test_unsupported_artifact_profile(bench_factory):
 
 
 def test_supported_task_launch_profiles(bench_factory):
-    for launch_profile in ("default", "all_resources"):
+    for launch_profile in ("default", "all_resources", "browser_automation"):
         task = make_task_dict(launch_profile=launch_profile)
         assert errors_for(bench_factory, l1_tasks=[task]) == []
 
