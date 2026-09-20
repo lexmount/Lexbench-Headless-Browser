@@ -1352,12 +1352,12 @@ SCENARIO_ADAPTER_KINDS: dict[str, dict[str, Any]] = {
     },
     "thin_cdp_use": {
         "driver_key": "cdp_use",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/cdp_use_adapter.py",
     },
     "thin_pydoll": {
         "driver_key": "pydoll",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/pydoll_adapter.py",
     },
     "framework_stagehand": {
@@ -1397,7 +1397,7 @@ SCENARIO_ADAPTER_KINDS: dict[str, dict[str, Any]] = {
     },
     "webdriver_selenium": {
         "driver_key": "selenium",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/selenium_adapter.py",
     },
     "thin_chromiumoxide": {

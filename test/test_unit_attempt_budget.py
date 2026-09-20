@@ -25,6 +25,7 @@ from __future__ import annotations
 import os
 import pathlib
 import re
+import sys
 
 import pytest
 
@@ -56,6 +57,11 @@ def test_no_adapter_launches_through_a_build_wrapper():
         "adapters must be launched as a pre-built binary, not through a build wrapper "
         "(the build cost is charged to timeouts.task_ms): " + "; ".join(offenders)
     )
+
+
+def test_python_adapters_reuse_the_runner_interpreter():
+    for kind in ("thin_cdp_use", "thin_pydoll", "webdriver_selenium"):
+        assert runner_run.SCENARIO_ADAPTER_KINDS[kind]["argv"] == [sys.executable]
 
 
 def test_compiled_adapters_declare_a_build_command():
