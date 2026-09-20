@@ -144,7 +144,9 @@ def test_summary_separates_final_logical_and_retry_physical_cost(tmp_path):
         "retry_physical_calls": 5,
         "total_physical_calls": 15,
     }
-    assert summary["metrics"]["final_logical_calls"]["rss_peak_mib"]["n"] == 10
+    assert summary["metrics"]["effective_logical_calls"]["rss_peak_mib"]["n"] == 10
+    assert summary["metrics"]["effective_logical_calls"]["cpu_time_ms"]["sum"] == 150
+    assert summary["metrics"]["effective_logical_calls"]["cpu_time_ms"]["mean"] == 15
     assert summary["metrics"]["retry_physical_calls"]["cpu_time_ms"]["sum"] == 50
     assert summary["quality"]["publishable"] is True
     assert summary["quality"]["pss_available"] is False

@@ -102,6 +102,35 @@ def _resource_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {"rss_peak_mib": _stats(rss), "cpu_time_ms": _stats(cpu)}
 
 
+def _effective_logical_rows(
+    initial_rows: list[dict[str, Any]], retry_rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Fold physical retries into one end-to-end resource row per logical call."""
+    retry_by_key = {(row["task_id"], row["attempt"]): row for row in retry_rows}
+    effective: list[dict[str, Any]] = []
+    for initial in initial_rows:
+        retry = retry_by_key.get((initial["task_id"], initial["attempt"]))
+        initial_resource = initial.get("resource") or {}
+        resource = dict(initial_resource)
+        if retry is not None:
+            retry_resource = retry.get("resource") or {}
+            resource["cpu_total_ms"] = (
+                float(initial_resource.get("cpu_total_ms") or 0)
+                + float(retry_resource.get("cpu_total_ms") or 0)
+            )
+            peaks = [
+                value
+                for value in (
+                    initial_resource.get("rss_peak_bytes"),
+                    retry_resource.get("rss_peak_bytes"),
+                )
+                if isinstance(value, (int, float)) and not isinstance(value, bool)
+            ]
+            resource["rss_peak_bytes"] = max(peaks) if len(peaks) == 2 else None
+        effective.append({**initial, "resource": resource})
+    return effective
+
+
 def summarize_pair(
     baseline_dir: Path,
     engine_dir: Path,
@@ -166,11 +195,12 @@ def summarize_pair(
         baseline_manifest=baseline_manifest,
     )
     host_summary = _json(engine_dir / "host_summary.json")
-    final_metrics = _resource_metrics(engine_final)
     initial_metrics = _resource_metrics(engine_initial)
     retry_metrics = _resource_metrics(engine_retry)
     all_physical = engine_initial + engine_retry
     all_metrics = _resource_metrics(all_physical)
+    effective_rows = _effective_logical_rows(engine_initial, engine_retry)
+    effective_metrics = _resource_metrics(effective_rows)
     baseline_retried = set(layout_retry.failed_cases(baseline_initial, 5))
     engine_retried = set(layout_retry.failed_cases(engine_initial, 5))
     quality_reasons: list[str] = []
@@ -183,6 +213,8 @@ def summarize_pair(
         quality_reasons.append("baseline/profiled logical pairing is incomplete")
     if calibration.get("provenance_mismatches"):
         quality_reasons.append("baseline/profiled provenance differs")
+    baseline_by_key = {(row["task_id"], row["attempt"]): row for row in baseline_final}
+    engine_by_key = {(row["task_id"], row["attempt"]): row for row in engine_final}
     task_ids_bytes = "".join(task_id + "\n" for task_id, _ in sorted(engine_tasks)).encode()
     return {
         "schema": "lexbench_moli_macos_resource_summary/1",
@@ -211,16 +243,19 @@ def summarize_pair(
         },
         "outcomes": {
             "final_status_counts": dict(sorted(Counter(row["status"] for row in engine_final).items())),
-            "baseline_profile_status_mismatches": sum(a["status"] != b["status"] for a, b in zip(baseline_final, engine_final)),
+            "baseline_profile_status_mismatches": sum(
+                baseline_by_key[key]["status"] != engine_by_key[key]["status"]
+                for key in baseline_by_key
+            ),
             "baseline_retried_cases": len(baseline_retried),
             "profiled_retried_cases": len(engine_retried),
             "layout_decision_mismatch_cases": len(baseline_retried ^ engine_retried),
         },
         "metrics": {
-            "final_logical_calls": final_metrics,
+            "effective_logical_calls": effective_metrics,
             "initial_physical_calls": initial_metrics,
             "retry_physical_calls": retry_metrics,
-            "total_physical_calls": all_metrics,
+            "all_physical_calls": all_metrics,
         },
         "quality": {
             "publishable": not quality_reasons,
