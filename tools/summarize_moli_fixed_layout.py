@@ -71,7 +71,7 @@ def summarize_fixed_sources(sources: list[tuple[Path, str]], contract: dict, lay
             if task_id in task_hashes and task_hashes[task_id] != resolved[task_id]:
                 raise ValueError("task content differs between sources")
             task_hashes[task_id] = resolved[task_id]
-            rows.append(row)
+            rows.append({**row, "source_run_id": manifest["run_id"]})
         bindings.append({"run_id": manifest["run_id"], "results_file": relative,
                          "manifest_sha256": file_sha256(manifest_path),
                          "results_sha256": file_sha256(path), "calls": len(part)})
@@ -84,7 +84,7 @@ def summarize_fixed_sources(sources: list[tuple[Path, str]], contract: dict, lay
         cases.append({"task_id": task_id, "task_sha256": task_hashes[task_id],
                       "passes": sum(r["status"] == "pass" for r in attempts),
                       "attempts": [{key: r.get(key) for key in
-                                    ("attempt", "status", "failure", "answer", "artifact_dir", "run_id", "seed")}
+                                    ("attempt", "status", "failure", "answer", "artifact_dir", "run_id", "source_run_id", "seed")}
                                    for r in attempts]})
     passed = sum(c["passes"] == contract["attempts_per_task"] for c in cases)
     return {"schema": "lexbench_moli_fixed_layout_summary/1", "layout": layout,
