@@ -132,10 +132,27 @@ def _receipt(tmp_path: Path) -> Path:
     return path
 
 
+def _comparison_protocol(tmp_path: Path) -> Path:
+    path = tmp_path / "comparison-protocol.json"
+    path.write_text(json.dumps({
+        "historical_common_pass_keys": [
+            {"task_id": "pass", "attempt": attempt} for attempt in range(1, 6)
+        ]
+    }), encoding="utf-8")
+    return path
+
+
 def test_summary_separates_final_logical_and_retry_physical_cost(tmp_path):
     baseline = _run(tmp_path, "baseline", False)
     profiled = _run(tmp_path, "profiled", True)
-    summary = summarize_pair(baseline, profiled, _receipt(tmp_path), expected_tasks=2)
+    summary = summarize_pair(
+        baseline,
+        profiled,
+        _receipt(tmp_path),
+        _comparison_protocol(tmp_path),
+        expected_tasks=2,
+        expected_frozen_calls=5,
+    )
     assert summary["population"] == {
         "tasks": 2,
         "attempts_per_task": 5,
@@ -143,10 +160,15 @@ def test_summary_separates_final_logical_and_retry_physical_cost(tmp_path):
         "initial_physical_calls": 10,
         "retry_physical_calls": 5,
         "total_physical_calls": 15,
+        "frozen_comparison_calls": 5,
+        "frozen_comparison_tasks": 1,
     }
     assert summary["metrics"]["effective_logical_calls"]["rss_peak_mib"]["n"] == 10
     assert summary["metrics"]["effective_logical_calls"]["cpu_time_ms"]["sum"] == 150
     assert summary["metrics"]["effective_logical_calls"]["cpu_time_ms"]["mean"] == 15
+    assert summary["population"]["frozen_comparison_calls"] == 5
+    assert summary["population"]["frozen_comparison_tasks"] == 1
+    assert summary["metrics"]["frozen_historical_common_pass_calls"]["cpu_time_ms"]["n"] == 5
     assert summary["metrics"]["retry_physical_calls"]["cpu_time_ms"]["sum"] == 50
     assert summary["quality"]["publishable"] is True
     assert summary["quality"]["pss_available"] is False
@@ -170,4 +192,11 @@ def test_summary_rejects_pss_or_missing_macos_rss(tmp_path):
     manifest["layout_retry"]["final_results_sha256"] = hashlib.sha256(final_path.read_bytes()).hexdigest()
     manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
     with pytest.raises(ValueError, match="missing peak RSS"):
-        summarize_pair(baseline, profiled, _receipt(tmp_path), expected_tasks=2)
+        summarize_pair(
+            baseline,
+            profiled,
+            _receipt(tmp_path),
+            _comparison_protocol(tmp_path),
+            expected_tasks=2,
+            expected_frozen_calls=5,
+        )

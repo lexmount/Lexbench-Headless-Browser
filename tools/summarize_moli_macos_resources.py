@@ -135,12 +135,21 @@ def summarize_pair(
     baseline_dir: Path,
     engine_dir: Path,
     binary_receipt_path: Path,
+    comparison_protocol_path: Path,
     *,
     expected_tasks: int = 557,
+    expected_frozen_calls: int = 1045,
 ) -> dict[str, Any]:
     binary_receipt = _json(binary_receipt_path)
     if binary_receipt.get("schema") != "moli-binary-receipt/v1":
         raise ValueError("unsupported Moli binary receipt")
+    comparison_protocol = _json(comparison_protocol_path)
+    frozen_items = comparison_protocol.get("historical_common_pass_keys")
+    if not isinstance(frozen_items, list) or len(frozen_items) != expected_frozen_calls:
+        raise ValueError(f"historical protocol must contain {expected_frozen_calls} frozen comparison keys")
+    frozen_keys = {(str(item.get("task_id")), int(item.get("attempt", 0))) for item in frozen_items}
+    if len(frozen_keys) != expected_frozen_calls:
+        raise ValueError("historical comparison keys are invalid or duplicated")
     loaded: dict[str, tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]] = {}
     for label, run_dir, mode in (("baseline", baseline_dir, "baseline"), ("engine", engine_dir, "engine")):
         manifest_path = run_dir / "run_manifest.json"
@@ -201,6 +210,10 @@ def summarize_pair(
     all_metrics = _resource_metrics(all_physical)
     effective_rows = _effective_logical_rows(engine_initial, engine_retry)
     effective_metrics = _resource_metrics(effective_rows)
+    effective_by_key = {(row["task_id"], row["attempt"]): row for row in effective_rows}
+    if not frozen_keys.issubset(effective_by_key):
+        raise ValueError("historical comparison keys are not covered by the candidate run")
+    frozen_metrics = _resource_metrics([effective_by_key[key] for key in sorted(frozen_keys)])
     baseline_retried = set(layout_retry.failed_cases(baseline_initial, 5))
     engine_retried = set(layout_retry.failed_cases(engine_initial, 5))
     quality_reasons: list[str] = []
@@ -240,6 +253,8 @@ def summarize_pair(
             "initial_physical_calls": len(engine_initial),
             "retry_physical_calls": len(engine_retry),
             "total_physical_calls": len(all_physical),
+            "frozen_comparison_calls": len(frozen_keys),
+            "frozen_comparison_tasks": len({task_id for task_id, _ in frozen_keys}),
         },
         "outcomes": {
             "final_status_counts": dict(sorted(Counter(row["status"] for row in engine_final).items())),
@@ -253,6 +268,7 @@ def summarize_pair(
         },
         "metrics": {
             "effective_logical_calls": effective_metrics,
+            "frozen_historical_common_pass_calls": frozen_metrics,
             "initial_physical_calls": initial_metrics,
             "retry_physical_calls": retry_metrics,
             "all_physical_calls": all_metrics,
@@ -282,6 +298,7 @@ def summarize_pair(
                 "host_summary_sha256": _sha(engine_dir / "host_summary.json"),
             },
             "binary_receipt_sha256": _sha(binary_receipt_path),
+            "comparison_protocol_sha256": _sha(comparison_protocol_path),
         },
     }
 
@@ -291,10 +308,16 @@ def main() -> None:
     parser.add_argument("--baseline-run", required=True, type=Path)
     parser.add_argument("--profiled-run", required=True, type=Path)
     parser.add_argument("--binary-receipt", required=True, type=Path)
+    parser.add_argument("--comparison-protocol", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     try:
-        summary = summarize_pair(args.baseline_run, args.profiled_run, args.binary_receipt)
+        summary = summarize_pair(
+            args.baseline_run,
+            args.profiled_run,
+            args.binary_receipt,
+            args.comparison_protocol,
+        )
     except (OSError, KeyError, TypeError, ValueError) as exc:
         parser.exit(1, f"Summary rejected: {exc}\n")
     args.output.parent.mkdir(parents=True, exist_ok=True)
