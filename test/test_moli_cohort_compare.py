@@ -7,7 +7,7 @@ import sys
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
-from compare_moli_cohort import first_difference, normalized_manifest  # noqa: E402
+from compare_moli_cohort import first_difference, normalized_conditions, normalized_manifest  # noqa: E402
 
 
 def manifest():
@@ -47,3 +47,17 @@ def test_runner_fixture_task_host_and_jobs_changes_are_rejected():
             target = target[part]
         target[path[-1]] = "changed"
         assert first_difference(normalized_manifest(left), normalized_manifest(right))
+
+
+def test_candidate_commit_is_binary_identity_not_a_run_condition():
+    left = {
+        "run_id": "base", "moli_sha256": "aaa", "moli_version": "1.1.8",
+        "moli_commit": None, "chromedriver_sha256": "driver", "profile_sha256": "profile",
+    }
+    right = {
+        **left, "run_id": "candidate", "moli_sha256": "bbb", "moli_version": "1.1.9",
+        "moli_commit": "7" * 40,
+    }
+    assert normalized_conditions(left) == normalized_conditions(right)
+    right["chromedriver_sha256"] = "other"
+    assert normalized_conditions(left) != normalized_conditions(right)

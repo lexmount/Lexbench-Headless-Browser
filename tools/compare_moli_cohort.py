@@ -25,6 +25,14 @@ def normalized_manifest(manifest: dict) -> dict:
     return result
 
 
+def normalized_conditions(receipt: dict) -> dict:
+    """Remove run-local and Moli binary identity from the comparison controls."""
+    return {
+        key: value for key, value in receipt.items()
+        if key not in ("run_id", "moli_sha256", "moli_version", "moli_commit")
+    }
+
+
 def load_run(path: Path) -> tuple[dict, list[dict]]:
     manifest = json.loads((path / "run_manifest.json").read_text(encoding="utf-8"))
     rows = [json.loads(line) for line in (path / "results.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -88,7 +96,7 @@ def compare(reference: Path, candidate: Path) -> tuple[dict, dict]:
             raise ValueError(f"{path}: conditions receipt does not match run")
         if receipt.get("profile_sha256") != file_sha256(PROFILE):
             raise ValueError(f"{path}: frozen run profile differs from receipt")
-        return {key: value for key, value in receipt.items() if key not in ("run_id", "moli_sha256", "moli_version")}
+        return normalized_conditions(receipt)
     difference = first_difference(conditions(reference, base), conditions(candidate, other), "conditions")
     if difference:
         raise ValueError(f"non-Moli binary or profile differs: {difference}")
