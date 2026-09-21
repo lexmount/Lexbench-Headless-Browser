@@ -18,7 +18,7 @@ import pytest
 
 from runner import run as runner_run
 from runner.version import HARNESS_VERSION
-from runner.layout_retry import POLICY_ID
+from runner.layout import policy
 
 REPO_ROOT = pathlib.Path(runner_run.REPO_ROOT)
 SEMVER = re.compile(r"\d+\.\d+\.\d+")
@@ -80,14 +80,11 @@ def test_run_manifest_records_both_axes():
     assert "site_version" not in payload["site"]
 
 
-def test_layout_retry_receipt_declares_policy_before_calls():
+def test_fixed_layout_receipt_declares_policy_before_calls():
     manifest_path = REPO_ROOT / "manifest.json"
     suite, tasks, errors = runner_run.validate_manifest(manifest_path, requested_subsets=["l1.raw_cdp"])
     assert not errors
-    args = argparse.Namespace(chrome_gate="off", score_mode="independent", jobs=1, k=1, seed="unit", moli_layout="off", try_layout=True)
+    args = argparse.Namespace(chrome_gate="off", score_mode="independent", jobs=1, k=1, seed="unit", moli_layout="off")
     payload = runner_run.run_manifest_payload(args,suite,manifest_path,tasks[:1],["moli"],"retry",True,[],None)
     receipt=payload["moli_layout_policy"]
-    assert receipt["initial_layout"] == "off"
-    assert receipt["try_layout"] is True
-    assert receipt["retry_scope"] == "failed_cases_after_complete_run"
-    assert receipt["retry_attempts"] == "same_k"
+    assert receipt == policy("off")

@@ -20,12 +20,11 @@ python tools/compare_moli_cohort.py moli_v1_failures372 moli_v2_failures372
 
 Each run produces 1,110 result rows under the ignored `runs/` directory and a sibling `<run-id>.conditions.json` receipt. The run tool refuses to overwrite an existing run, checks the frozen cohort and manifest before launch, records the Moli and ChromeDriver binary hashes, and verifies completion. The comparator checks every task and attempt plus all recorded non-Moli conditions. Report pass counts from `results.jsonl`, keeping `infra` and `unsupported` separate from task failure. A Moli upgrade may legitimately change task outcomes, timings, and its binary hash and version.
 
-Add `--try-layout` to an off-mode cohort to rerun its failed cases with layout enabled for all three attempts. Only cases passing all three rerun attempts replace their original results. Use the same retry policy for both version cohorts; original and rerun evidence are retained separately.
 
 ## Input cohort and run results
 
 `moli-0.1.1-failure-task-ids.txt` is the 372-case input cohort derived from Moli 0.1.1 failures. Its profile records `source_moli_version: 0.1.1`. The same input cohort can test later versions; passing with another version does not rewrite this historical input list.
 
-Each run's final verdicts remain in `results.jsonl`, with the tested version, binary identity and selected task scope in `run_manifest.json`. Layout recovery retains original and rerun matrices separately. A partial regression run is not a new version-wide failure cohort.
+Each run's final verdicts remain in `results.jsonl`, with the tested version, binary identity and selected task scope in `run_manifest.json`. A partial regression run is not a new version-wide failure cohort.
 
 If a future version needs a dedicated input cohort, record that source version and selection evidence in a separate profile and task list. Compare versions on the same input cohort and keep historical runs unchanged.

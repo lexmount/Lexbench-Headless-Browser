@@ -25,7 +25,7 @@ def run(root, name, task, statuses, layout=True):
                 'engines': {'moli': {'sha256': SHA, 'version': 'moli 1.1.9'}},
                 'runner': {'fixtures': {'tree_sha256': 'fixtures'}, 'harness_pins': {}},
                 'resolved_tasks': [{'task_id': task, 'sha256': hashlib.sha256(task.encode()).hexdigest()}],
-                'moli_layout_policy': {'try_layout': False}}
+                'moli_layout_policy': {'policy_id': 'fixed_layout_v1', 'layout': 'on'}}
     (path / 'run_manifest.json').write_text(json.dumps(manifest))
     rows = [{'engine': 'moli', 'task_id': task, 'attempt': i, 'status': status,
              'engine_provenance': {'binary_sha256': SHA, 'layout_enabled': layout},
@@ -38,7 +38,7 @@ def run(root, name, task, statuses, layout=True):
 def test_supplement_combines_disjoint_tasks_and_keeps_failed_execution(tmp_path):
     a = run(tmp_path, 'retained', 'one', ['pass'] * 3)
     b = run(tmp_path, 'supplement', 'two', ['pass', 'fail', 'pass'])
-    result = summarize_fixed_sources([(a, 'results'), (b, 'results')], CONTRACT, 'on')
+    result = summarize_fixed_sources([a, b], CONTRACT, 'on')
     assert result['population']['calls'] == 6
     assert result['outcomes']['passed_cases'] == 1
     assert result['outcomes']['success_rate_pct'] == 50
@@ -50,11 +50,11 @@ def test_supplement_combines_disjoint_tasks_and_keeps_failed_execution(tmp_path)
 def test_rejects_incomplete_or_mixed_execution_evidence(tmp_path, problem):
     a = run(tmp_path, 'first', 'one', ['pass'] * 3)
     b = run(tmp_path, 'second', 'two', ['pass'] * 3, layout=problem != 'wrong_layout')
-    sources = [(a, 'results'), (b, 'results')]
+    sources = [a, b]
     if problem == 'missing_task':
         sources.pop()
     elif problem == 'duplicate_task':
-        sources.append((a, 'results'))
+        sources.append(a)
     elif problem == 'wrong_binary':
         p = b / 'results.jsonl'
         p.write_text(p.read_text().replace(SHA, 'd' * 64))
@@ -63,3 +63,13 @@ def test_rejects_incomplete_or_mixed_execution_evidence(tmp_path, problem):
         p.write_text(p.read_text().replace('"completed"', '"running"'))
     with pytest.raises(ValueError):
         summarize_fixed_sources(sources, CONTRACT, 'on')
+
+
+def test_cli_reads_fixed_runs_from_another_working_directory(tmp_path):
+    import subprocess
+    script = Path(__file__).resolve().parents[1] / 'tools/summarize_moli_fixed_layout.py'
+    result = subprocess.run([sys.executable, str(script), '--help'], cwd=tmp_path,
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert '--source RUN_DIR' in result.stdout
+    assert 'initial|retry' not in result.stdout

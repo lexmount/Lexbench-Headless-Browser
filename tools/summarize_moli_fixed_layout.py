@@ -8,19 +8,41 @@ import json
 from pathlib import Path
 
 from run_moli_cohort import PROFILE, file_sha256, frozen_tasks
-from summarize_moli_try_layout import _matrix, _read_json, _read_rows, summarize_run
+from typing import Any
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from runner.layout import require_fixed
+
+def _read_json(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"{path.name} must contain an object")
+    return value
 
 
-def summarize_fixed_sources(sources: list[tuple[Path, str]], contract: dict, layout: str) -> dict:
+def _read_rows(path: Path) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _matrix(rows: list[dict[str, Any]], task_ids: list[str], attempts: int, label: str) -> None:
+    keys = [(row.get("task_id"), row.get("attempt")) for row in rows if row.get("engine") == "moli"]
+    expected = {(task_id, attempt) for task_id in task_ids for attempt in range(1, attempts + 1)}
+    if len(keys) != len(expected) or set(keys) != expected:
+        raise ValueError(f"{label} has missing, duplicate or unexpected task attempts")
+
+
+
+
+
+def summarize_fixed_sources(sources: list[Path], contract: dict, layout: str) -> dict:
     """Require every task/attempt exactly once; never substitute opposite-layout passes."""
     if layout not in {"off", "on"}:
         raise ValueError("layout must be off or on")
     rows, bindings = [], []
     controls = None
     task_hashes = {}
-    for run_dir, source in sources:
-        if source not in {"initial", "retry", "results"}:
-            raise ValueError("unknown physical execution source")
+    for run_dir in sources:
         manifest_path = run_dir / "run_manifest.json"
         if manifest_path.is_symlink():
             raise ValueError("symlinked manifest is not allowed")
@@ -42,23 +64,16 @@ def summarize_fixed_sources(sources: list[tuple[Path, str]], contract: dict, lay
         if controls is not None and current_controls != controls:
             raise ValueError("source binaries, fixtures or harness pins differ")
         controls = current_controls
-        if source in {"initial", "retry"}:
-            summarize_run(run_dir, contract)
-            receipt = manifest["layout_retry"]
-            relative = receipt["initial_results" if source == "initial" else "retry_results"]
-        else:
-            if manifest.get("layout_retry") or (manifest.get("moli_layout_policy") or {}).get("try_layout"):
-                raise ValueError("fixed source must not select replacement results")
-            relative = "results.jsonl"
+        require_fixed(manifest)
+        relative = "results.jsonl"
         path = run_dir / relative
         if path.is_symlink() or path.resolve().parent != run_dir.resolve():
             raise ValueError("source results must be an ordinary file inside the run")
         part = _read_rows(path)
         resolved = {t["task_id"]: t["sha256"] for t in manifest["resolved_tasks"]}
-        if source == "results":
-            _matrix(part, list(resolved), contract["attempts_per_task"], "source matrix")
-            if manifest.get("completed_result_rows") != len(part):
-                raise ValueError("source completion count mismatch")
+        _matrix(part, list(resolved), contract["attempts_per_task"], "source matrix")
+        if manifest.get("completed_result_rows") != len(part):
+            raise ValueError("source completion count mismatch")
         for row in part:
             provenance = row.get("engine_provenance") or {}
             if provenance.get("layout_enabled") is not (layout == "on"):
@@ -99,12 +114,12 @@ def summarize_fixed_sources(sources: list[tuple[Path, str]], contract: dict, lay
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--layout", choices=("off", "on"), required=True)
-    parser.add_argument("--source", action="append", nargs=2, metavar=("RUN_DIR", "initial|retry|results"), required=True)
+    parser.add_argument("--source", action="append", type=Path, metavar="RUN_DIR", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     profile, task_ids = frozen_tasks()
     contract = {**profile, "task_ids": task_ids, "profile_sha256": file_sha256(PROFILE)}
-    result = summarize_fixed_sources([(Path(p), kind) for p, kind in args.source], contract, args.layout)
+    result = summarize_fixed_sources(args.source, contract, args.layout)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
 
 

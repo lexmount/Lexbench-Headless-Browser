@@ -15,7 +15,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from runner import layout_retry  # noqa: E402
+from runner import layout as layout_policy  # noqa: E402
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -126,7 +126,7 @@ def summarize_fixed_runs(
             raise ValueError(f"{label} run must use one worker")
         if (manifest.get("resource_profile") or {}).get("mode") != "engine":
             raise ValueError(f"{label} resource profile mode mismatch")
-        if (manifest.get("moli_layout_policy") or {}) != layout_retry.policy(layout, False):
+        if (manifest.get("moli_layout_policy") or {}) != layout_policy.policy(layout):
             raise ValueError(f"{label} run must use fixed layout {layout}")
         if manifest.get("layout_retry") or (run_dir / "layout_retry_results.jsonl").exists():
             raise ValueError(f"{label} must not contain layout retries")
@@ -225,7 +225,6 @@ def summarize_fixed_runs(
             "configurations": [f"layout_{layout}" for layout in profiled_dirs],
             "attempts_per_case": 5,
             "resource_sample_interval_ms": (profiled_manifest.get("resource_profile") or {}).get("sample_interval_ms"),
-            "layout_retry": False,
             "resource_runs": len(profiled_dirs),
             "observer_calibration": "not_requested",
         },

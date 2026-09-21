@@ -12,7 +12,7 @@ import pytest
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
 from summarize_moli_macos_resources import summarize_fixed_pairs, summarize_fixed_runs  # noqa: E402
-from runner import layout_retry  # noqa: E402
+from runner import layout as layout_policy  # noqa: E402
 
 MOLI_SHA = "9" * 64
 
@@ -84,7 +84,7 @@ def _run(tmp_path: Path, layout: str, profiled: bool) -> Path:
             "max_observer_effect_pct": 20,
             "sample_interval_ms": 250,
         },
-        "moli_layout_policy": layout_retry.policy(layout, False),
+        "moli_layout_policy": layout_policy.policy(layout),
     }
     (run_dir / "run_manifest.json").write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
     (run_dir / "host_summary.json").write_text(json.dumps({"polluted": False, "samples": 20}), encoding="utf-8")
@@ -135,7 +135,6 @@ def test_summary_reports_two_fixed_configurations_and_signed_changes(tmp_path):
         "frozen_comparison_calls": 5,
         "frozen_comparison_tasks": 1,
     }
-    assert summary["method"]["layout_retry"] is False
     assert summary["method"]["resource_runs"] == 2
     assert summary["method"]["observer_calibration"] == "not_requested"
     assert all(set(c["provenance"]) == {"profiled"} for c in summary["configurations"].values())

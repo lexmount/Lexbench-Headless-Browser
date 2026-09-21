@@ -134,4 +134,4 @@ Round B compares its task-duration distribution against round A to quantify how 
 
 ## Moli layout rerun
 
-Layout is off by default. Add `--try-layout` to finish the normal three attempts first, then rerun failed cases with layout on for three attempts. Replace a case only when all three rerun attempts pass; otherwise keep its original failed result. `--moli-layout on` enables layout from the start. See [Moli layout rerun](MOLI_LAYOUT_POLICY.md).
+Layout is off by default. Use `--moli-layout on` to enable it for every attempt, or `--moli-layout off` to keep it disabled. See [Fixed Moli layout](MOLI_LAYOUT_POLICY.md).

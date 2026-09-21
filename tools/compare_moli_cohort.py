@@ -15,7 +15,7 @@ from run_moli_cohort import PROFILE, ROOT, file_sha256, frozen_tasks
 def normalized_manifest(manifest: dict) -> dict:
     """Remove run-local fields and the sole intended treatment variable."""
     result = json.loads(json.dumps(manifest))
-    for key in ("argv", "run_id", "started_at", "completed_at", "site", "layout_retry"):
+    for key in ("argv", "run_id", "started_at", "completed_at", "site"):
         result.pop(key, None)
     result.get("engine_set", {}).pop("name", None)
     moli = result["engines"]["moli"]

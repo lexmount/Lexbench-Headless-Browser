@@ -38,10 +38,9 @@ def load_run(run_dir: pathlib.Path) -> tuple[dict, list[dict], dict]:
         for line in (run_dir / "results.jsonl").read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    if manifest.get("layout_retry"):
-        sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]))
-        from runner.layout_retry import verify
-        verify(run_dir,manifest,rows)
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+    from runner.layout import require_fixed
+    require_fixed(manifest)
     return manifest, rows, scores
 
 
@@ -163,10 +162,6 @@ def build_report(manifest: dict, rows: list[dict], scores: dict) -> str:
         f"`score_eligible: {str(bool(manifest.get('score_eligible'))).lower()}`, no fallback."
     )
     out("")
-    if (manifest.get("moli_layout_policy") or {}).get("retry_layout") == "on":
-        receipt=manifest.get("layout_retry") or {}
-        out(f"Moli layout recovery: after the normal {k} attempts, failed cases receive {k} layout-on attempts. Only all-pass reruns replace original results; failed reruns leave the original case unchanged. Recovered {len(receipt.get('recovered_cases', []))} of {len(receipt.get('retried_cases', []))} retried cases. The {receipt.get('extra_executions', 0)} extra executions do not increase the case denominator; their driver duration is {receipt.get('extra_execution_duration_ms', 0)} ms, separate from final-execution latency.")
-        out("")
     out(
         "This report covers local pinned-binary engines only. Remote endpoints "
         "(such as Kitesurf) sit in a different evidence class; see the five-engine report."
