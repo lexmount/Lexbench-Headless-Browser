@@ -15,6 +15,8 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from runner.run import compact_run_id
 PROFILE = ROOT / "benchmarks/moli-0.1.1-failure-cohort.json"
 
 
@@ -70,6 +72,7 @@ def main() -> None:
         parser.error("run_id must contain only letters, digits, underscore or hyphen")
     if args.moli_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", args.moli_commit):
         parser.error("--moli-commit must be a 40-character lowercase hexadecimal commit")
+    args.run_id = compact_run_id(args.run_id)
     profile, task_ids = frozen_tasks()
     binary = args.moli_binary.resolve()
     version = subprocess.check_output([str(binary), "--version"], text=True).strip()

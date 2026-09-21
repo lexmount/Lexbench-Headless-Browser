@@ -182,3 +182,18 @@ def test_official_on_only_does_not_require_an_unrequested_off_run(tmp_path):
     assert set(summary["configurations"]) == {"on"}
     assert summary["comparisons"] == {}
     assert summary["configurations"]["on"]["metrics"]["all_predeclared_calls"]["cpu_time_ms"]["n"] == 10
+
+
+@pytest.mark.parametrize('binary_hash', [None, 'a' * 64])
+def test_rejects_missing_or_foreign_binary_on_any_resource_row(tmp_path, binary_hash):
+    off = _run(tmp_path, 'off', True)
+    on = _run(tmp_path, 'on', True)
+    rows = [json.loads(line) for line in (on / 'results.jsonl').read_text().splitlines()]
+    if binary_hash is None:
+        rows[-1]['engine_provenance'].pop('binary_sha256')
+    else:
+        rows[-1]['engine_provenance']['binary_sha256'] = binary_hash
+    _write_jsonl(on / 'results.jsonl', rows)
+    with pytest.raises(ValueError, match='row binary identity mismatch'):
+        summarize_fixed_pairs(off, on, _receipt(tmp_path), _protocol(tmp_path),
+                              expected_tasks=2, expected_frozen_calls=5)

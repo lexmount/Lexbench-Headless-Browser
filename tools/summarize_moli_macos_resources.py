@@ -143,6 +143,8 @@ def summarize_fixed_runs(
             raise ValueError(f"{label} must contain {expected_calls} rows")
         if any((row.get("engine_provenance") or {}).get("layout_enabled") != (layout == "on") for row in rows):
             raise ValueError(f"{label} row layout provenance mismatch")
+        if any((row.get("engine_provenance") or {}).get("binary_sha256") != receipt["sha256"] for row in rows):
+            raise ValueError(f"{label} row binary identity mismatch")
         controls = {
             "seed": manifest.get("seed"),
             "score_mode": manifest.get("score_mode"),
