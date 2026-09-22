@@ -233,7 +233,7 @@ class Adapter
       times = (step["times"] || 1).to_i
       times.times do
         node = find_node(timeout, sel)
-        call_op(timeout) { node.click }
+        call_op(timeout) { node.scroll_into_view.click }
       end
       "clicked x#{times}"
     when "fill"
@@ -258,7 +258,7 @@ class Adapter
       already = eval_value(timeout, sel_expr(sel, "return !!el.checked;"))
       unless already == true
         node = find_node(timeout, sel)
-        call_op(timeout) { node.click }
+        call_op(timeout) { node.scroll_into_view.click }
       end
       "checked"
     when "select_option"
