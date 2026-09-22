@@ -446,7 +446,7 @@ def test_moli_all_resources_profile_enables_full_resource_fetch():
     ]
 
 
-def test_browser_automation_profile_is_chrome_only():
+def test_chrome_browser_automation_profile_is_opt_in():
     automation = runner_run.chrome_launch_command(
         pathlib.Path("/tmp/chrome"),
         9336,
@@ -459,7 +459,20 @@ def test_browser_automation_profile_is_chrome_only():
     assert "--enable-automation" in automation
     assert "--enable-automation" not in default
     assert automation[-1] == "about:blank"
-    assert runner_run.engine_serve_args("moli", "browser_automation") == ()
+
+
+@pytest.mark.parametrize("engine", ["moli", "lightpanda", "obscura"])
+def test_browser_automation_profile_only_enables_supported_serve_engines(engine):
+    binary = pathlib.Path("/tmp") / engine
+    default = runner_run.serve_engine_launch_command(engine, binary, 9333)
+    automation = runner_run.serve_engine_launch_command(
+        engine, binary, 9333, "browser_automation"
+    )
+    assert "--enable-automation" not in default
+    if engine == "moli":
+        assert automation == [*default, "--enable-automation"]
+    else:
+        assert automation == default
 
 
 def test_serve_command_keeps_engine_specific_flags_isolated():
