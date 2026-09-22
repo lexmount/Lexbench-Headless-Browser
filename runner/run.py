@@ -194,6 +194,7 @@ ENGINE_DEFS = {
         # Automation cohorts opt into on-demand layout explicitly.
         "launch_profile_args": {
             "all_resources": ("--resource",),
+            "browser_automation": ("--enable-automation",),
         },
     },
     "lightpanda": {
