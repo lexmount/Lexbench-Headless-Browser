@@ -376,7 +376,12 @@ async function main() {
       }
       case "click": {
         const times = Number(step.times || 1);
-        for (let i = 0; i < times; i += 1) await abOrThrow(["click", sel]);
+        for (let i = 0; i < times; i += 1) {
+          // The tool's click sends coordinates even when the center is outside
+          // the viewport. Use its native visibility operation before clicking.
+          await abOrThrow(["scrollintoview", sel]);
+          await abOrThrow(["click", sel]);
+        }
         return `clicked x${times}`;
       }
       case "fill":
@@ -394,6 +399,7 @@ async function main() {
         return `pressed ${step.key}`;
       }
       case "check":
+        await abOrThrow(["scrollintoview", sel]);
         await abOrThrow(["check", sel]);
         return "checked";
       case "select_option": {
