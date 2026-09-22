@@ -32,6 +32,7 @@ from typing import Any
 
 if __package__:
     from runner import bindings as binding_catalog
+    from runner import layout
     from runner import resources as resource_metrics
     from runner import semantics as semantic_model
     from runner.launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -40,6 +41,7 @@ else:
     # Keep the historical direct-script entry point (`python3 runner/run.py`)
     # working as well as the preferred module form (`python3 -m runner.run`).
     import bindings as binding_catalog
+    import layout
     import resources as resource_metrics
     import semantics as semantic_model
     from launch_profiles import DEFAULT_LAUNCH_PROFILE, LAUNCH_PROFILES
@@ -52,7 +54,11 @@ DEFAULT_MANIFEST = BENCH_ROOT / "manifest.json"
 DEFAULT_RUNS_DIR = BENCH_ROOT / "runs"
 DEFAULT_K_RUNS = 1
 LOCAL_HOST = "127.0.0.1"
-DEFAULT_AGENT_BROWSER_SOCKET_DIR = pathlib.Path(tempfile.gettempdir()) / "ab"
+# macOS's per-user tempfile directory can make Unix socket paths exceed the
+# agent-browser limit once namespace and session components are appended.
+DEFAULT_AGENT_BROWSER_SOCKET_DIR = (
+    pathlib.Path("/tmp/ab") if os.name == "posix" else pathlib.Path(tempfile.gettempdir()) / "ab"
+)
 
 STATUS_VALUES = {
     "pass",
@@ -184,11 +190,11 @@ ENGINE_DEFS = {
         "upstream_commit": "63eb3d6bc284950e2eb7f8a4dadd813208a22818",
         "cdp_port": 9222,
         "role": "native_candidate",
-        # Most tasks intentionally use Moli's crawler-oriented default. Tasks
-        # whose observable contract requires visual resources opt into this
-        # profile explicitly.
+        # The crawler-oriented default deliberately avoids real layout.
+        # Automation cohorts opt into on-demand layout explicitly.
         "launch_profile_args": {
             "all_resources": ("--resource",),
+            "browser_automation": ("--enable-automation",),
         },
     },
     "lightpanda": {
@@ -208,6 +214,9 @@ ENGINE_DEFS = {
         "cdp_port": 9224,
         "role": "gold_baseline",
         "mode": "headless=new",
+        "launch_profile_args": {
+            "browser_automation": ("--enable-automation",),
+        },
     },
     "obscura": {
         "binary": REPO_ROOT / "build_artifacts/obscura/bin/obscura",
@@ -609,6 +618,7 @@ def append_result(path: pathlib.Path, payload: dict[str, Any]) -> None:
     # Single writer lock: parallel workers all append to one results.jsonl.
     with _RESULTS_LOCK:
         append_jsonl(path, payload)
+
 
 
 def read_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
@@ -1343,12 +1353,12 @@ SCENARIO_ADAPTER_KINDS: dict[str, dict[str, Any]] = {
     },
     "thin_cdp_use": {
         "driver_key": "cdp_use",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/cdp_use_adapter.py",
     },
     "thin_pydoll": {
         "driver_key": "pydoll",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/pydoll_adapter.py",
     },
     "framework_stagehand": {
@@ -1388,7 +1398,7 @@ SCENARIO_ADAPTER_KINDS: dict[str, dict[str, Any]] = {
     },
     "webdriver_selenium": {
         "driver_key": "selenium",
-        "argv": ["python3"],
+        "argv": [sys.executable],
         "script": "runner/scripts/adapters/selenium_adapter.py",
     },
     "thin_chromiumoxide": {
@@ -2212,6 +2222,7 @@ def run_manifest_payload(
             item["mode"] = "headless=new"
         if engine == "moli":
             item["resource_fetch_policy"] = "task_scoped_launch_profile"
+            item["layout_mode"] = getattr(args, "moli_layout", "off")
         if engine == "obscura":
             item.update(
                 {
@@ -2235,6 +2246,10 @@ def run_manifest_payload(
     resource_mode = str(getattr(args, "resource_profile", "off") or "off")
     host_telemetry_enabled = str(getattr(args, "host_telemetry", "on") or "on") == "on"
     calibration_baseline = getattr(args, "resource_calibration_baseline", None)
+
+    layout_receipt = None
+    if "moli" in selected_engines:
+        layout_receipt = layout.policy(getattr(args, "moli_layout", "off"))
 
     return {
         "run_id": run_id,
@@ -2272,6 +2287,7 @@ def run_manifest_payload(
             "manifest": rel_to_repo(ACTIVE_ENGINE_SET_PATH) if ACTIVE_ENGINE_SET else None,
         },
         "engines": engines,
+        **({"moli_layout_policy": layout_receipt} if layout_receipt is not None else {}),
         "host": resource_metrics.host_provenance(
             str(getattr(args, "provenance_level", "full") or "full")
         ),
@@ -2495,6 +2511,7 @@ def find_free_port() -> int:
 def engine_serve_args(
     engine: str,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     if launch_profile not in LAUNCH_PROFILES:
         raise BenchError(f"unsupported launch profile: {launch_profile}")
@@ -2504,7 +2521,9 @@ def engine_serve_args(
         str(arg)
         for arg in meta.get("launch_profile_args", {}).get(launch_profile, ())
     )
-    return base_args + profile_args
+    if extra_serve_args and engine != "moli":
+        raise BenchError("task-scoped serve arguments are only supported for Moli")
+    return base_args + profile_args + extra_serve_args
 
 
 def serve_engine_launch_command(
@@ -2512,6 +2531,7 @@ def serve_engine_launch_command(
     binary: pathlib.Path,
     port: int,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+    extra_serve_args: tuple[str, ...] = (),
 ) -> list[str]:
     """Build the auditable serve command for a non-Chrome engine."""
     return [
@@ -2521,7 +2541,39 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
-        *engine_serve_args(engine, launch_profile),
+        *engine_serve_args(engine, launch_profile, extra_serve_args),
+    ]
+
+
+def chrome_launch_command(
+    binary: pathlib.Path,
+    port: int,
+    profile_dir: pathlib.Path,
+    launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+) -> list[str]:
+    """Build Chrome's pinned launch command, including task-scoped flags."""
+    return [
+        str(binary),
+        "--headless=new",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--no-proxy-server",
+        f"--user-data-dir={profile_dir}",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-sync",
+        "--disable-features=NetworkPrediction,OptimizationHints",
+        # Keep non-loopback Chrome background traffic away from the network;
+        # benchmark fixtures remain reachable on localhost.
+        "--host-resolver-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
+        # A fresh profile must not inherit an HTTP cache between attempts.
+        "--disable-http-cache",
+        f"--remote-debugging-port={port}",
+        f"--remote-debugging-address={LOCAL_HOST}",
+        *engine_serve_args("chrome", launch_profile),
+        "about:blank",
     ]
 
 
@@ -2553,14 +2605,15 @@ class BrowserManager:
         self,
         engine: str,
         launch_profile: str = DEFAULT_LAUNCH_PROFILE,
+        extra_serve_args: tuple[str, ...] = (),
     ) -> BrowserProcess:
         with self._lock:
             if self._closed:
                 raise BenchError("browser manager is closed")
-            return self._launch_locked(engine, launch_profile)
+            return self._launch_locked(engine, launch_profile, extra_serve_args)
 
-    def _launch_locked(self, engine: str, launch_profile: str) -> BrowserProcess:
-        desired_serve_args = engine_serve_args(engine, launch_profile)
+    def _launch_locked(self, engine: str, launch_profile: str, extra_serve_args: tuple[str, ...]) -> BrowserProcess:
+        desired_serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine in self.processes:
             browser = self.processes[engine]
             proc = browser.process
@@ -2594,7 +2647,7 @@ class BrowserManager:
         for _ in range(attempts):
             port = find_free_port() if self.dynamic_ports else int(meta["cdp_port"])
             try:
-                return self._launch_on_port(engine, binary, port, launch_profile)
+                return self._launch_on_port(engine, binary, port, launch_profile, extra_serve_args)
             except BenchError as exc:
                 last_error = exc
                 if "already in use" not in str(exc):
@@ -2607,42 +2660,19 @@ class BrowserManager:
         binary: pathlib.Path,
         port: int,
         launch_profile: str,
+        extra_serve_args: tuple[str, ...],
     ) -> BrowserProcess:
         if port_is_open(port):
             raise BenchError(f"{engine}: port {port} is already in use")
-        serve_args = engine_serve_args(engine, launch_profile)
+        serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
         if engine == "chrome":
             profile_dir = pathlib.Path(tempfile.mkdtemp(prefix=f"abb-chrome-{port}-"))
             self._profile_dirs.append(profile_dir)
-            cmd = [
-                str(binary),
-                "--headless=new",
-                "--no-sandbox",
-                "--disable-gpu",
-                "--no-proxy-server",
-                f"--user-data-dir={profile_dir}",
-                "--no-first-run",
-                "--no-default-browser-check",
-                "--disable-background-networking",
-                "--disable-component-update",
-                "--disable-sync",
-                "--disable-features=NetworkPrediction,OptimizationHints",
-                # Hermetic bench: every non-loopback host resolves to a dead
-                # local port so stray Chrome-internal requests fail instantly
-                # instead of stalling the first fixture navigation ~25s on a
-                # network-blackholed machine (QUIC to clients2.google.com).
-                "--host-resolver-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
-                # No HTTP cache: the first navigation on a fresh profile can
-                # deadlock ~25s against its own speculative preconnect on the
-                # cache-entry lock (netlog: HTTP_CACHE_ADD_TO_ENTRY), and a
-                # benchmark wants uncached fetches anyway.
-                "--disable-http-cache",
-                f"--remote-debugging-port={port}",
-                f"--remote-debugging-address={LOCAL_HOST}",
-                "about:blank",
-            ]
+            cmd = chrome_launch_command(
+                binary, port, profile_dir, launch_profile
+            )
         else:
-            cmd = serve_engine_launch_command(engine, binary, port, launch_profile)
+            cmd = serve_engine_launch_command(engine, binary, port, launch_profile, extra_serve_args)
 
         # Browser output goes to spool files: PIPE would deadlock the engine
         # once the 64 KiB pipe buffer fills (nobody drains it during a run).
@@ -2866,7 +2896,9 @@ def create_page_ws(browser: BrowserProcess) -> str:
     return create_page_target(browser, "about:blank")[0]
 
 
-BROWSER_SCOPE_DOMAINS = ("Browser.", "Target.", "Schema.", "SystemInfo.", "Security.")
+# Schema.getDomains belongs to the page target in Chrome. Routing it to the
+# root browser connection makes a supported command look unsupported.
+BROWSER_SCOPE_DOMAINS = ("Browser.", "Target.", "SystemInfo.", "Security.")
 
 
 def open_page_session(
@@ -4138,7 +4170,7 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
     different local browser visible in every attempt row.
     """
     binary = browser.binary
-    return {
+    payload = {
         "engine": browser.engine,
         "pid": getattr(browser.process, "pid", None),
         "binary": rel_to_repo(binary) if binary is not None else None,
@@ -4151,6 +4183,9 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
         "browser_ws": browser.version_info.get("webSocketDebuggerUrl"),
         "http_identity": dict(browser.version_info),
     }
+    if browser.engine == "moli":
+        payload["layout_enabled"] = "--layout" in browser.serve_args
+    return payload
 
 
 def is_unsupported_error(exc: Exception) -> bool:
@@ -5246,6 +5281,121 @@ class _DriverProcessIdentity:
     leader_start_ticks: int
 
 
+@dataclass(frozen=True)
+class _DarwinDriverProcessIdentity:
+    leader_pid: int
+    pgid: int
+    session: int
+
+
+def _darwin_session_members(
+    identity: _DarwinDriverProcessIdentity,
+) -> tuple[tuple[int, str, int], ...] | None:
+    """Inspect the unreaped adapter session without Linux /proc or PID reuse."""
+    result = subprocess.run(
+        ["ps", "-A", "-o", "pid=,pgid=,stat="],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    members: list[tuple[int, str, int]] = []
+    leader_found = False
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) < 3:
+            continue
+        try:
+            pid, pgid = int(fields[0]), int(fields[1])
+        except ValueError:
+            continue
+        state = fields[2]
+        if pid == identity.leader_pid:
+            if pgid != identity.pgid:
+                return None
+            leader_found = True
+            members.append((pid, state, pgid))
+            continue
+        if state.startswith("Z"):
+            continue
+        try:
+            same_session = os.getsid(pid) == identity.session
+        except OSError:
+            same_session = False
+        if same_session:
+            members.append((pid, state, pgid))
+    if not leader_found:
+        return None
+    return tuple(sorted(members))
+
+
+def _darwin_leader_is_terminal(identity: _DarwinDriverProcessIdentity) -> bool:
+    members = _darwin_session_members(identity)
+    return members is not None and any(
+        pid == identity.leader_pid and state.startswith("Z")
+        for pid, state, _ in members
+    )
+
+
+def _darwin_session_is_clean(identity: _DarwinDriverProcessIdentity) -> bool:
+    members = _darwin_session_members(identity)
+    return members is not None and all(state.startswith("Z") for _, state, _ in members)
+
+
+def _signal_darwin_driver_group(
+    identity: _DarwinDriverProcessIdentity,
+    signal_number: int,
+) -> bool:
+    members = _darwin_session_members(identity)
+    if members is None:
+        return False
+    # The unreaped leader anchors this numeric process group. A descendant
+    # that moved to another group stays visible above and makes cleanup fail
+    # closed; there is no pidfd on Darwin to signal that PID without a race.
+    if any(
+        not state.startswith("Z") and pgid != identity.pgid
+        for _, state, pgid in members
+    ):
+        return False
+    if any(not state.startswith("Z") for _, state, _ in members):
+        try:
+            os.killpg(identity.pgid, signal_number)
+        except ProcessLookupError:
+            pass
+    return True
+
+
+def _cleanup_darwin_selenium_process_group(
+    proc: subprocess.Popen[str],
+    identity: _DarwinDriverProcessIdentity,
+    hard_deadline: float,
+    grace_s: float = 2.0,
+) -> bool:
+    clean = _darwin_session_is_clean(identity)
+    if not clean:
+        remaining = max(0.0, hard_deadline - time.monotonic())
+        kill_reserve = min(0.5, remaining / 2)
+        term_deadline = min(time.monotonic() + grace_s, hard_deadline - kill_reserve)
+        _signal_darwin_driver_group(identity, signal.SIGTERM)
+        while time.monotonic() < term_deadline:
+            if _darwin_session_is_clean(identity):
+                clean = True
+                break
+            time.sleep(min(0.02, max(0.0, term_deadline - time.monotonic())))
+    if not clean:
+        _signal_darwin_driver_group(identity, signal.SIGKILL)
+        while time.monotonic() < hard_deadline:
+            if _darwin_session_is_clean(identity):
+                clean = True
+                break
+            _signal_darwin_driver_group(identity, signal.SIGKILL)
+            time.sleep(min(0.02, max(0.0, hard_deadline - time.monotonic())))
+    if _darwin_leader_is_terminal(identity):
+        proc.wait(timeout=max(0.0, hard_deadline - time.monotonic()))
+    return clean
+
+
 def _read_driver_proc_stat(pid: int) -> _DriverProcStat | None:
     """Read the fields needed to identify one Linux process generation."""
     try:
@@ -5267,8 +5417,17 @@ def _read_driver_proc_stat(pid: int) -> _DriverProcStat | None:
 
 def _capture_driver_process_identity(
     proc: subprocess.Popen[str],
-) -> _DriverProcessIdentity | None:
+) -> _DriverProcessIdentity | _DarwinDriverProcessIdentity | None:
     """Capture the detached adapter session before it can be reaped."""
+    if sys.platform == "darwin":
+        try:
+            pgid = os.getpgid(proc.pid)
+            session_id = os.getsid(proc.pid)
+        except OSError:
+            return None
+        if proc.pid == pgid == session_id and pgid not in {0, 1, os.getpgrp()}:
+            return _DarwinDriverProcessIdentity(proc.pid, pgid, session_id)
+        return None
     if not pathlib.Path("/proc/self/stat").exists():
         return None
     stat = _read_driver_proc_stat(proc.pid)
@@ -5388,6 +5547,8 @@ def _driver_session_is_clean(identity: _DriverProcessIdentity) -> bool:
 
 
 def _driver_leader_is_terminal(identity: _DriverProcessIdentity) -> bool:
+    if isinstance(identity, _DarwinDriverProcessIdentity):
+        return _darwin_leader_is_terminal(identity)
     result = os.waitid(
         os.P_PID,
         identity.leader_pid,
@@ -5397,7 +5558,7 @@ def _driver_leader_is_terminal(identity: _DriverProcessIdentity) -> bool:
 
 
 def _wait_driver_without_reaping(
-    identity: _DriverProcessIdentity,
+    identity: _DriverProcessIdentity | _DarwinDriverProcessIdentity,
     deadline: float,
 ) -> bool:
     """Wait for terminal state while retaining the leader as a PID anchor."""
@@ -5508,6 +5669,23 @@ def _cleanup_unidentified_selenium_process_group(
     except OSError:
         pass
 
+    if sys.platform == "darwin":
+        if group_is_safe:
+            identity = _DarwinDriverProcessIdentity(
+                proc.pid, proc.pid, proc.pid
+            )
+            return _cleanup_darwin_selenium_process_group(
+                proc, identity, hard_deadline, grace_s=0
+            )
+        # Popen still owns this unreaped child, so signaling the child is
+        # safe. Descendants cannot be verified without a group identity.
+        try:
+            proc.kill()
+            proc.wait(timeout=max(0.05, hard_deadline - time.monotonic()))
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return False
+
     if group_is_safe:
         # Popen(start_new_session=True) created this still-unreaped leader, so
         # the numeric group cannot be reused before this one signal.
@@ -5564,11 +5742,15 @@ def _cleanup_unidentified_selenium_process_group(
 
 def _cleanup_selenium_process_group(
     proc: subprocess.Popen[str],
-    identity: _DriverProcessIdentity,
+    identity: _DriverProcessIdentity | _DarwinDriverProcessIdentity,
     hard_deadline: float,
     grace_s: float = 2.0,
 ) -> bool:
     """TERM, escalate, verify the session, and only then reap its leader."""
+    if isinstance(identity, _DarwinDriverProcessIdentity):
+        return _cleanup_darwin_selenium_process_group(
+            proc, identity, hard_deadline, grace_s
+        )
     if proc.returncode is not None:
         return True
 
@@ -6435,6 +6617,10 @@ def run_driver_attempt(
                 "pss_peak_bytes": None,
                 "pss_end_bytes": None,
                 "pss_peak_delta_bytes": None,
+                "rss_baseline_bytes": None,
+                "rss_peak_bytes": None,
+                "rss_end_bytes": None,
+                "rss_peak_delta_bytes": None,
                 "process_count_peak": None,
                 "sample_interval_ms": resource_runtime.sample_interval_ms,
                 "samples_seen": 0,
@@ -6966,27 +7152,27 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
         offset = (seed_rotation + position) % len(ordered)
         return ordered[offset:] + ordered[:offset]
 
+    def scenario_binding_for(engine: str, task: ResolvedTask) -> dict[str, Any] | None:
+        driver_kind = str(task.driver.get("kind") or "")
+        driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(driver_kind)
+        if driver_id is None:
+            return None
+        unavailable = unavailable_bindings.get((engine, driver_id))
+        if unavailable is not None:
+            return unavailable
+        if driver_id != "selenium":
+            return None
+        try:
+            return selenium_bindings[engine]
+        except KeyError as exc:
+            raise BenchError(
+                f"missing pre-resolved Selenium binding for ({engine}, selenium)"
+            ) from exc
+
     def run_one(task: ResolvedTask, attempt: int, browsers: EngineHandles) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         seed = seed_for_attempt(args.seed, task, attempt)
         gate_result: dict[str, Any]
-
-        def scenario_binding_for(engine: str) -> dict[str, Any] | None:
-            driver_kind = str(task.driver.get("kind") or "")
-            driver_id = CATALOG_DRIVER_BY_TASK_KIND.get(driver_kind)
-            if driver_id is None:
-                return None
-            unavailable = unavailable_bindings.get((engine, driver_id))
-            if unavailable is not None:
-                return unavailable
-            if driver_id != "selenium":
-                return None
-            try:
-                return selenium_bindings[engine]
-            except KeyError as exc:
-                raise BenchError(
-                    f"missing pre-resolved Selenium binding for ({engine}, selenium)"
-                ) from exc
 
         if not gating_active:
             # Independent mode: no Chrome oracle. Every selected engine runs and
@@ -7010,7 +7196,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                         score_mode=score_mode,
                         resource_runtime=resource_runtime,
                         fixture_server=fixture_server,
-                        scenario_binding=scenario_binding_for(engine),
+                        scenario_binding=scenario_binding_for(engine, task),
                     )
                 )
             return rows
@@ -7028,7 +7214,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                 fixture_base_url,
                 resource_runtime=resource_runtime,
                 fixture_server=fixture_server,
-                scenario_binding=scenario_binding_for("chrome"),
+                scenario_binding=scenario_binding_for("chrome", task),
             )
             rows.append(chrome_row)
             if gate_result["status"] != "pass":
@@ -7056,7 +7242,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                     fixture_base_url=fixture_base_url,
                     resource_runtime=resource_runtime,
                     fixture_server=fixture_server,
-                    scenario_binding=scenario_binding_for("chrome"),
+                    scenario_binding=scenario_binding_for("chrome", task),
                 )
                 rows.append(chrome_result)
                 gate_result = {"required": False, "status": chrome_result["status"], "chrome_attempt_ref": ref}
@@ -7084,7 +7270,7 @@ def run_attempts(args: argparse.Namespace, suite: dict[str, Any], tasks: list[Re
                     score_mode=score_mode,
                     resource_runtime=resource_runtime,
                     fixture_server=fixture_server,
-                    scenario_binding=scenario_binding_for(engine),
+                    scenario_binding=scenario_binding_for(engine, task),
                 )
             )
         return rows
@@ -7818,6 +8004,8 @@ def command_run(args: argparse.Namespace) -> int:
         }
         payload = {
             "manifest": rel_to_repo(manifest_path),
+            "seed": args.seed,
+            "moli_layout_policy": layout.policy(getattr(args, "moli_layout", "off")),
             "selected_layers": sorted({task.layer for task in tasks}),
             "tasks": [
                 task.to_run_manifest(semantic_index.get(task.task_id))
@@ -7970,6 +8158,7 @@ def summarize_results(run_manifest: dict[str, Any], rows: list[dict[str, Any]]) 
         "harness_version": run_manifest.get("harness_version") or "unknown",
         "score_eligible": bool(run_manifest.get("score_eligible")),
         "layers": layers,
+        "moli_layout_policy": run_manifest.get("moli_layout_policy"),
         "evaluation_axes": evaluation_axes,
         "chrome_baseline": chrome_gate,
         "chrome_gate": chrome_gate,
@@ -8153,6 +8342,7 @@ def generate_report_files(run_dir: pathlib.Path, emit: bool = True) -> None:
         raise BenchError(f"run directory not found: {run_dir}")
     run_manifest = load_json(run_dir / "run_manifest.json")
     rows = read_jsonl(run_dir / "results.jsonl")
+    layout.require_fixed(run_manifest)
     scores = summarize_results(run_manifest, rows)
     write_json(run_dir / "scores.json", scores)
     write_scorecard(run_dir, run_manifest, rows, scores)
@@ -8311,6 +8501,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--feature", action="append")
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
+    run.add_argument(
+        "--moli-layout", choices=("off", "on"), default="off",
+        help="Moli layout: off (default), on (always enabled)",
+    )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
         "--k",
@@ -8422,11 +8616,19 @@ def main(argv: list[str] | None = None) -> int:
             args.k = int(suite.get("default_k_runs", DEFAULT_K_RUNS))
         except Exception:
             args.k = DEFAULT_K_RUNS
+    prior_moli_args = ENGINE_DEFS["moli"].get("serve_args")
+    if hasattr(args, "moli_layout"):
+        ENGINE_DEFS["moli"]["serve_args"] = ("--layout",) if args.moli_layout == "on" else ()
     try:
         return int(args.func(args))
     except BenchError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if prior_moli_args is None:
+            ENGINE_DEFS["moli"].pop("serve_args", None)
+        else:
+            ENGINE_DEFS["moli"]["serve_args"] = prior_moli_args
 
 
 if __name__ == "__main__":

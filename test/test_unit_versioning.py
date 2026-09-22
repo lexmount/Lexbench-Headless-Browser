@@ -9,6 +9,7 @@ held to a single source of truth across pyproject.toml and package.json.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -17,6 +18,7 @@ import pytest
 
 from runner import run as runner_run
 from runner.version import HARNESS_VERSION
+from runner.layout import policy
 
 REPO_ROOT = pathlib.Path(runner_run.REPO_ROOT)
 SEMVER = re.compile(r"\d+\.\d+\.\d+")
@@ -76,3 +78,13 @@ def test_run_manifest_records_both_axes():
     assert payload["bench_version"] == suite["bench_version"]
     assert payload["harness_version"] == HARNESS_VERSION
     assert "site_version" not in payload["site"]
+
+
+def test_fixed_layout_receipt_declares_policy_before_calls():
+    manifest_path = REPO_ROOT / "manifest.json"
+    suite, tasks, errors = runner_run.validate_manifest(manifest_path, requested_subsets=["l1.raw_cdp"])
+    assert not errors
+    args = argparse.Namespace(chrome_gate="off", score_mode="independent", jobs=1, k=1, seed="unit", moli_layout="off")
+    payload = runner_run.run_manifest_payload(args,suite,manifest_path,tasks[:1],["moli"],"retry",True,[],None)
+    receipt=payload["moli_layout_policy"]
+    assert receipt == policy("off")

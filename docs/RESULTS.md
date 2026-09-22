@@ -8,7 +8,7 @@ The reports print the numbers. This page defines what the numbers mean, where th
 
 The headline pass rate counts a task as passed only when all k attempts pass (k=3 in the published run). A task that passes twice and times out once counts as failed. This makes the headline sensitive to instability on purpose: an agent retrying a flaky operation burns its budget just as surely as it does on a hard failure.
 
-Every engine is scored on its own attempts (`--score-mode independent`). Chrome is a reference column, not a gate. The alternative, `--chrome-baseline required`, would remove Chrome-failing tasks from every engine's denominator and push Chrome's own column toward 100% by construction, which is why the published runs use `best_effort`: Chrome's 99.90% is a measured value, and the two tasks it fails stay in everyone's denominator.
+Every engine is scored on its own attempts (`--score-mode independent`). Chrome is a reference column, not a gate. The alternative, `--chrome-baseline required`, would remove Chrome-failing tasks from every engine's denominator and push Chrome's own column toward 100% by construction, which is why the published runs use `best_effort`. The historical 99.90% is the raw all-task completion rate, including diagnostic tasks. Both Chrome-failing tasks remain in that raw denominator; their calls have `score_included: false` in the scored population. One, `pw_raw_schema_getdomains`, failed because the harness routed a page-target command to the browser connection. Corrected runs must keep raw and scored populations separate.
 
 ## Status taxonomy
 
@@ -94,4 +94,4 @@ Runs predating this scheme carry a dated label instead: the three published runs
 
 - Screenshot, PDF and raster output are outside the current measurement scope. This is a deferred boundary, not a permanent verdict: it predates candidate engines growing paint pipelines and is tracked for re-evaluation. Nothing here measures pixel correctness.
 - Functional results come from one pinned engine set on one machine class. Different builds are different software; compare manifests before comparing numbers.
-- Chrome's 99.90% is measured, not axiomatic. The two tasks it fails are visible in the report and stay in every denominator.
+- Chrome's historical 99.90% is the raw all-task rate. Its two failed diagnostic tasks stay visible; neither belongs to the `score_included` population, and one was caused by a corrected harness routing error.

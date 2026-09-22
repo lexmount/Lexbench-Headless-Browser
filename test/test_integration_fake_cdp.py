@@ -31,10 +31,12 @@ def eval_result(value, value_type="number", extra=None):
     return payload
 
 
-def run_attempt(tmp_path, fake, task, engine="moli", attempt=1, seed="seed123", score_eligible=True):
+def run_attempt(tmp_path, fake, task, engine="moli", attempt=1, seed="seed123", score_eligible=True, browser_ws=False):
     run_dir = tmp_path / "run"
     results_path = run_dir / "results.jsonl"
     browser = stub_browser(fake.port, engine=engine)
+    if browser_ws:
+        browser.version_info["webSocketDebuggerUrl"] = fake.ws_url
     result = runner_run.run_driver_attempt(
         run_dir,
         results_path,
@@ -86,6 +88,30 @@ def test_pass_path_and_artifact_invariants(tmp_path, fake_cdp):
     grader = json.loads((final / "grader.json").read_text())
     assert grader["ok"] is True
     assert {check["name"] for check in grader["checks"]} == {"value_equals_3", "result_type_number"}
+
+
+def test_raw_cdp_routes_schema_to_page_session(tmp_path, fake_cdp):
+    fake = fake_cdp({
+        "Target.createTarget": {"result": {"targetId": "page-1"}},
+        "Target.attachToTarget": {"result": {"sessionId": "page-session-1"}},
+        "Schema.getDomains": {"result": {"domains": [{"name": "Schema", "version": "1.2"}]}},
+    })
+    task = make_resolved(
+        task=make_task_dict(
+            task_id="raw_target_scope_001",
+            driver={"kind": "raw_cdp", "steps": [
+                {"method": "Schema.getDomains", "params": {}},
+                {"method": "Browser.getVersion", "params": {}},
+            ]},
+            grader={"kind": "inline_assertions", "checks": [{"kind": "no_error"}]},
+        ),
+        subset_gate="off",
+    )
+    _, _, result = run_attempt(tmp_path, fake, task, engine="chrome", browser_ws=True)
+    assert result["status"] == "pass"
+    sessions = {request["method"]: request["sessionId"] for request in fake.requests}
+    assert sessions["Schema.getDomains"] == "page-session-1"
+    assert sessions["Browser.getVersion"] is None
 
 
 def test_raw_cdp_substitutes_portable_fixture_and_attempt_paths(tmp_path, fake_cdp):
@@ -335,10 +361,20 @@ def test_process_diagnostic_preserves_core_dump_evidence(monkeypatch):
         def poll(self):
             return -signal.SIGABRT
 
+    platform_constants = {
+        "P_PID": 1,
+        "WEXITED": 2,
+        "WNOHANG": 4,
+        "WNOWAIT": 8,
+        "CLD_DUMPED": 9,
+    }
+    for name, value in platform_constants.items():
+        monkeypatch.setattr(runner_run.os, name, value, raising=False)
     monkeypatch.setattr(
         runner_run.os,
         "waitid",
         lambda *_args: types.SimpleNamespace(si_code=runner_run.os.CLD_DUMPED),
+        raising=False,
     )
 
     process = runner_run.process_diagnostic("engine", ExitedProc())
