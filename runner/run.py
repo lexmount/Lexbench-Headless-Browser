@@ -2541,6 +2541,8 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
+        "--load-resources", "iframe", "--load-resources", "worker",
+        "--protocol", "cdp", "--protocol", "webdriver",
         *engine_serve_args(engine, launch_profile),
     ]
 
