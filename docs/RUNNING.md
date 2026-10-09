@@ -132,6 +132,6 @@ Round B compares its task-duration distribution against round A to quantify how 
 - Rows come back as `infra`: the identity gate failed, meaning the client did not reach the engine it was supposed to reach. This is an environment or routing problem, never a compatibility score.
 - A compiled adapter is missing: rebuild with the Go/Rust commands above; `doctor` prints the exact command it expects.
 
-## Moli layout rerun
+## Fixed Moli layout
 
-Layout is off by default. Use `--moli-layout on` to enable it for every attempt, or `--moli-layout off` to keep it disabled. See [Fixed Moli layout](MOLI_LAYOUT_POLICY.md).
+Layout is off by default. Use `--moli-layout on` to enable it for every attempt, or `--moli-layout off` to keep it disabled. Choose the mode before launch; it applies to the complete run. Each task executes its configured attempts (normally three), and all must pass for the task to pass. Failures do not switch layout or add attempts. Compare off/on as separate runs with identical tasks and repetition counts.
