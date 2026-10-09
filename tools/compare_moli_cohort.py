@@ -44,6 +44,14 @@ def load_run(path: Path) -> tuple[dict, list[dict]]:
         raise ValueError(f"{path}: benchmark manifest changed")
     if manifest.get("selected_engines") != ["moli"] or manifest.get("k_runs") != profile["attempts_per_task"]:
         raise ValueError(f"{path}: wrong engine set or repetition count")
+    binary_hash = manifest.get("engines", {}).get("moli", {}).get("sha256")
+    if not binary_hash:
+        raise ValueError(f"{path}: missing measured Moli binary hash")
+    for row in rows:
+        if (row.get("engine") != "moli"
+                or row.get("run_id") != manifest.get("run_id")
+                or (row.get("engine_provenance") or {}).get("binary_sha256") != binary_hash):
+            raise ValueError(f"{path}: physical result identity does not match run manifest")
     return manifest, rows
 
 
@@ -100,9 +108,6 @@ def compare(reference: Path, candidate: Path) -> tuple[dict, dict]:
     difference = first_difference(conditions(reference, base), conditions(candidate, other), "conditions")
     if difference:
         raise ValueError(f"non-Moli binary or profile differs: {difference}")
-    for label, manifest in (("reference", base), ("candidate", other)):
-        if not manifest["engines"]["moli"].get("sha256"):
-            raise ValueError(f"{label}: missing measured Moli binary hash")
     return base, other
 
 

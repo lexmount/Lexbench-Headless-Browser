@@ -1,12 +1,16 @@
 """The version comparator must reject changes outside the Moli binary."""
 
 import copy
+import json
 from pathlib import Path
 import sys
+
+import pytest
 
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
+import compare_moli_cohort as comparator  # noqa: E402
 from compare_moli_cohort import first_difference, normalized_conditions, normalized_manifest  # noqa: E402
 
 
@@ -61,3 +65,36 @@ def test_candidate_commit_is_binary_identity_not_a_run_condition():
     assert normalized_conditions(left) == normalized_conditions(right)
     right["chromedriver_sha256"] = "other"
     assert normalized_conditions(left) != normalized_conditions(right)
+
+
+@pytest.fixture
+def complete_run(tmp_path, monkeypatch):
+    profile = {"attempts_per_task": 3, "bench_manifest_sha256": "tasks"}
+    monkeypatch.setattr(comparator, "frozen_tasks", lambda: (profile, ["one"]))
+    run = manifest()
+    run.update(completion_status="completed", completed_result_rows=3,
+               bench_manifest={"sha256": "tasks"}, selected_engines=["moli"], k_runs=3)
+    rows = [{"run_id": "a", "engine": "moli", "task_id": "one", "attempt": i,
+             "engine_provenance": {"binary_sha256": "aaa"}}
+            for i in range(1, 4)]
+    (tmp_path / "run_manifest.json").write_text(json.dumps(run))
+    (tmp_path / "results.jsonl").write_text("\n".join(map(json.dumps, rows)))
+    return tmp_path, rows
+
+
+def test_complete_run_accepts_matching_physical_results(complete_run):
+    path, rows = complete_run
+    assert comparator.load_run(path)[1] == rows
+
+
+@pytest.mark.parametrize("field,value", [
+    ("engine", "chrome"), ("run_id", "other"),
+    ("engine_provenance", {"binary_sha256": "other"}),
+    ("engine_provenance", {}),
+])
+def test_complete_run_rejects_foreign_or_unbound_physical_results(complete_run, field, value):
+    path, rows = complete_run
+    rows[1][field] = value
+    (path / "results.jsonl").write_text("\n".join(map(json.dumps, rows)))
+    with pytest.raises(ValueError, match="physical result identity"):
+        comparator.load_run(path)
