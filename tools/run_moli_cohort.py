@@ -13,10 +13,9 @@ import re
 import subprocess
 import sys
 
+from runner.run import compact_run_id
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-from runner.run import compact_run_id
 PROFILE = ROOT / "benchmarks/moli-0.1.1-failure-cohort.json"
 
 

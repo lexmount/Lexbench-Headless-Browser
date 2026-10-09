@@ -29,7 +29,7 @@ Swap `chrome` for `moli`, `lightpanda` or `obscura` for another engine. One boun
 
 ## Prerequisites
 
-Linux, with cgroup v2 enabled (resource telemetry reads the cgroup and process tree); other platforms are not supported yet. You need Python 3.11 or newer and Node 20. Go, Rust and Ruby are only needed for the compiled adapters: `chromedp` and `rod` (Go), `chromiumoxide` (Rust), `ferrum` (Ruby).
+Linux and macOS are supported. Linux resource measurements use cgroup v2 and process-tree PSS; macOS uses process-tree RSS and CPU time. PSS and RSS measure different quantities and must not be compared directly. You need Python 3.11 or newer and Node 20. Go, Rust and Ruby are only needed for the compiled adapters: `chromedp` and `rod` (Go), `chromiumoxide` (Rust), `ferrum` (Ruby).
 
 ## 1. Engine binaries
 
@@ -124,7 +124,7 @@ python3 -m runner.run run ... --resource-profile engine --jobs 1 --k 5 --score-m
   --resource-calibration-baseline runs/<baseline-run>
 ```
 
-Round B compares its task-duration distribution against round A to quantify how much the profiler itself disturbed the engines. CPU, PSS, process counts and fixture traffic are reported only when that disturbance clears the gate (`resource_comparison_eligible: true`). The full contract is in [resource-cost.md](resource-cost.md).
+Round B compares its task-duration distribution against round A to quantify how much the profiler itself disturbed the engines. CPU, memory (Linux PSS or macOS RSS), process counts and fixture traffic are reported only when that disturbance clears the gate (`resource_comparison_eligible: true`). The full contract is in [resource-cost.md](resource-cost.md).
 
 ## Common failures
 

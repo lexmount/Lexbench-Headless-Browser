@@ -2511,7 +2511,6 @@ def find_free_port() -> int:
 def engine_serve_args(
     engine: str,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
-    extra_serve_args: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     if launch_profile not in LAUNCH_PROFILES:
         raise BenchError(f"unsupported launch profile: {launch_profile}")
@@ -2521,9 +2520,7 @@ def engine_serve_args(
         str(arg)
         for arg in meta.get("launch_profile_args", {}).get(launch_profile, ())
     )
-    if extra_serve_args and engine != "moli":
-        raise BenchError("task-scoped serve arguments are only supported for Moli")
-    return base_args + profile_args + extra_serve_args
+    return base_args + profile_args
 
 
 def serve_engine_launch_command(
@@ -2531,7 +2528,6 @@ def serve_engine_launch_command(
     binary: pathlib.Path,
     port: int,
     launch_profile: str = DEFAULT_LAUNCH_PROFILE,
-    extra_serve_args: tuple[str, ...] = (),
 ) -> list[str]:
     """Build the auditable serve command for a non-Chrome engine."""
     return [
@@ -2541,7 +2537,7 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
-        *engine_serve_args(engine, launch_profile, extra_serve_args),
+        *engine_serve_args(engine, launch_profile),
     ]
 
 
@@ -2605,15 +2601,14 @@ class BrowserManager:
         self,
         engine: str,
         launch_profile: str = DEFAULT_LAUNCH_PROFILE,
-        extra_serve_args: tuple[str, ...] = (),
     ) -> BrowserProcess:
         with self._lock:
             if self._closed:
                 raise BenchError("browser manager is closed")
-            return self._launch_locked(engine, launch_profile, extra_serve_args)
+            return self._launch_locked(engine, launch_profile)
 
-    def _launch_locked(self, engine: str, launch_profile: str, extra_serve_args: tuple[str, ...]) -> BrowserProcess:
-        desired_serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
+    def _launch_locked(self, engine: str, launch_profile: str) -> BrowserProcess:
+        desired_serve_args = engine_serve_args(engine, launch_profile)
         if engine in self.processes:
             browser = self.processes[engine]
             proc = browser.process
@@ -2647,7 +2642,7 @@ class BrowserManager:
         for _ in range(attempts):
             port = find_free_port() if self.dynamic_ports else int(meta["cdp_port"])
             try:
-                return self._launch_on_port(engine, binary, port, launch_profile, extra_serve_args)
+                return self._launch_on_port(engine, binary, port, launch_profile)
             except BenchError as exc:
                 last_error = exc
                 if "already in use" not in str(exc):
@@ -2660,11 +2655,10 @@ class BrowserManager:
         binary: pathlib.Path,
         port: int,
         launch_profile: str,
-        extra_serve_args: tuple[str, ...],
     ) -> BrowserProcess:
         if port_is_open(port):
             raise BenchError(f"{engine}: port {port} is already in use")
-        serve_args = engine_serve_args(engine, launch_profile, extra_serve_args)
+        serve_args = engine_serve_args(engine, launch_profile)
         if engine == "chrome":
             profile_dir = pathlib.Path(tempfile.mkdtemp(prefix=f"abb-chrome-{port}-"))
             self._profile_dirs.append(profile_dir)
@@ -2672,7 +2666,7 @@ class BrowserManager:
                 binary, port, profile_dir, launch_profile
             )
         else:
-            cmd = serve_engine_launch_command(engine, binary, port, launch_profile, extra_serve_args)
+            cmd = serve_engine_launch_command(engine, binary, port, launch_profile)
 
         # Browser output goes to spool files: PIPE would deadlock the engine
         # once the 64 KiB pipe buffer fills (nobody drains it during a run).

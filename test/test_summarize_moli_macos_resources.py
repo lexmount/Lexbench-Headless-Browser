@@ -5,14 +5,11 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import sys
 
 import pytest
 
-TOOLS = Path(__file__).resolve().parents[1] / "tools"
-sys.path.insert(0, str(TOOLS))
-from summarize_moli_macos_resources import summarize_fixed_pairs, summarize_fixed_runs  # noqa: E402
-from runner import layout as layout_policy  # noqa: E402
+from tools.summarize_moli_macos_resources import summarize_fixed_runs
+from runner import layout as layout_policy
 
 MOLI_SHA = "9" * 64
 
@@ -115,9 +112,8 @@ def _protocol(tmp_path: Path) -> Path:
 
 
 def _summary(tmp_path: Path) -> dict:
-    return summarize_fixed_pairs(
-        _run(tmp_path, "off", True),
-        _run(tmp_path, "on", True),
+    return summarize_fixed_runs(
+        {"off": _run(tmp_path, "off", True), "on": _run(tmp_path, "on", True)},
         _receipt(tmp_path),
         _protocol(tmp_path),
         expected_tasks=2,
@@ -154,8 +150,8 @@ def test_summary_rejects_layout_retry_or_missing_macos_rss(tmp_path):
     rows[0]["resource"]["rss_peak_bytes"] = None
     _write_jsonl(off_profiled / "results.jsonl", rows)
     with pytest.raises(ValueError, match="missing peak RSS"):
-        summarize_fixed_pairs(
-            off_profiled, on_profiled,
+        summarize_fixed_runs(
+            {"off": off_profiled, "on": on_profiled},
             _receipt(tmp_path), _protocol(tmp_path), expected_tasks=2, expected_frozen_calls=5,
         )
 
@@ -166,8 +162,8 @@ def test_summary_rejects_layout_retry_or_missing_macos_rss(tmp_path):
     manifest["layout_retry"] = {"unexpected": True}
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="must not contain layout retries"):
-        summarize_fixed_pairs(
-            off_profiled, on_profiled,
+        summarize_fixed_runs(
+            {"off": off_profiled, "on": on_profiled},
             _receipt(tmp_path), _protocol(tmp_path), expected_tasks=2, expected_frozen_calls=5,
         )
 
@@ -195,5 +191,5 @@ def test_rejects_missing_or_foreign_binary_on_any_resource_row(tmp_path, binary_
         rows[-1]['engine_provenance']['binary_sha256'] = binary_hash
     _write_jsonl(on / 'results.jsonl', rows)
     with pytest.raises(ValueError, match='row binary identity mismatch'):
-        summarize_fixed_pairs(off, on, _receipt(tmp_path), _protocol(tmp_path),
+        summarize_fixed_runs({"off": off, "on": on}, _receipt(tmp_path), _protocol(tmp_path),
                               expected_tasks=2, expected_frozen_calls=5)

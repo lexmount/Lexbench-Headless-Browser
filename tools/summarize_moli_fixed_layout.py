@@ -6,13 +6,11 @@ import argparse
 from collections import Counter
 import json
 from pathlib import Path
-
-from run_moli_cohort import PROFILE, file_sha256, frozen_tasks
 from typing import Any
-import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from runner.layout import require_fixed
+from tools.run_moli_cohort import PROFILE, file_sha256, frozen_tasks
+
 
 def _read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -30,9 +28,6 @@ def _matrix(rows: list[dict[str, Any]], task_ids: list[str], attempts: int, labe
     expected = {(task_id, attempt) for task_id in task_ids for attempt in range(1, attempts + 1)}
     if len(keys) != len(expected) or set(keys) != expected:
         raise ValueError(f"{label} has missing, duplicate or unexpected task attempts")
-
-
-
 
 
 def summarize_fixed_sources(sources: list[Path], contract: dict, layout: str) -> dict:

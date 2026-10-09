@@ -65,7 +65,7 @@ EOF
 把某次 run 的 `evidence-*` 包解压到它自己的 `docs/evidence/<run_id>/` 旁边，让生成器同时看到结果行和 manifest，然后跑：
 
 ```bash
-python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
+python3 -m tools.report_four_engine runs/four_engine_full_20260812 \
     -o docs/reports/four-engine-report-20260812.md
 ```
 

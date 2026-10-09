@@ -84,7 +84,7 @@ Expand a run's `evidence-*` archive next to its `docs/evidence/<run_id>/`
 directory so the generator sees both the rows and the manifest, then:
 
 ```bash
-python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
+python3 -m tools.report_four_engine runs/four_engine_full_20260812 \
     -o docs/reports/four-engine-report-20260812.md
 ```
 

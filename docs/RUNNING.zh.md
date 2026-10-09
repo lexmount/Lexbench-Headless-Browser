@@ -33,8 +33,8 @@ python3 -m runner.run run --subset l1.raw_cdp --tag purpose.smoke \
 
 ## 前提
 
-- 操作系统：**Linux**（暂不支持其他平台）。
-- 需要 **cgroup v2**：资源遥测要读 cgroup 和进程树来统计用量（cgroup 是 Linux 的资源统计机制）。
+- 操作系统：**Linux 或 macOS**。
+- Linux 资源采样使用 **cgroup v2** 和进程树 PSS；macOS 使用进程树 RSS 和 CPU 时间。PSS 与 RSS 口径不同，不能直接比较。
 - 需要 **Python 3.11+** 和 **Node 20**。
 - Go、Rust、Ruby 只有编译型 adapter 才用得到：`chromedp` 和 `rod`（Go）、`chromiumoxide`（Rust）、`ferrum`（Ruby）。
 
@@ -142,7 +142,7 @@ python3 -m runner.run run ... --resource-profile engine --jobs 1 --k 5 --score-m
   --resource-calibration-baseline runs/<baseline-run>
 ```
 
-B 轮结束时，拿自己的任务耗时分布和 A 轮对比，量出 **profiler（性能剖析器）本身对引擎的干扰**。CPU、内存（PSS，进程实际占用内存的估算）、进程数、页面流量——这些只有在干扰过了校准门（`resource_comparison_eligible: true`）时才会报告。完整契约见 [resource-cost.zh.md](resource-cost.zh.md)。
+B 轮结束时，拿自己的任务耗时分布和 A 轮对比，量出 **profiler（性能剖析器）本身对引擎的干扰**。CPU、内存（Linux PSS 或 macOS RSS）、进程数、页面流量——这些只有在干扰过了校准门（`resource_comparison_eligible: true`）时才会报告。完整契约见 [resource-cost.zh.md](resource-cost.zh.md)。
 
 ## 常见失败
 

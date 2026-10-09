@@ -7,7 +7,7 @@ generation-time timestamp is embedded. Rerunning on the same data yields a
 byte-identical report.
 
 Usage:
-    python3 tools/report_four_engine.py runs/<run-id> [-o docs/reports/foo.md]
+    python3 -m tools.report_four_engine runs/<run-id> [-o docs/reports/foo.md]
 """
 
 from __future__ import annotations
@@ -17,6 +17,8 @@ import collections
 import json
 import pathlib
 import sys
+
+from runner.layout import require_fixed
 
 ENGINE_ORDER = ("chrome", "moli", "lightpanda", "obscura")
 
@@ -38,8 +40,6 @@ def load_run(run_dir: pathlib.Path) -> tuple[dict, list[dict], dict]:
         for line in (run_dir / "results.jsonl").read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-    from runner.layout import require_fixed
     require_fixed(manifest)
     return manifest, rows, scores
 

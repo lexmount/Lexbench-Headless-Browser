@@ -2,16 +2,12 @@
 
 import copy
 import json
-from pathlib import Path
-import sys
 
 import pytest
 
 
-TOOLS = Path(__file__).resolve().parents[1] / "tools"
-sys.path.insert(0, str(TOOLS))
-import compare_moli_cohort as comparator  # noqa: E402
-from compare_moli_cohort import first_difference, normalized_conditions, normalized_manifest  # noqa: E402
+from tools import compare_moli_cohort as comparator
+from tools.compare_moli_cohort import first_difference, normalized_conditions, normalized_manifest
 
 
 def manifest():

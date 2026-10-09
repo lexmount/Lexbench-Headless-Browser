@@ -10,12 +10,9 @@ import json
 import math
 from pathlib import Path
 import statistics
-import sys
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-from runner import layout as layout_policy  # noqa: E402
+from runner import layout as layout_policy
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -254,16 +251,6 @@ def summarize_fixed_runs(
             "comparison_protocol_sha256": _sha(comparison_protocol_path),
         },
     }
-
-
-def summarize_fixed_pairs(off_profiled_dir: Path, on_profiled_dir: Path,
-                          binary_receipt_path: Path, comparison_protocol_path: Path,
-                          *, expected_tasks: int = 557, expected_frozen_calls: int = 1045) -> dict[str, Any]:
-    return summarize_fixed_runs(
-        {"off": off_profiled_dir, "on": on_profiled_dir}, binary_receipt_path,
-        comparison_protocol_path, expected_tasks=expected_tasks,
-        expected_frozen_calls=expected_frozen_calls,
-    )
 
 
 def main() -> None:

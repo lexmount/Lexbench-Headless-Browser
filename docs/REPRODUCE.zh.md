@@ -55,7 +55,7 @@ python3 -m runner.run run \
 报告是**生成**出来的，不是手写出来的：
 
 ```bash
-python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
+python3 -m tools.report_four_engine runs/four_engine_full_20260812 \
   -o docs/reports/four-engine-report-20260812.md
 ```
 

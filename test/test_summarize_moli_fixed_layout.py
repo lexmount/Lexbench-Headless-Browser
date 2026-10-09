@@ -6,8 +6,7 @@ import sys
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
-from summarize_moli_fixed_layout import summarize_fixed_sources
+from tools.summarize_moli_fixed_layout import summarize_fixed_sources
 
 SHA = 'a' * 64
 CONTRACT = {'task_ids': ['one', 'two'], 'attempts_per_task': 3,
@@ -65,11 +64,21 @@ def test_rejects_incomplete_or_mixed_execution_evidence(tmp_path, problem):
         summarize_fixed_sources(sources, CONTRACT, 'on')
 
 
-def test_cli_reads_fixed_runs_from_another_working_directory(tmp_path):
+@pytest.mark.parametrize('module', [
+    'run_moli_cohort', 'compare_moli_cohort', 'summarize_moli_fixed_layout',
+    'summarize_moli_macos_resources', 'report_four_engine',
+])
+@pytest.mark.parametrize('outside_repo', [False, True])
+def test_tool_modules_work_from_repo_or_explicit_pythonpath(tmp_path, module, outside_repo):
+    import os
     import subprocess
-    script = Path(__file__).resolve().parents[1] / 'tools/summarize_moli_fixed_layout.py'
-    result = subprocess.run([sys.executable, str(script), '--help'], cwd=tmp_path,
+    root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    env.pop('PYTHONPATH', None)
+    if outside_repo:
+        env['PYTHONPATH'] = str(root)
+    result = subprocess.run([sys.executable, '-m', f'tools.{module}', '--help'],
+                            cwd=tmp_path if outside_repo else root, env=env,
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    assert '--source RUN_DIR' in result.stdout
-    assert 'initial|retry' not in result.stdout
+    assert 'usage:' in result.stdout

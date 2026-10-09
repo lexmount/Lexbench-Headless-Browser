@@ -39,3 +39,4 @@ version = { attr = "runner.version.HARNESS_VERSION" }
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+pythonpath = [".", "test"]

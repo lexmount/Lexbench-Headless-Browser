@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import sys
 
-from run_moli_cohort import PROFILE, ROOT, file_sha256, frozen_tasks
+from tools.run_moli_cohort import PROFILE, ROOT, file_sha256, frozen_tasks
 
 
 def normalized_manifest(manifest: dict) -> dict:

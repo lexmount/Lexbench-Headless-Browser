@@ -272,7 +272,7 @@ and `secondary_process` respectively.
 ```text
 Lexbench-Headless-Browser/
   test/
-    conftest.py                  # sys.path bootstrap + fake_cdp / fixture_server / bench factories
+    conftest.py                  # fake_cdp / fixture_server / bench factories
     _fakes.py                    # FakeCDP (scripted HTTP+WS) / StubProc / task & manifest factories
     _stub_scripts/stub.js        # mode-switched node stub for node_cdp_probe (no real CDP connection)
     test_unit_validate.py        # §2: good+bad for every validate rule

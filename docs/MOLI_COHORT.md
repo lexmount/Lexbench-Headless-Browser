@@ -13,10 +13,12 @@ To reproduce the all-layout automation cohort, explicitly pass `--moli-layout on
 From a Python environment satisfying the repository's dependencies:
 
 ```sh
-python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_failures372 --moli-layout on
-python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_failures372 --moli-layout on
-python tools/compare_moli_cohort.py moli_v1_failures372 moli_v2_failures372
+python -m tools.run_moli_cohort /absolute/path/to/moli-v1 moli_v1_failures372 --moli-layout on
+python -m tools.run_moli_cohort /absolute/path/to/moli-v2 moli_v2_failures372 --moli-layout on
+python -m tools.compare_moli_cohort moli_v1_failures372 moli_v2_failures372
 ```
+
+Run these modules from the repository root. From another directory, set `PYTHONPATH` to the absolute repository root before invoking `python -m tools.<module>`.
 
 Each run produces 1,116 result rows under the ignored `runs/` directory and a sibling `<run-id>.conditions.json` receipt. The run tool refuses to overwrite an existing run, checks the frozen cohort and manifest before launch, records the Moli and ChromeDriver binary hashes, and verifies completion. The comparator checks every task and attempt, binds each result to its run, engine and measured binary hash, and compares all recorded non-Moli conditions. Report pass counts from `results.jsonl`, keeping `infra` and `unsupported` separate from task failure. A Moli upgrade may legitimately change task outcomes, timings, and its binary hash and version.
 

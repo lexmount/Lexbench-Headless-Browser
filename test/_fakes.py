@@ -22,17 +22,11 @@ import json
 import pathlib
 import socket
 import struct
-import sys
 import threading
 from typing import Any, Callable
 
-TEST_DIR = pathlib.Path(__file__).resolve().parent
-BENCH_ROOT = TEST_DIR.parent
-for _p in (str(BENCH_ROOT), str(TEST_DIR)):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
 
-from runner import run as runner_run  # noqa: E402
+from runner import run as runner_run
 
 
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
