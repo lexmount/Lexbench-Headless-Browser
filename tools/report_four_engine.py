@@ -7,7 +7,7 @@ generation-time timestamp is embedded. Rerunning on the same data yields a
 byte-identical report.
 
 Usage:
-    python3 -m tools.report_four_engine runs/<run-id> [-o docs/reports/foo.md]
+    python3 tools/report_four_engine.py runs/<run-id> [-o docs/reports/foo.md]
 """
 
 from __future__ import annotations

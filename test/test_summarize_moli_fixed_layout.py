@@ -68,17 +68,14 @@ def test_rejects_incomplete_or_mixed_execution_evidence(tmp_path, problem):
     'run_moli_cohort', 'compare_moli_cohort', 'summarize_moli_fixed_layout',
     'summarize_moli_macos_resources', 'report_four_engine',
 ])
-@pytest.mark.parametrize('outside_repo', [False, True])
-def test_tool_modules_work_from_repo_or_explicit_pythonpath(tmp_path, module, outside_repo):
+def test_tool_scripts_work_from_another_directory(tmp_path, module):
     import os
     import subprocess
     root = Path(__file__).resolve().parents[1]
     env = os.environ.copy()
     env.pop('PYTHONPATH', None)
-    if outside_repo:
-        env['PYTHONPATH'] = str(root)
-    result = subprocess.run([sys.executable, '-m', f'tools.{module}', '--help'],
-                            cwd=tmp_path if outside_repo else root, env=env,
+    result = subprocess.run([sys.executable, str(root / 'tools' / f'{module}.py'), '--help'],
+                            cwd=tmp_path, env=env,
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert 'usage:' in result.stdout

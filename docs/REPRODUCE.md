@@ -55,7 +55,7 @@ Both resource rounds must run on the same machine with nothing else competing fo
 Reports are generated, never written:
 
 ```bash
-python3 -m tools.report_four_engine runs/four_engine_full_20260812 \
+python3 tools/report_four_engine.py runs/four_engine_full_20260812 \
   -o docs/reports/four-engine-report-20260812.md
 ```
 
