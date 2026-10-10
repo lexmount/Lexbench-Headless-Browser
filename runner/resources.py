@@ -26,6 +26,7 @@ import platform
 import random
 import re
 import statistics
+import subprocess
 import threading
 import time
 from dataclasses import dataclass
@@ -110,6 +111,7 @@ class ProcStat:
     user_ticks: int
     system_ticks: int
     start_ticks: int
+    rss_bytes: int | None = None
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -176,6 +178,92 @@ def descendant_pids(root_pid: int, table: dict[int, ProcStat]) -> list[int]:
     return sorted(found)
 
 
+def _parse_ps_cpu_seconds(value: str) -> float:
+    days = 0
+    clock = value.strip()
+    if "-" in clock:
+        raw_days, clock = clock.split("-", 1)
+        days = int(raw_days)
+    pieces = clock.split(":")
+    if len(pieces) == 2:
+        hours = 0
+        minutes, seconds = pieces
+    elif len(pieces) == 3:
+        hours, minutes, seconds = pieces
+    else:
+        raise ValueError(f"unsupported ps CPU time: {value!r}")
+    return days * 86400 + int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+
+
+def parse_darwin_ps_table(text: str) -> dict[int, ProcStat]:
+    """Parse one macOS process table for process-tree RSS and CPU sampling."""
+    ticks = int(os.sysconf("SC_CLK_TCK"))
+    table: dict[int, ProcStat] = {}
+    for line in text.splitlines():
+        pieces = line.split()
+        if len(pieces) != 10:
+            continue
+        try:
+            pid, ppid, rss_kib = map(int, pieces[:3])
+            user_ticks = round(_parse_ps_cpu_seconds(pieces[3]) * ticks)
+            system_ticks = round(_parse_ps_cpu_seconds(pieces[4]) * ticks)
+        except (TypeError, ValueError):
+            continue
+        start_text = " ".join(pieces[5:])
+        start_ticks = int.from_bytes(
+            hashlib.sha256(start_text.encode("utf-8")).digest()[:8], "big"
+        )
+        table[pid] = ProcStat(
+            pid=pid,
+            ppid=ppid,
+            session=0,
+            state="?",
+            user_ticks=user_ticks,
+            system_ticks=system_ticks,
+            start_ticks=start_ticks,
+            rss_bytes=rss_kib * 1024,
+        )
+    return table
+
+
+def read_darwin_process_table() -> dict[int, ProcStat]:
+    completed = subprocess.run(
+        ["/bin/ps", "-axo", "pid=,ppid=,rss=,utime=,stime=,lstart="],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    return parse_darwin_ps_table(completed.stdout)
+
+
+def _darwin_process_tree_snapshot_once(root_pid: int) -> dict[str, Any]:
+    table = read_darwin_process_table()
+    pids = descendant_pids(root_pid, table)
+    selected = [table[pid] for pid in pids]
+    counters = {
+        item.identity: (item.user_ticks, item.system_ticks) for item in selected
+    }
+    return {
+        "timestamp": _now_iso(),
+        "monotonic_ns": time.monotonic_ns(),
+        "root_pid": root_pid,
+        "root_alive": root_pid in table,
+        "pids": pids,
+        "process_count": len(pids),
+        "pss_bytes": None,
+        "pss_errors": ["unsupported:Darwin"],
+        "pss_zero_address_space_pids": [],
+        "rss_bytes": sum(int(item.rss_bytes or 0) for item in selected)
+        if selected else None,
+        "memory_backend": "darwin_ps_process_tree_rss",
+        "cpu_user_ticks": sum(value[0] for value in counters.values()),
+        "cpu_system_ticks": sum(value[1] for value in counters.values()),
+        "_counters": counters,
+        "_pss_reader_cpu_ns": 0,
+    }
+
+
 def read_process_tree(
     root_pid: int, proc_root: pathlib.Path = PROC_ROOT
 ) -> dict[int, ProcStat]:
@@ -235,6 +323,8 @@ def _process_tree_snapshot_once(
     proc_root: pathlib.Path,
     candidate_pids: list[int] | None = None,
 ) -> dict[str, Any]:
+    if proc_root == PROC_ROOT and platform.system() == "Darwin":
+        return _darwin_process_tree_snapshot_once(root_pid)
     if candidate_pids is None:
         table = read_process_tree(root_pid, proc_root)
     else:
@@ -330,6 +420,8 @@ def _process_tree_snapshot_once(
         "pss_bytes": pss_total if pids and not pss_errors else None,
         "pss_errors": pss_errors,
         "pss_zero_address_space_pids": pss_zero_address_space_pids,
+        "rss_bytes": None,
+        "memory_backend": "linux_proc_smaps_rollup_pss",
         "cpu_user_ticks": sum(value[0] for value in counters.values()),
         "cpu_system_ticks": sum(value[1] for value in counters.values()),
         "_counters": counters,
@@ -363,7 +455,9 @@ def process_tree_snapshot(
                 root_pid, proc_root, candidate_pids
             )
         snapshot["pss_scan_attempts"] = attempt
-        if snapshot.get("pss_bytes") is not None or not snapshot.get("root_alive"):
+        if (snapshot.get("pss_bytes") is not None
+                or snapshot.get("rss_bytes") is not None
+                or not snapshot.get("root_alive")):
             return snapshot
     assert snapshot is not None
     return snapshot
@@ -591,7 +685,17 @@ class EngineProcessSampler:
             for sample in self.samples
             if sample.get("pss_bytes") is not None
         ]
-        if len(pss_values) != len(self.samples):
+        rss_values = [
+            int(sample["rss_bytes"])
+            for sample in self.samples
+            if sample.get("rss_bytes") is not None
+        ]
+        memory_backend = str(first.get("memory_backend") or "unknown")
+        if memory_backend == "darwin_ps_process_tree_rss":
+            unavailable["pss"] = (
+                "PSS is unavailable on macOS; process-tree RSS is reported"
+            )
+        elif len(pss_values) != len(self.samples):
             unavailable["pss"] = "one or more complete process-tree PSS scans failed"
             quality_flags.append("pss_scan_incomplete")
         if any(int(sample.get("pss_scan_attempts") or 1) > 1 for sample in self.samples):
@@ -601,6 +705,9 @@ class EngineProcessSampler:
         pss_baseline = first.get("pss_bytes")
         pss_end = last.get("pss_bytes")
         pss_peak = max(pss_values) if pss_values and "pss" not in unavailable else None
+        rss_baseline = first.get("rss_bytes")
+        rss_end = last.get("rss_bytes")
+        rss_peak = max(rss_values) if len(rss_values) == len(self.samples) else None
 
         cpu_total_ms: float | None = None
         cpu_user_ms: float | None = None
@@ -671,7 +778,12 @@ class EngineProcessSampler:
             "scope": "engine_scope",
             "measurement_backend": {
                 "cpu": cpu_backend,
-                "memory_pss": "proc_smaps_rollup",
+                "memory_pss": "proc_smaps_rollup"
+                if memory_backend == "linux_proc_smaps_rollup_pss"
+                else "unavailable",
+                "memory_rss": "darwin_ps_process_tree_rss"
+                if memory_backend == "darwin_ps_process_tree_rss"
+                else "unavailable",
                 "memory_accounting": "cgroup_v2" if cgroup_memory_values else "unavailable",
             },
             "cpu_total_ms": round(cpu_total_ms, 3) if cpu_total_ms is not None else None,
@@ -685,6 +797,12 @@ class EngineProcessSampler:
             "pss_end_bytes": pss_end,
             "pss_peak_delta_bytes": max(0, int(pss_peak) - int(pss_baseline))
             if pss_peak is not None and pss_baseline is not None
+            else None,
+            "rss_baseline_bytes": rss_baseline,
+            "rss_peak_bytes": rss_peak,
+            "rss_end_bytes": rss_end,
+            "rss_peak_delta_bytes": max(0, int(rss_peak) - int(rss_baseline))
+            if rss_peak is not None and rss_baseline is not None
             else None,
             "process_count_baseline": first.get("process_count"),
             "process_count_peak": max(int(sample.get("process_count") or 0) for sample in self.samples),

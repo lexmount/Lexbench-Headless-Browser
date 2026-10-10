@@ -1,6 +1,6 @@
 {
   "artifact_profile": "l1_standard",
-  "description": "Verifies raw.schema.getDomains by issuing raw CDP command(s) Schema.getDomains against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. The command is sent over the page-target transport. This probe is diagnostic-only because the pinned Chrome protocol no longer exposes `Schema.getDomains`.",
+  "description": "Verifies raw.schema.getDomains by issuing raw CDP command(s) Schema.getDomains against an about:blank page. It passes when every non-optional CDP step completes without a protocol error. Optional steps are best-effort, and returned values are not graded. The command is sent over the page-target transport. This remains a diagnostic probe; the historical Chrome failure came from the harness routing the command to the browser connection.",
   "driver": {
     "kind": "raw_cdp",
     "steps": [

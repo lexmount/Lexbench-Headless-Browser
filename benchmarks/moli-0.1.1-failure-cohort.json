@@ -1,0 +1,25 @@
+{
+  "schema": "lexbench_moli_failure_cohort/1",
+  "source_run_id": "four_engine_full_20260812",
+  "source_results_sha256": "fe8e2094d6220429f77d877a6512195d4f122fe95df323ecb1da33e3108491e4",
+  "selection": "All historical Moli 0.1.1 tasks that did not pass all three attempts; Chrome outcomes do not filter this cohort",
+  "task_ids_file": "benchmarks/moli-0.1.1-failure-task-ids.txt",
+  "task_ids_sha256": "00e38dc8492d50fb21cb0ad80f30703c4a07391da57c05fe34c865bd3ea6a193",
+  "task_count": 372,
+  "bench_manifest_sha256": "0a0274af9cd88af2189c70d76232a00266646553283022aa89c91a9105e0c8a7",
+  "selected_engines": [
+    "moli"
+  ],
+  "score_mode": "independent",
+  "chrome_baseline": "off",
+  "seed": "official20260709",
+  "attempts_per_task": 3,
+  "jobs": 8,
+  "host_telemetry": "off",
+  "resource_profile": "off",
+  "provenance_level": "minimal",
+  "source_failure_task_count": 372,
+  "excluded_tasks": [],
+  "source_moli_version": "0.1.1",
+  "source_attempts_per_task": 3
+}

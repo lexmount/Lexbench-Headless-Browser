@@ -4,6 +4,8 @@
 
 Head-to-head comparison of Chrome 151, Moli 0.1.1, Lightpanda, Obscura on 1,928 tasks. k=3, 23,136 result rows, wall time 1:34:36, `score_eligible: true`, no fallback.
 
+Historical-data correction: Chrome's three `unsupported` rows below are the three attempts of one diagnostic task, `pw_raw_schema_getdomains`. The harness sent its page-target command over the browser connection. The pinned Chrome result is retained as measured; this is a harness routing error, not evidence that Chrome lacks the page-target command. Those three rows have `score_included: false`. New runs use the corrected route.
+
 This report covers local pinned-binary engines only. Remote endpoints (such as Kitesurf) sit in a different evidence class; see the five-engine report.
 
 ---
@@ -97,4 +99,3 @@ Across 7,712 `task × engine` groups, 3 groups had inconsistent statuses (0.04%)
 - **L3 is out of scope.** Real-site chain results are not part of this report.
 
 - **Chrome is a reference column, not a gold standard.** `--score-mode independent`; each engine is scored independently.
-

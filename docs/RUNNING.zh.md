@@ -33,8 +33,8 @@ python3 -m runner.run run --subset l1.raw_cdp --tag purpose.smoke \
 
 ## 前提
 
-- 操作系统：**Linux**（暂不支持其他平台）。
-- 需要 **cgroup v2**：资源遥测要读 cgroup 和进程树来统计用量（cgroup 是 Linux 的资源统计机制）。
+- 操作系统：**Linux 或 macOS**。
+- Linux 资源采样使用 **cgroup v2** 和进程树 PSS；macOS 使用进程树 RSS 和 CPU 时间。PSS 与 RSS 口径不同，不能直接比较。
 - 需要 **Python 3.11+** 和 **Node 20**。
 - Go、Rust、Ruby 只有编译型 adapter 才用得到：`chromedp` 和 `rod`（Go）、`chromiumoxide`（Rust）、`ferrum`（Ruby）。
 
@@ -142,10 +142,14 @@ python3 -m runner.run run ... --resource-profile engine --jobs 1 --k 5 --score-m
   --resource-calibration-baseline runs/<baseline-run>
 ```
 
-B 轮结束时，拿自己的任务耗时分布和 A 轮对比，量出 **profiler（性能剖析器）本身对引擎的干扰**。CPU、内存（PSS，进程实际占用内存的估算）、进程数、页面流量——这些只有在干扰过了校准门（`resource_comparison_eligible: true`）时才会报告。完整契约见 [resource-cost.zh.md](resource-cost.zh.md)。
+B 轮结束时，拿自己的任务耗时分布和 A 轮对比，量出 **profiler（性能剖析器）本身对引擎的干扰**。CPU、内存（Linux PSS 或 macOS RSS）、进程数、页面流量——这些只有在干扰过了校准门（`resource_comparison_eligible: true`）时才会报告。完整契约见 [resource-cost.zh.md](resource-cost.zh.md)。
 
 ## 常见失败
 
 - **`doctor` 报 pin 不匹配**：`build_artifacts/` 下的二进制不是你 pin 的那个构建。激活正确的 set，或者有意识地更新 `active-set.json`。
 - **结果行大量 `infra`**：身份门没过——客户端没连到它该连的引擎。这是环境或路由问题，**永远不是**兼容性分数。
 - **编译型 adapter 缺失**：用上面的 Go/Rust 命令重新编译；`doctor` 会打印它期待的确切命令。
+
+## Moli 固定布局
+
+布局默认关闭。`--moli-layout on` 全程开启，`--moli-layout off` 全程关闭；模式在启动前确定。每题执行配置的次数（通常三次），全部通过才算成功。失败不会切换布局或追加执行。比较开关效果时，分别运行，保持题目和重复次数一致。

@@ -51,6 +51,7 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { transportFaultSignature } = require("./lib/transport_fault");
+const { waitForDownloadProgress } = require("./lib/download_completion");
 
 const artifactDir = process.env.ARTIFACT_DIR || ".";
 const cdpPath = path.join(artifactDir, "cdp.jsonl");
@@ -780,24 +781,20 @@ async function main() {
           ? await fw.browser.newBrowserCDPSession()
           : await fw.browser.target().createCDPSession();
         await cdp.send("Browser.setDownloadBehavior", { behavior: "allowAndName", downloadPath: downloadDir, eventsEnabled: true });
-        const completed = new Promise((resolve, reject) => {
-          const timer = setTimeout(() => reject(new Error("download did not complete before the timeout")), timeout || 8000);
-          cdp.on("Browser.downloadProgress", (ev) => {
-            if (ev.state === "completed") {
-              clearTimeout(timer);
-              resolve(ev.guid);
-            } else if (ev.state === "canceled") {
-              clearTimeout(timer);
-              reject(new Error("download was canceled"));
-            }
-          });
-        });
-        if (fw.kind === "playwright") await page.locator(sel).click(timeout ? { timeout } : {});
-        else await page.click(sel);
-        const guid = await completed;
-        fs.copyFileSync(path.join(downloadDir, guid), savePath);
-        const bytes = fs.readFileSync(savePath);
-        return `${crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 12)}:${bytes.length}`;
+        try {
+          const guid = await waitForDownloadProgress(
+            cdp,
+            () => fw.kind === "playwright"
+              ? page.locator(sel).click(timeout ? { timeout } : {})
+              : page.click(sel),
+            timeout || 8000
+          );
+          fs.copyFileSync(path.join(downloadDir, guid), savePath);
+          const bytes = fs.readFileSync(savePath);
+          return `${crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 12)}:${bytes.length}`;
+        } finally {
+          try { await cdp.detach(); } catch { /* session may already be gone */ }
+        }
       }
       case "set_cookie": {
         const cookie = {

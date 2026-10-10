@@ -9,6 +9,24 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_browser_command_line_probe_declares_automation_precondition() -> None:
+    task_path = (
+        REPO_ROOT
+        / "tasks/L1/raw_cdp/pw_raw_browser_getbrowsercommandline.json"
+    )
+    task = json.loads(task_path.read_text(encoding="utf-8"))
+
+    assert task["launch_profile"] == "browser_automation"
+    assert task["driver"]["steps"] == [
+        {
+            "method": "Browser.getBrowserCommandLine",
+            "optional": False,
+            "params": {},
+            "save_as": "value",
+        }
+    ]
+
+
 def test_debugger_stepout_requires_caller_pause_and_completion() -> None:
     task_path = REPO_ROOT / "tasks/L1/raw_cdp/v4_cdp_debugger_stepout.json"
     task = json.loads(task_path.read_text(encoding="utf-8"))

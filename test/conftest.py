@@ -1,6 +1,6 @@
 """Shared pytest fixtures for the runner test suite.
 
-Covers TESTING.md §10 (tests layout): bench-root import path, FakeCDP server
+Covers TESTING.md §10 (tests layout): FakeCDP server
 factory, FixtureServer factory, and tmp manifest/task bench factories.
 
 All runs/artifacts are written under pytest ``tmp_path`` — tests never touch
@@ -11,18 +11,11 @@ from __future__ import annotations
 
 import itertools
 import pathlib
-import sys
 
-TEST_DIR = pathlib.Path(__file__).resolve().parent
-BENCH_ROOT = TEST_DIR.parent
-for _p in (str(BENCH_ROOT), str(TEST_DIR)):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+import pytest
 
-import pytest  # noqa: E402
-
-from runner import run as runner_run  # noqa: E402
-import _fakes  # noqa: E402
+from runner import run as runner_run
+import _fakes
 
 
 @pytest.fixture

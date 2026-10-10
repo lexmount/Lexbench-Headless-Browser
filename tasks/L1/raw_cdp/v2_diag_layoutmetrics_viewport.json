@@ -1,10 +1,19 @@
 {
   "artifact_profile": "l1_standard",
   "chrome_gate": "off",
-  "description": "[diagnostic lane] This method is on the real framework main path (on_framework_main_path); routed to the diagnostic lane per bench policy. Page.getLayoutMetrics viewport consistency: cssLayoutViewport.clientWidth, cssContentSize.width and the (deprecated) layoutViewport.clientWidth must all agree (780 under the pinned Chrome headless viewport).",
+  "description": "Sets an explicit 780\u00d7600 CSS viewport with DPR 1, then checks layout/content/visual viewport widths. This removes platform-dependent headless window defaults from the contract.",
   "driver": {
     "kind": "raw_cdp",
     "steps": [
+      {
+        "method": "Emulation.setDeviceMetricsOverride",
+        "params": {
+          "width": 780,
+          "height": 600,
+          "deviceScaleFactor": 1,
+          "mobile": false
+        }
+      },
       {
         "method": "Page.getLayoutMetrics",
         "save_result_as": "lm"
@@ -34,6 +43,12 @@
         "kind": "saved_path_equals",
         "name": "lm",
         "path": "layoutViewport.clientWidth"
+      },
+      {
+        "expected": 780,
+        "kind": "saved_path_equals",
+        "name": "lm",
+        "path": "cssVisualViewport.clientWidth"
       }
     ],
     "kind": "inline_assertions"
@@ -50,7 +65,7 @@
     "version.v0_2"
   ],
   "task_id": "v2_diag_layoutmetrics_viewport",
-  "task_version": 1,
+  "task_version": 2,
   "timeouts": {
     "hard_kill_ms": 30000,
     "task_ms": 15000

@@ -53,7 +53,12 @@ time.sleep(2)
 
     assert summary["measurement_backend"]["cpu"] == "proc_tree"
     assert summary["cpu_total_ms"] > 50
-    assert summary["pss_peak_bytes"] > 12 * 1024 * 1024
+    if sys.platform == "darwin":
+        assert summary["rss_peak_bytes"] > 12 * 1024 * 1024
+        assert summary["pss_peak_bytes"] is None
+        assert summary["measurement_backend"]["memory_rss"] == "darwin_ps_process_tree_rss"
+    else:
+        assert summary["pss_peak_bytes"] > 12 * 1024 * 1024
     assert summary["process_count_peak"] >= 2
     assert summary["samples_seen"] >= 3
     assert samples[0]["phase"] == "baseline"
@@ -78,6 +83,24 @@ def test_process_tree_snapshot_retries_transient_pss_race(monkeypatch):
     assert calls == [1, 2]
 
 
+def test_darwin_process_table_and_tree_snapshot(monkeypatch):
+    table = resources.parse_darwin_ps_table(
+        """\
+  42     1  1024   0:01.25   0:00.50 Sat Sep 20 12:00:00 2026
+  43    42  2048   0:00.75   0:00.25 Sat Sep 20 12:00:01 2026
+  99     1  4096   0:09.00   0:01.00 Sat Sep 20 12:00:02 2026
+"""
+    )
+    assert table[42].rss_bytes == 1024 * 1024
+    assert table[43].ppid == 42
+    monkeypatch.setattr(resources, "read_darwin_process_table", lambda: table)
+    snapshot = resources._darwin_process_tree_snapshot_once(42)
+    assert snapshot["pids"] == [42, 43]
+    assert snapshot["rss_bytes"] == 3 * 1024 * 1024
+    assert snapshot["pss_bytes"] is None
+    assert snapshot["memory_backend"] == "darwin_ps_process_tree_rss"
+
+
 def test_process_tree_pss_treats_confirmed_zombie_as_zero(monkeypatch):
     zombie = resources.ProcStat(
         pid=42,
@@ -92,6 +115,7 @@ def test_process_tree_pss_treats_confirmed_zombie_as_zero(monkeypatch):
     monkeypatch.setattr(resources, "read_pss_bytes", lambda *_args: (_ for _ in ()).throw(ProcessLookupError()))
     monkeypatch.setattr(resources, "_read_text", lambda _path: "stat")
     monkeypatch.setattr(resources, "parse_proc_stat", lambda _text: zombie)
+    monkeypatch.setattr(resources.platform, "system", lambda: "Linux")
 
     snapshot = resources._process_tree_snapshot_once(42, pathlib.Path("/proc"))
     assert snapshot["pss_bytes"] == 0

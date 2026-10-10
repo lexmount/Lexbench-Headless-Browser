@@ -9,6 +9,7 @@ held to a single source of truth across pyproject.toml and package.json.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -17,6 +18,7 @@ import pytest
 
 from runner import run as runner_run
 from runner.version import HARNESS_VERSION
+from runner.layout import policy
 
 REPO_ROOT = pathlib.Path(runner_run.REPO_ROOT)
 SEMVER = re.compile(r"\d+\.\d+\.\d+")
@@ -76,3 +78,37 @@ def test_run_manifest_records_both_axes():
     assert payload["bench_version"] == suite["bench_version"]
     assert payload["harness_version"] == HARNESS_VERSION
     assert "site_version" not in payload["site"]
+
+
+def test_fixed_layout_receipt_declares_policy_before_calls():
+    manifest_path = REPO_ROOT / "manifest.json"
+    suite, tasks, errors = runner_run.validate_manifest(manifest_path, requested_subsets=["l1.raw_cdp"])
+    assert not errors
+    args = argparse.Namespace(chrome_gate="off", score_mode="independent", jobs=1, k=1, seed="unit", moli_layout="off")
+    payload = runner_run.run_manifest_payload(args,suite,manifest_path,tasks[:1],["moli"],"retry",True,[],None)
+    receipt=payload["moli_layout_policy"]
+    assert receipt == policy("off")
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_subprocess_uses_explicit_engine_set_without_changing_default(tmp_path, missing):
+    import os
+    import subprocess
+    import sys
+    selection = tmp_path / "engine-set.json"
+    candidate = tmp_path / "candidate-moli"
+    if not missing:
+        selection.write_text(json.dumps({"engines": {"moli": {
+            "binary": str(candidate), "version": "test-candidate", "sha256": "a" * 64,
+        }}}))
+    env = {**os.environ, "LEXBENCH_ENGINE_SET": str(selection), "PYTHONPATH": str(REPO_ROOT)}
+    result = subprocess.run([sys.executable, "-c",
+        "from runner.run import ENGINE_DEFS; import json; "
+        "m=ENGINE_DEFS['moli']; print(json.dumps([str(m['binary']), m['version'], m['sha256']]))"],
+        cwd=tmp_path, env=env, capture_output=True, text=True)
+    if missing:
+        assert result.returncode != 0
+        assert "engine set does not exist" in result.stderr
+    else:
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout) == [str(candidate), "test-candidate", "a" * 64]

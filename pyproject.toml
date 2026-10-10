@@ -28,14 +28,14 @@ dev = [
 [project.urls]
 Repository = "https://github.com/lexmount/Lexbench-Headless-Browser"
 
-# The repo is a flat workspace (runner/, tools/, test/, tasks/ ...); only the
-# harness package is importable/installable. Without this, setuptools
-# auto-discovery refuses the layout and `pip install -e .` fails.
+# Install the runner and tool modules from this flat workspace. Explicit
+# packages avoid setuptools discovering tasks and fixtures as packages.
 [tool.setuptools]
-packages = ["runner"]
+packages = ["runner", "tools"]
 
 [tool.setuptools.dynamic]
 version = { attr = "runner.version.HARNESS_VERSION" }
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+pythonpath = [".", "test"]

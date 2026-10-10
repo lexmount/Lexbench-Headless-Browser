@@ -18,6 +18,12 @@ import json
 import pathlib
 import sys
 
+from tools._repository import require_local_runner
+
+require_local_runner(pathlib.Path(__file__).resolve().parents[1])
+
+from runner.layout import require_fixed
+
 ENGINE_ORDER = ("chrome", "moli", "lightpanda", "obscura")
 
 ENGINE_LABELS = {
@@ -38,6 +44,7 @@ def load_run(run_dir: pathlib.Path) -> tuple[dict, list[dict], dict]:
         for line in (run_dir / "results.jsonl").read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+    require_fixed(manifest)
     return manifest, rows, scores
 
 
