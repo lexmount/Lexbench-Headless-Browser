@@ -18,6 +18,10 @@ import json
 import pathlib
 import sys
 
+from tools._repository import require_local_runner
+
+require_local_runner(pathlib.Path(__file__).resolve().parents[1])
+
 from runner.layout import require_fixed
 
 ENGINE_ORDER = ("chrome", "moli", "lightpanda", "obscura")

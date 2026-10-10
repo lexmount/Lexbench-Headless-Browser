@@ -12,6 +12,10 @@ from pathlib import Path
 import statistics
 from typing import Any
 
+from tools._repository import require_local_runner
+
+require_local_runner(Path(__file__).resolve().parents[1])
+
 from runner import layout as layout_policy
 
 

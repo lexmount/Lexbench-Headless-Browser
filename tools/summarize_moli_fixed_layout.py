@@ -8,6 +8,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from tools._repository import require_local_runner
+
+require_local_runner(Path(__file__).resolve().parents[1])
+
 from runner.layout import require_fixed
 from tools.run_moli_cohort import PROFILE, file_sha256, frozen_tasks
 

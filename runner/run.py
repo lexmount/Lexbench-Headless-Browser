@@ -234,7 +234,9 @@ ENGINE_DEFS = {
         "serve_args": ("--allow-private-network",),
     },
 }
-ACTIVE_ENGINE_SET_PATH = REPO_ROOT / "build_artifacts/active-set.json"
+ACTIVE_ENGINE_SET_PATH = pathlib.Path(
+    os.environ.get("LEXBENCH_ENGINE_SET", REPO_ROOT / "build_artifacts/active-set.json")
+)
 ACTIVE_ENGINE_SET: dict[str, Any] = {}
 
 
@@ -249,6 +251,8 @@ def apply_active_engine_set() -> None:
     """
     global ACTIVE_ENGINE_SET
     if not ACTIVE_ENGINE_SET_PATH.exists():
+        if os.environ.get("LEXBENCH_ENGINE_SET"):
+            raise RuntimeError(f"engine set does not exist: {ACTIVE_ENGINE_SET_PATH}")
         return
     try:
         payload = json.loads(ACTIVE_ENGINE_SET_PATH.read_text(encoding="utf-8"))

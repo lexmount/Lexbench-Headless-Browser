@@ -27,7 +27,8 @@ def test_only_moli_version_and_local_run_fields_may_change():
     right["run_id"] = "b"
     right["site"]["base_url"] = "http://127.0.0.1:456"
     right["engine_set"]["name"] = "b"
-    right["engines"]["moli"].update(version="2", sha256="bbb", expected_sha256="bbb")
+    right["engine_set"]["manifest"] = "runs/b.conditions.engines.json"
+    right["engines"]["moli"].update(version="2", sha256="bbb", expected_sha256="bbb", binary="/candidate/moli")
     assert first_difference(normalized_manifest(left), normalized_manifest(right)) is None
 
 

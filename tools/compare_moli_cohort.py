@@ -9,6 +9,10 @@ import json
 from pathlib import Path
 import sys
 
+from tools._repository import require_local_runner
+
+require_local_runner(Path(__file__).resolve().parents[1])
+
 from tools.run_moli_cohort import PROFILE, ROOT, file_sha256, frozen_tasks
 
 
@@ -17,9 +21,10 @@ def normalized_manifest(manifest: dict) -> dict:
     result = json.loads(json.dumps(manifest))
     for key in ("argv", "run_id", "started_at", "completed_at", "site"):
         result.pop(key, None)
-    result.get("engine_set", {}).pop("name", None)
+    for key in ("name", "manifest"):
+        result.get("engine_set", {}).pop(key, None)
     moli = result["engines"]["moli"]
-    for key in ("version", "sha256", "sha256_12", "expected_sha256", "expected_sha256_12"):
+    for key in ("binary", "version", "sha256", "sha256_12", "expected_sha256", "expected_sha256_12"):
         moli.pop(key, None)
     result.get("host_telemetry", {}).pop("summary", None)
     return result

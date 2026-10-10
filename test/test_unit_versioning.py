@@ -88,3 +88,27 @@ def test_fixed_layout_receipt_declares_policy_before_calls():
     payload = runner_run.run_manifest_payload(args,suite,manifest_path,tasks[:1],["moli"],"retry",True,[],None)
     receipt=payload["moli_layout_policy"]
     assert receipt == policy("off")
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_subprocess_uses_explicit_engine_set_without_changing_default(tmp_path, missing):
+    import os
+    import subprocess
+    import sys
+    selection = tmp_path / "engine-set.json"
+    candidate = tmp_path / "candidate-moli"
+    if not missing:
+        selection.write_text(json.dumps({"engines": {"moli": {
+            "binary": str(candidate), "version": "test-candidate", "sha256": "a" * 64,
+        }}}))
+    env = {**os.environ, "LEXBENCH_ENGINE_SET": str(selection), "PYTHONPATH": str(REPO_ROOT)}
+    result = subprocess.run([sys.executable, "-c",
+        "from runner.run import ENGINE_DEFS; import json; "
+        "m=ENGINE_DEFS['moli']; print(json.dumps([str(m['binary']), m['version'], m['sha256']]))"],
+        cwd=tmp_path, env=env, capture_output=True, text=True)
+    if missing:
+        assert result.returncode != 0
+        assert "engine set does not exist" in result.stderr
+    else:
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout) == [str(candidate), "test-candidate", "a" * 64]

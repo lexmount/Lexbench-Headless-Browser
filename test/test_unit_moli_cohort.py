@@ -55,8 +55,9 @@ def test_checked_in_cohort_keeps_all_372_failures():
     assert "pw_raw_schema_getdomains" in task_ids
 
 
+@pytest.mark.parametrize('child_failure', [False, True])
 @pytest.mark.parametrize('requested', ['release-1_1_9', 'Release__119', 'x' * 80])
-def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, requested):
+def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, requested, child_failure):
     from runner.run import compact_run_id
     binary = tmp_path / 'moli'
     binary.write_text('binary')
@@ -76,11 +77,29 @@ def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, request
     monkeypatch.setattr(cohort, 'frozen_tasks', lambda: (profile, ['one']))
     monkeypatch.setattr(cohort.subprocess, 'check_output',
                         lambda cmd, **kw: 'ChromeDriver 153.0' if cmd[0] == str(driver) else 'moli 1.1.9')
+    original = tmp_path / 'original-moli'
+    original.write_text('original binary')
+    link = tmp_path / 'build_artifacts/moli/bin/moli'
+    link.parent.mkdir(parents=True)
+    link.symlink_to(original)
+    active = tmp_path / 'build_artifacts/active-set.json'
+    active.write_text('{"name": "original", "engines": {}}')
+    original_active = active.read_bytes()
+    monkeypatch.setenv('GEM_HOME', '/configured/gems')
+    monkeypatch.setenv('PATH', '/configured/bin')
     invoked = []
 
     def execute(command, **kwargs):
         requested_id = command[command.index('--run-id') + 1]
         invoked.append(requested_id)
+        assert link.is_symlink() and link.resolve() == original
+        assert active.read_bytes() == original_active
+        assert kwargs['env']['GEM_HOME'] == '/configured/gems'
+        assert kwargs['env']['PATH'] == '/configured/bin'
+        selection = json.loads(cohort.Path(kwargs['env']['LEXBENCH_ENGINE_SET']).read_text())
+        assert selection['engines']['moli']['binary'] == str(binary)
+        if child_failure:
+            raise cohort.subprocess.CalledProcessError(1, command)
         run_dir = tmp_path / 'runs' / compact_run_id(requested_id)
         run_dir.mkdir()
         manifest = dict(completion_status='completed', completed_result_rows=3,
@@ -90,7 +109,14 @@ def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, request
 
     monkeypatch.setattr(cohort.subprocess, 'run', execute)
     monkeypatch.setattr(cohort.sys, 'argv', ['run_moli_cohort.py', str(binary), requested])
-    cohort.main()
+    if child_failure:
+        with pytest.raises(cohort.subprocess.CalledProcessError):
+            cohort.main()
+    else:
+        cohort.main()
+    assert link.is_symlink() and link.resolve() == original
+    assert active.read_bytes() == original_active
+    assert original.read_text() == 'original binary'
     canonical = compact_run_id(requested)
     assert invoked == [canonical]
     conditions = json.loads((tmp_path / 'runs' / f'{canonical}.conditions.json').read_text())

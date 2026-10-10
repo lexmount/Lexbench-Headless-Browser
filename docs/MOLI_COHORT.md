@@ -10,13 +10,15 @@ The tested macOS arm64 setup uses Python 3.11, Node 24, the pinned harness drive
 
 To reproduce the all-layout automation cohort, explicitly pass `--moli-layout on`, which starts Moli with `serve --layout`. Real coordinate input and hit testing require that flag in current Moli releases. The runner's general default remains Moli's lightweight mock-layout mode; it deliberately rejects coordinate mouse and touch dispatch. Optional visual/media resource fetching is separately task-scoped through `launch_profile=all_resources`. Compare version candidates with the same launch flags and frozen run profile; a default-mode run and a layout-enabled run test different runtime configurations.
 
-From a Python environment satisfying the repository's dependencies:
+Install this checkout with `pip install -e ".[drivers,dev]"`, as described in the running guide. Tool scripts reject a runner imported from another checkout.
 
 ```sh
 python tools/run_moli_cohort.py /absolute/path/to/moli-v1 moli_v1_failures372 --moli-layout on
 python tools/run_moli_cohort.py /absolute/path/to/moli-v2 moli_v2_failures372 --moli-layout on
 python tools/compare_moli_cohort.py moli_v1_failures372 moli_v2_failures372
 ```
+
+Each run writes a separate `<run-id>.conditions.engines.json` selection and passes it through `LEXBENCH_ENGINE_SET`; the shared active set and binary links are unchanged. Ruby and gem settings are inherited from `PATH`, `GEM_HOME` and `GEM_PATH`.
 
 Each run produces 1,116 result rows under the ignored `runs/` directory and a sibling `<run-id>.conditions.json` receipt. The run tool refuses to overwrite an existing run, checks the frozen cohort and manifest before launch, records the Moli and ChromeDriver binary hashes, and verifies completion. The comparator checks every task and attempt, binds each result to its run, engine and measured binary hash, and compares all recorded non-Moli conditions. Report pass counts from `results.jsonl`, keeping `infra` and `unsupported` separate from task failure. A Moli upgrade may legitimately change task outcomes, timings, and its binary hash and version.
 

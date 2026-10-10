@@ -13,6 +13,10 @@ import re
 import subprocess
 import sys
 
+from tools._repository import require_local_runner
+
+require_local_runner(Path(__file__).resolve().parents[1])
+
 from runner.run import compact_run_id
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,26 +96,18 @@ def main() -> None:
         fcntl.flock(lock, fcntl.LOCK_EX)
         if run_dir.exists() or receipt.exists():
             raise ValueError(f"run already exists: {run_dir}")
-        link = ROOT / "build_artifacts/moli/bin/moli"
-        link.parent.mkdir(parents=True, exist_ok=True)
-        temporary_link = link.with_name("moli.next")
-        temporary_link.unlink(missing_ok=True)
-        temporary_link.symlink_to(binary)
-        temporary_link.replace(link)
-        active_set = ROOT / "build_artifacts/active-set.json"
+        active_set = receipt.with_suffix(".engines.json")
         payload = {
             "name": args.run_id,
             "engines": {"moli": {
-                "binary": str(link), "version": version,
+                "binary": str(binary), "version": version,
                 "sha256": binary_sha, "sha256_12": binary_sha[:12],
             }},
             "harness_drivers": {"chromedriver": {
                 "version": driver_version, "sha256_12": driver_sha[:12],
             }},
         }
-        temporary_set = active_set.with_suffix(".json.next")
-        temporary_set.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-        temporary_set.replace(active_set)
+        active_set.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         conditions = {
             "schema": "lexbench_moli_cohort_conditions/1",
             "run_id": args.run_id,
@@ -128,13 +124,9 @@ def main() -> None:
         receipt.write_text(json.dumps(conditions, indent=2) + "\n", encoding="utf-8")
         env = dict(os.environ)
         env["PYTHONPATH"] = str(ROOT)
+        env["LEXBENCH_ENGINE_SET"] = str(active_set)
         env["AGENT_BROWSER_SOCKET_DIR"] = "/tmp/ab"
         Path(env["AGENT_BROWSER_SOCKET_DIR"]).mkdir(exist_ok=True)
-        ruby = Path("/opt/homebrew/opt/ruby/bin")
-        gems = Path.home() / ".browser-eval/toolchains/lexbench-gems"
-        if ruby.is_dir() and gems.is_dir():
-            env["PATH"] = f"{ruby}:{env['PATH']}"
-            env["GEM_HOME"] = str(gems)
         command = [
             sys.executable, "-m", "runner.run", "run",
             *(part for task_id in task_ids for part in ("--task", task_id)),
