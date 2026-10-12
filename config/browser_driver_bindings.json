@@ -1207,7 +1207,7 @@
             "mechanism": "webdriver_capabilities",
             "actual_path": "capabilities.browserName",
             "operator": "equals",
-            "expected_literal": "moli",
+            "expected_ref": "expect_browser_name",
             "condition": "always"
           },
           {
@@ -1694,12 +1694,10 @@
       "binding_id": "lightpanda__selenium",
       "browser_id": "lightpanda",
       "driver_id": "selenium",
-      "route_ref": "chromedriver_cdp",
+      "route_ref": "native_webdriver",
       "browser_pin_ref": "browser.lightpanda",
       "driver_pin_ref": "driver.selenium",
-      "bridge_pin_refs": [
-        "bridge.chromedriver"
-      ],
+      "bridge_pin_refs": [],
       "fallback_allowed": false
     },
     {

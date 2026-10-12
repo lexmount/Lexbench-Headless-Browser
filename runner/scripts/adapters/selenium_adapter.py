@@ -30,7 +30,13 @@ from typing import Any
 BENCH_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 SUPPORTED_ROUTE_IDS = frozenset({"native_webdriver", "chromedriver_cdp"})
 EXPECTED_REF_FIELDS = frozenset(
-    {"expect_product", "expect_ua", "browser_ws", "expect_product_live"}
+    {
+        "expect_product",
+        "expect_ua",
+        "browser_ws",
+        "expect_product_live",
+        "expect_browser_name",
+    }
 )
 ROUTE_CONTRACTS: dict[str, dict[str, Any]] = {
     "native_webdriver": {
@@ -622,7 +628,7 @@ def validate_runtime_binding(payload: dict[str, Any]) -> dict[str, Any]:
         )
         if (
             len(live_assertions) != 2
-            or "expected_literal" not in browser_name_assertion
+            or browser_name_assertion.get("expected_ref") != "expect_browser_name"
             or browser_name_assertion["condition"] != "always"
             or browser_version_assertion.get("expected_ref") != "expect_product_live"
             or browser_version_assertion["condition"] != "always"

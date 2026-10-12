@@ -168,9 +168,8 @@ def binding_payload(
                 assertion(
                     "webdriver_capabilities",
                     "capabilities.browserName",
-                    None,
+                    "expect_browser_name",
                     "always",
-                    expected_literal="moli",
                 ),
                 assertion(
                     "webdriver_capabilities",
@@ -241,6 +240,7 @@ def adapter_payload(
         "expect_product": "Moli/0.1.0",
         "expect_ua": "MoliUA/1.0",
         "expect_product_live": "MoliLive/0.1",
+        "expect_browser_name": "moli",
         "transport_policy": transport_policy,
         "task_url": "http://127.0.0.1:18080/l1/core",
         "steps": [],

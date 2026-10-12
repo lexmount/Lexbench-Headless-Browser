@@ -196,6 +196,13 @@ ENGINE_DEFS = {
             "all_resources": ("--resource",),
             "browser_automation": ("--enable-automation",),
         },
+        # Native WebDriver session identity: the capabilities.browserName the
+        # session must report, and the /json/version fields (first non-empty
+        # wins) its capabilities.browserVersion must equal.
+        "webdriver_identity": {
+            "browser_name": "moli",
+            "version_fields": ("Browser", "Product"),
+        },
     },
     "lightpanda": {
         "binary": REPO_ROOT / "build_artifacts/lightpanda/zig-out/bin/lightpanda",
@@ -205,6 +212,16 @@ ENGINE_DEFS = {
         "upstream_commit": "b04c99a9111564ebe06317f644680eda5e3ee83e",
         "cdp_port": 9223,
         "role": "native_candidate",
+        # Load iframes and workers, and serve classic WebDriver next to CDP on
+        # the same port, so Selenium connects directly without ChromeDriver.
+        "serve_args": (
+            "--load-resources", "iframe", "--load-resources", "worker",
+            "--protocol", "cdp", "--protocol", "webdriver",
+        ),
+        "webdriver_identity": {
+            "browser_name": "Lightpanda",
+            "version_fields": ("Lightpanda-Version",),
+        },
     },
     "chrome": {
         "binary": REPO_ROOT / "build_artifacts/chrome-for-testing/bin/chrome",
@@ -2541,8 +2558,6 @@ def serve_engine_launch_command(
         LOCAL_HOST,
         "--port",
         str(port),
-        "--load-resources", "iframe", "--load-resources", "worker",
-        "--protocol", "cdp", "--protocol", "webdriver",
         *engine_serve_args(engine, launch_profile),
     ]
 
@@ -4889,6 +4904,7 @@ def run_scenario_adapter_driver(
         "{fixture_base_url}": fixture_base_url,
         "{artifact_dir}": str(artifact_dir),
     }
+    expect_browser_name = None
     if spec["driver_key"] == "selenium":
         if runtime_binding is None:
             raise BenchError(
@@ -4901,10 +4917,19 @@ def run_scenario_adapter_driver(
         )
         route_id = (runtime_binding.get("route") or {}).get("route_id")
         if route_id == "native_webdriver":
-            expect_product_live = str(
-                browser.version_info.get("Browser")
-                or browser.version_info.get("Product")
-                or ""
+            identity = ENGINE_DEFS[engine].get("webdriver_identity")
+            if not identity:
+                raise BenchError(
+                    f"{engine}: native_webdriver route needs ENGINE_DEFS webdriver_identity"
+                )
+            expect_browser_name = identity["browser_name"]
+            expect_product_live = next(
+                (
+                    str(browser.version_info[field])
+                    for field in identity["version_fields"]
+                    if browser.version_info.get(field)
+                ),
+                "",
             )
         elif route_id == "chromedriver_cdp":
             # Preserve the discovery identity as a fail-closed expectation if
@@ -4947,6 +4972,8 @@ def run_scenario_adapter_driver(
     }
     if spec["driver_key"] == "selenium":
         payload["binding"] = runtime_binding
+        if expect_browser_name is not None:
+            payload["expect_browser_name"] = expect_browser_name
     script_path = str(BENCH_ROOT / spec["script"])
     if any("{script}" in arg for arg in spec["argv"]):
         argv = [arg.replace("{script}", script_path) for arg in spec["argv"]]

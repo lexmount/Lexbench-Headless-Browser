@@ -85,16 +85,16 @@ def test_selenium_golden_routes():
     chrome = catalog.require_binding("chrome", "selenium")
     lightpanda = catalog.require_binding("lightpanda", "selenium")
     obscura = catalog.require_binding("obscura", "selenium")
-    assert moli.route and moli.route.route_id == "native_webdriver"
-    assert moli.route.client_protocol == "webdriver_classic"
-    assert moli.route.client_endpoint_kind == "webdriver_classic_http"
-    assert moli.route.browser_endpoint_kind == "webdriver_classic_http"
-    assert moli.bridge_pins == ()
-    for binding in (chrome, lightpanda):
-        assert binding.route and binding.route.route_id == "chromedriver_cdp"
-        assert binding.route.client_endpoint_kind == "chromedriver_http"
-        assert binding.route.browser_endpoint_kind == "cdp_http_port"
-        assert [pin.key for pin in binding.bridge_pins] == ["chromedriver"]
+    for binding in (moli, lightpanda):
+        assert binding.route and binding.route.route_id == "native_webdriver"
+        assert binding.route.client_protocol == "webdriver_classic"
+        assert binding.route.client_endpoint_kind == "webdriver_classic_http"
+        assert binding.route.browser_endpoint_kind == "webdriver_classic_http"
+        assert binding.bridge_pins == ()
+    assert chrome.route and chrome.route.route_id == "chromedriver_cdp"
+    assert chrome.route.client_endpoint_kind == "chromedriver_http"
+    assert chrome.route.browser_endpoint_kind == "cdp_http_port"
+    assert [pin.key for pin in chrome.bridge_pins] == ["chromedriver"]
     assert obscura.route is None
     assert "no WebDriver server" in obscura.unavailable_reason
     assert obscura.bridge_pins == ()
@@ -140,7 +140,7 @@ def test_native_webdriver_identity_is_machine_readable():
         assertion.actual_path: assertion
         for assertion in route.identity.live_transport_assertions
     }
-    assert assertions["capabilities.browserName"].expected_literal == "moli"
+    assert assertions["capabilities.browserName"].expected_ref == "expect_browser_name"
     assert assertions["capabilities.browserName"].operator == "equals"
     assert assertions["capabilities.browserVersion"].expected_ref == "expect_product_live"
 

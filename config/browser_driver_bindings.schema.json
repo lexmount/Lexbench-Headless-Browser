@@ -267,7 +267,8 @@
             "expect_product",
             "expect_ua",
             "browser_ws",
-            "expect_product_live"
+            "expect_product_live",
+            "expect_browser_name"
           ]
         },
         "expected_literal": {

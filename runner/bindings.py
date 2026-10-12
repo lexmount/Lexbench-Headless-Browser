@@ -780,7 +780,7 @@ def _validate_golden_routes(catalog: Catalog) -> None:
     expected = {
         "moli": "native_webdriver",
         "chrome": "chromedriver_cdp",
-        "lightpanda": "chromedriver_cdp",
+        "lightpanda": "native_webdriver",
     }
     for browser_id, route_id in expected.items():
         binding = catalog.require_binding(browser_id, "selenium")
@@ -789,14 +789,16 @@ def _validate_golden_routes(catalog: Catalog) -> None:
             raise CatalogError(
                 f"golden route ({browser_id}, selenium) must resolve to `{route_id}`, got `{actual}`"
             )
-    if catalog.require_binding("moli", "selenium").bridge_pins:
-        raise CatalogError("golden route (moli, selenium) must not reference ChromeDriver")
-    for browser_id in ("chrome", "lightpanda"):
-        keys = {pin.key for pin in catalog.require_binding(browser_id, "selenium").bridge_pins}
-        if keys != {"chromedriver"}:
+    for browser_id in ("moli", "lightpanda"):
+        if catalog.require_binding(browser_id, "selenium").bridge_pins:
             raise CatalogError(
-                f"golden route ({browser_id}, selenium) must reference exactly the chromedriver pin"
+                f"golden route ({browser_id}, selenium) must not reference ChromeDriver"
             )
+    keys = {pin.key for pin in catalog.require_binding("chrome", "selenium").bridge_pins}
+    if keys != {"chromedriver"}:
+        raise CatalogError(
+            "golden route (chrome, selenium) must reference exactly the chromedriver pin"
+        )
     obscura = catalog.require_binding("obscura", "selenium")
     if obscura.route is not None or not obscura.unavailable_reason:
         raise CatalogError(
