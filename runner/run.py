@@ -206,10 +206,10 @@ ENGINE_DEFS = {
     },
     "lightpanda": {
         "binary": REPO_ROOT / "build_artifacts/lightpanda/zig-out/bin/lightpanda",
-        "version": "1.0.0-dev.321+b04c99a9",
-        "sha256": "70f5ab69b0ce9740ae2bf9cf682ad44a2a17362621f55df8f750b79af095c574",
-        "sha256_12": "70f5ab69b0ce",
-        "upstream_commit": "b04c99a9111564ebe06317f644680eda5e3ee83e",
+        "version": "1.1.0-nightly.10552+dd2cd5d7f",
+        "sha256": "855170c2d15a2b17692fa6e2e7ad4e57022d15e64f1383b6ad748670bbaf9273",
+        "sha256_12": "855170c2d15a",
+        "upstream_commit": "dd2cd5d7f7bdd5f1a24d5704d47da0183bf9a557",
         "cdp_port": 9223,
         "role": "native_candidate",
         # Load iframes and workers, and serve classic WebDriver next to CDP on
