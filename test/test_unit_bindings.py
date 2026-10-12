@@ -100,10 +100,11 @@ def test_selenium_golden_routes():
     assert obscura.bridge_pins == ()
 
 
-def test_obscura_pydoll_uses_audited_bootstrap_route():
-    binding = bindings.load_catalog().require_binding("obscura", "pydoll")
+@pytest.mark.parametrize("browser_id", ["obscura", "lightpanda"])
+def test_empty_registry_pydoll_uses_audited_bootstrap_route(browser_id):
+    binding = bindings.load_catalog().require_binding(browser_id, "pydoll")
     assert binding.route is not None
-    assert binding.route.route_id == "pydoll_obscura_cdp"
+    assert binding.route.route_id == "pydoll_empty_registry_cdp"
     assert (
         binding.route.discovery.client.probe
         == "Pydoll 2.23.1 connection handler then Target.createTarget and "

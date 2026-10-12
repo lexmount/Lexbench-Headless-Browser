@@ -512,7 +512,7 @@
       }
     },
     {
-      "route_id": "pydoll_obscura_cdp",
+      "route_id": "pydoll_empty_registry_cdp",
       "client_protocol": "pydoll_api_over_cdp",
       "client_endpoint_kind": "cdp_browser_websocket",
       "browser_endpoint_kind": "cdp_browser_websocket",
@@ -1620,7 +1620,7 @@
       "binding_id": "lightpanda__pydoll",
       "browser_id": "lightpanda",
       "driver_id": "pydoll",
-      "route_ref": "pydoll_cdp",
+      "route_ref": "pydoll_empty_registry_cdp",
       "browser_pin_ref": "browser.lightpanda",
       "driver_pin_ref": "driver.pydoll",
       "bridge_pin_refs": [],
@@ -1754,7 +1754,7 @@
       "binding_id": "obscura__pydoll",
       "browser_id": "obscura",
       "driver_id": "pydoll",
-      "route_ref": "pydoll_obscura_cdp",
+      "route_ref": "pydoll_empty_registry_cdp",
       "browser_pin_ref": "browser.obscura",
       "driver_pin_ref": "driver.pydoll",
       "bridge_pin_refs": [],

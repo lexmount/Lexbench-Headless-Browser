@@ -804,14 +804,12 @@ def _validate_golden_routes(catalog: Catalog) -> None:
         raise CatalogError(
             "golden route (obscura, selenium) must be a fail-closed unavailable binding"
         )
-    obscura_pydoll = catalog.require_binding("obscura", "pydoll")
-    if (
-        obscura_pydoll.route is None
-        or obscura_pydoll.route.route_id != "pydoll_obscura_cdp"
-    ):
-        raise CatalogError(
-            "golden route (obscura, pydoll) must use the audited flattened-session bootstrap"
-        )
+    for browser_id in ("obscura", "lightpanda"):
+        pydoll = catalog.require_binding(browser_id, "pydoll")
+        if pydoll.route is None or pydoll.route.route_id != "pydoll_empty_registry_cdp":
+            raise CatalogError(
+                f"golden route ({browser_id}, pydoll) must use the audited flattened-session bootstrap"
+            )
 
 
 def load_catalog(

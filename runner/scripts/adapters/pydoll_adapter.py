@@ -30,38 +30,41 @@ except Exception:  # pragma: no cover - metadata lookup is best effort
     CLIENT_VERSION = "unknown"
 
 UNSUPPORTED_MARKERS = ("not found", "wasn't found", "unsupported", "unknown method", "not implemented", "not supported")
-OBSCURA_COMPAT_CLIENT_VERSION = "2.23.1"
+BOOTSTRAP_COMPAT_CLIENT_VERSION = "2.23.1"
+# Engines that start with an empty target registry (no initial page), so
+# Pydoll's stock connect path cannot be used.
+EMPTY_TARGET_REGISTRY_ENGINES = frozenset({"obscura", "lightpanda"})
 
 
-def require_obscura_compat_client() -> None:
-    if CLIENT_VERSION != OBSCURA_COMPAT_CLIENT_VERSION:
+def require_bootstrap_compat_client() -> None:
+    if CLIENT_VERSION != BOOTSTRAP_COMPAT_CLIENT_VERSION:
         raise RuntimeError(
-            "Obscura Pydoll bootstrap is pinned to pydoll-python "
-            f"{OBSCURA_COMPAT_CLIENT_VERSION}; installed {CLIENT_VERSION}"
+            "Pydoll empty-registry bootstrap is pinned to pydoll-python "
+            f"{BOOTSTRAP_COMPAT_CLIENT_VERSION}; installed {CLIENT_VERSION}"
         )
 
 
-def obscura_private_api_error(detail: str) -> RuntimeError:
+def bootstrap_private_api_error(detail: str) -> RuntimeError:
     return RuntimeError(
-        "Obscura Pydoll bootstrap requires the audited private API surface "
-        f"from pydoll-python {OBSCURA_COMPAT_CLIENT_VERSION}; {detail}"
+        "Pydoll empty-registry bootstrap requires the audited private API surface "
+        f"from pydoll-python {BOOTSTRAP_COMPAT_CLIENT_VERSION}; {detail}"
     )
 
 
-async def setup_obscura_connection(
+async def setup_empty_registry_connection(
     browser: Any,
     browser_ws: str,
     timeout_s: float,
 ) -> None:
     """Bind Pydoll's handler without assuming an initial target exists."""
-    require_obscura_compat_client()
+    require_bootstrap_compat_client()
     setup = getattr(browser, "_setup_ws_address", None)
     if not callable(setup):
-        raise obscura_private_api_error("Chrome._setup_ws_address is unavailable")
+        raise bootstrap_private_api_error("Chrome._setup_ws_address is unavailable")
     try:
         setup_awaitable = setup(browser_ws)
     except TypeError as exc:
-        raise obscura_private_api_error(
+        raise bootstrap_private_api_error(
             "Chrome._setup_ws_address has an unexpected call signature"
         ) from exc
     await asyncio.wait_for(setup_awaitable, timeout=timeout_s)
@@ -147,16 +150,16 @@ class Adapter:
         self.cdp_path = self.artifact_dir / "cdp.jsonl"
 
     async def new_tab(self, url: str = "", browser_context_id: Any = None):
-        """Create a tab through Pydoll, with Obscura's empty-target bootstrap.
+        """Create a tab through Pydoll, with the empty-target bootstrap.
 
-        Obscura gives each browser websocket an empty target registry, while
+        Obscura and Lightpanda start with an empty target registry, while
         Pydoll 2.23.1's stock connect path assumes an initial tab.  This
         compatibility path changes only target/session bootstrap: all task
         operations continue through Pydoll's Tab/WebElement APIs.
         """
-        if self.engine != "obscura":
+        if self.engine not in EMPTY_TARGET_REGISTRY_ENGINES:
             return await self.browser.new_tab(url, browser_context_id)
-        require_obscura_compat_client()
+        require_bootstrap_compat_client()
 
         from pydoll.browser.tab import Tab
         from pydoll.commands import TargetCommands
@@ -172,7 +175,7 @@ class Adapter:
         target_id = ((created or {}).get("result") or {}).get("targetId")
         if not target_id:
             raise RuntimeError(
-                "Obscura Pydoll bootstrap: Target.createTarget returned no targetId"
+                "Pydoll empty-registry bootstrap: Target.createTarget returned no targetId"
             )
 
         try:
@@ -185,7 +188,7 @@ class Adapter:
             session_id = ((attached or {}).get("result") or {}).get("sessionId")
             if not session_id:
                 raise RuntimeError(
-                    "Obscura Pydoll bootstrap: Target.attachToTarget returned no sessionId"
+                    "Pydoll empty-registry bootstrap: Target.attachToTarget returned no sessionId"
                 )
 
             try:
@@ -203,12 +206,12 @@ class Adapter:
                 tab._routing_session_id = session_id
                 tabs_opened[target_id] = tab
             except (AttributeError, TypeError) as exc:
-                raise obscura_private_api_error(
+                raise bootstrap_private_api_error(
                     "Tab/session routing internals do not match the pinned client"
                 ) from exc
 
             self.binding["compatibility_bootstrap"] = (
-                "obscura_pydoll_flattened_session_v1"
+                "pydoll_flattened_session_v1"
             )
             self.binding["compatibility_target_id"] = target_id
             if url:
@@ -717,18 +720,18 @@ async def amain() -> None:
     connect_error = None
     browser = Chrome()
     try:
-        if str(payload.get("engine") or "") == "obscura":
+        if str(payload.get("engine") or "") in EMPTY_TARGET_REGISTRY_ENGINES:
             # The stock connect path immediately indexes the initial tab.
-            # Obscura's per-websocket target registry starts empty, so bind
+            # These engines' target registry starts empty, so bind
             # Pydoll's own connection handler first and let Adapter.new_tab()
             # establish a flattened Pydoll Tab session.
-            await setup_obscura_connection(
+            await setup_empty_registry_connection(
                 browser,
                 browser_ws,
                 connect_timeout_ms / 1000,
             )
             binding["compatibility_bootstrap"] = (
-                "obscura_pydoll_flattened_session_v1"
+                "pydoll_flattened_session_v1"
             )
         else:
             await asyncio.wait_for(browser.connect(browser_ws), timeout=connect_timeout_ms / 1000)

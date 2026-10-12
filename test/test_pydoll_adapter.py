@@ -8,7 +8,7 @@ from runner.scripts.adapters import pydoll_adapter
 from runner.scripts.adapters.pydoll_adapter import (
     Adapter,
     protocol_error_message,
-    setup_obscura_connection,
+    setup_empty_registry_connection,
 )
 
 
@@ -130,7 +130,7 @@ class _Tab:
         self._routing_session_id = None
 
 
-class _ObscuraBrowser:
+class _EmptyRegistryBrowser:
     def __init__(self, *, attach_error=False):
         self._connection_handler = object()
         self._tabs_opened = {}
@@ -151,7 +151,7 @@ class _ObscuraBrowser:
         return {"result": {"sessionId": "session-1"}}
 
     async def new_tab(self, *_args, **_kwargs):
-        raise AssertionError("stock Pydoll new_tab must not be used for Obscura")
+        raise AssertionError("stock Pydoll new_tab must not be used for empty-registry engines")
 
 
 def _install_fake_pydoll_target_modules(monkeypatch):
@@ -167,7 +167,7 @@ def _install_fake_pydoll_target_modules(monkeypatch):
         monkeypatch.setitem(sys.modules, name, module)
 
 
-def test_obscura_bootstrap_uses_pydoll_flattened_session(monkeypatch, tmp_path):
+def test_empty_registry_bootstrap_uses_pydoll_flattened_session(monkeypatch, tmp_path):
     _install_fake_pydoll_target_modules(monkeypatch)
     monkeypatch.setattr(pydoll_adapter, "CLIENT_VERSION", "2.23.1")
     adapter = Adapter(
@@ -178,7 +178,7 @@ def test_obscura_bootstrap_uses_pydoll_flattened_session(monkeypatch, tmp_path):
             "task_timeout_ms": 30000,
         }
     )
-    browser = _ObscuraBrowser()
+    browser = _EmptyRegistryBrowser()
     adapter.browser = browser
 
     tab = asyncio.run(adapter.new_tab())
@@ -193,11 +193,11 @@ def test_obscura_bootstrap_uses_pydoll_flattened_session(monkeypatch, tmp_path):
     assert browser._tabs_opened == {"target-1": tab}
     assert (
         adapter.binding["compatibility_bootstrap"]
-        == "obscura_pydoll_flattened_session_v1"
+        == "pydoll_flattened_session_v1"
     )
 
 
-def test_obscura_bootstrap_fails_closed_on_unpinned_pydoll(
+def test_empty_registry_bootstrap_fails_closed_on_unpinned_pydoll(
     monkeypatch, tmp_path
 ):
     _install_fake_pydoll_target_modules(monkeypatch)
@@ -210,7 +210,7 @@ def test_obscura_bootstrap_fails_closed_on_unpinned_pydoll(
             "task_timeout_ms": 30000,
         }
     )
-    browser = _ObscuraBrowser()
+    browser = _EmptyRegistryBrowser()
     adapter.browser = browser
 
     try:
@@ -222,7 +222,7 @@ def test_obscura_bootstrap_fails_closed_on_unpinned_pydoll(
     assert browser.commands == []
 
 
-def test_obscura_bootstrap_closes_target_when_attach_fails(
+def test_empty_registry_bootstrap_closes_target_when_attach_fails(
     monkeypatch, tmp_path
 ):
     _install_fake_pydoll_target_modules(monkeypatch)
@@ -235,7 +235,7 @@ def test_obscura_bootstrap_closes_target_when_attach_fails(
             "task_timeout_ms": 30000,
         }
     )
-    browser = _ObscuraBrowser(attach_error=True)
+    browser = _EmptyRegistryBrowser(attach_error=True)
     adapter.browser = browser
 
     try:
@@ -253,7 +253,7 @@ def test_obscura_bootstrap_closes_target_when_attach_fails(
     assert browser._tabs_opened == {}
 
 
-def test_obscura_bootstrap_reports_private_tab_api_drift_and_closes_target(
+def test_empty_registry_bootstrap_reports_private_tab_api_drift_and_closes_target(
     monkeypatch, tmp_path
 ):
     _install_fake_pydoll_target_modules(monkeypatch)
@@ -272,7 +272,7 @@ def test_obscura_bootstrap_reports_private_tab_api_drift_and_closes_target(
             "task_timeout_ms": 30000,
         }
     )
-    browser = _ObscuraBrowser()
+    browser = _EmptyRegistryBrowser()
     adapter.browser = browser
 
     try:
@@ -287,12 +287,12 @@ def test_obscura_bootstrap_reports_private_tab_api_drift_and_closes_target(
     assert browser._tabs_opened == {}
 
 
-def test_obscura_connection_reports_missing_private_setup_api(monkeypatch):
+def test_empty_registry_connection_reports_missing_private_setup_api(monkeypatch):
     monkeypatch.setattr(pydoll_adapter, "CLIENT_VERSION", "2.23.1")
 
     try:
         asyncio.run(
-            setup_obscura_connection(
+            setup_empty_registry_connection(
                 object(),
                 "ws://127.0.0.1:9225/devtools/browser",
                 1.0,
