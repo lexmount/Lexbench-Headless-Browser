@@ -48,7 +48,13 @@ type payloadT struct {
 	ActionTimeoutMS   int              `json:"action_timeout_ms"`
 	TaskTimeoutMS     int              `json:"task_timeout_ms"`
 	ArtifactDir       string           `json:"artifact_dir"`
+	Engine            string           `json:"engine"`
 }
+
+// rootTabReuseEngines allow one target per browser context: their first
+// new_page reuses the tab the binding gate created instead of opening a
+// second one.
+var rootTabReuseEngines = map[string]bool{"lightpanda": true}
 
 type checkRow struct {
 	Name     string `json:"name"`
@@ -128,10 +134,13 @@ type adapter struct {
 	rootCtx    context.Context
 	tabCtx     context.Context
 	tabCancels []context.CancelFunc
-	saved      map[string]string
-	steps      []stepResult
-	opCalls    int
-	opErrors   int
+	// rootTabClaimed is set once a new_page has taken over the tab that the
+	// binding gate's first Run created on rootCtx.
+	rootTabClaimed bool
+	saved          map[string]string
+	steps          []stepResult
+	opCalls        int
+	opErrors       int
 	// budgetDeadline is the runner's task_ms kill time minus a reserve; ops
 	// clamp their waits to it so the adapter always emits a result instead of
 	// being killed mid-run (which would misclassify the fail as infra).
@@ -362,9 +371,22 @@ func (a *adapter) runOp(step map[string]any) (any, error) {
 		}
 		return userAgent, nil
 	case "new_page":
-		// A fresh chromedp context spawned from the root = a new tab in the
-		// same browser. Retain prior contexts so multi-tab scenarios measure
-		// two simultaneously live targets instead of serial page replacement.
+		// The binding gate's first Run already created a tab on rootCtx, and
+		// nothing has used it yet: on rootTabReuseEngines the first new_page
+		// takes it over instead of opening a second tab, so single-tab
+		// scenarios can run.
+		if !a.rootTabClaimed && rootTabReuseEngines[a.payload.Engine] {
+			a.rootTabClaimed = true
+			a.tabCtx = a.rootCtx
+			if err := a.run(timeout, chromedp.Navigate("about:blank")); err != nil {
+				return nil, err
+			}
+			return "page_created", nil
+		}
+		// Later new_page calls spawn a fresh chromedp context from the root =
+		// a new tab in the same browser. Retain prior contexts so multi-tab
+		// scenarios measure two simultaneously live targets instead of serial
+		// page replacement.
 		var tabCancel context.CancelFunc
 		a.tabCtx, tabCancel = chromedp.NewContext(a.rootCtx)
 		a.tabCancels = append(a.tabCancels, tabCancel)
