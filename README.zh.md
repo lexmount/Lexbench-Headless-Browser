@@ -39,7 +39,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/four-engine-overview-dark.png">
-    <img alt="四个无头浏览器在 1,928 道任务上的成功率：Chrome 99.9%、Moli 80.7%、Lightpanda 43.8%、Obscura 39.5%" src="docs/assets/four-engine-overview-light.png" width="100%">
+    <img alt="四个无头浏览器在 1,928 道任务上的成功率：Chrome 99.9%、Lightpanda 80.8%、Moli 80.7%、Obscura 39.5%" src="docs/assets/four-engine-overview-light.png" width="100%">
   </picture>
 </div>
 
@@ -48,8 +48,8 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 | 引擎 | 版本 | 通过 | 任务成功率 |
 |:---|:---|---:|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 151.0.7922.47 | 1,926 / 1,928 | **99.90%** |
+| [Lightpanda](https://github.com/lightpanda-io/browser) | 1.1.0-nightly.10552+dd2cd5d7f | 1,558 / 1,928 | **80.81%** |
 | [Moli](https://github.com/lexmount/moli) | 0.1.1 | 1,556 / 1,928 | **80.71%** |
-| [Lightpanda](https://github.com/lightpanda-io/browser) | 1.0.0-dev.321+b04c99a9 | 845 / 1,928 | **43.83%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.1.11 | 762 / 1,928 | **39.52%** |
 
 </div>
@@ -60,7 +60,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/five-engine-caliber-b-dark.png">
-    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率：Chrome 99.8%、Moli 81.9%、Kitesurf 62.1%、Lightpanda 53.3%、Obscura 44.9%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
+    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率：Chrome 99.8%、Moli 81.9%、Lightpanda 75.8%、Kitesurf 62.1%、Obscura 44.9%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
   </picture>
 </div>
 
@@ -70,8 +70,8 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,306 / 1,308 · **99.85%** |
 | [Moli](https://github.com/lexmount/moli) | 1,071 / 1,308 · **81.88%** |
+| [Lightpanda](https://github.com/lightpanda-io/browser) | 992 / 1,308 · **75.84%** |
 | [Kitesurf](https://blog.cloudflare.com/kitesurf/)（远程） | 812 / 1,308 · **62.08%** |
-| [Lightpanda](https://github.com/lightpanda-io/browser) | 697 / 1,308 · **53.29%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 587 / 1,308 · **44.88%** |
 
 </div>
@@ -94,7 +94,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/efficiency-map-dark.png">
-    <img alt="任务成功率与单题内存峰值中位数的关系：Chrome 99.9%、697 MiB，Moli 80.7%、92 MiB，Lightpanda 43.8%、34 MiB，Obscura 39.5%、39 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
+    <img alt="任务成功率与单题内存峰值中位数的关系：Chrome 99.9%、697 MiB，Moli 80.7%、92 MiB，Lightpanda 80.8%、34 MiB，Obscura 39.5%、39 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
   </picture>
 </div>
 
