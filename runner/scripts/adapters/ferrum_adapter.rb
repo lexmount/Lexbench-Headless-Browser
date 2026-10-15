@@ -20,6 +20,14 @@ require "net/http"
 require "timeout"
 require "ferrum"
 
+# Engines whose pages are created in one browser context the adapter makes
+# first. Lightpanda reports a placeholder STARTUP target on auto-attach;
+# Ferrum takes its BID-STARTUP context as the default one, and released
+# Lightpanda builds reject createTarget in it with UnknownBrowserContextId.
+# Lightpanda also allows a single browser context, so it is created once and
+# reused, before anything makes the engine create its implicit context.
+EXPLICIT_CONTEXT_ENGINES = ["lightpanda"].freeze
+
 UNSUPPORTED_MARKERS = ["not found", "wasn't found", "unsupported", "unknown method", "not implemented", "not supported"].freeze
 
 def emit(obj)
@@ -211,7 +219,14 @@ class Adapter
     when "user_agent"
       call_op(timeout) { @browser.command("Browser.getVersion")["userAgent"] }
     when "new_page"
-      @page = call_op(timeout) { @browser.create_page }
+      @page = call_op(timeout) do
+        if EXPLICIT_CONTEXT_ENGINES.include?(@payload["engine"])
+          @context ||= @browser.contexts.create
+          @context.create_page
+        else
+          @browser.create_page
+        end
+      end
       "page_created"
     when "goto"
       target = step["url"] ? substitute(step["url"]) : @task_url
