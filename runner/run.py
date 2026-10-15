@@ -184,10 +184,10 @@ SOCKET_TRANSPORT_ERRNOS = {
 ENGINE_DEFS = {
     "moli": {
         "binary": REPO_ROOT / "build_artifacts/moli/bin/moli",
-        "version": "moli 0.1.1",
-        "sha256": "74e08f8d3eb6f0c937baa48a9eec9c0771be71fbd830bb26fbc3864816833a26",
-        "sha256_12": "74e08f8d3eb6",
-        "upstream_commit": "63eb3d6bc284950e2eb7f8a4dadd813208a22818",
+        "version": "moli 1.1.17",
+        "sha256": "04f27d757d793515a7c8ce38e564c668489a1f4351bb3c49586629a24044c24f",
+        "sha256_12": "04f27d757d79",
+        "upstream_commit": "cac20d15b83892d71fa8efc27d1e802002a4d68e",
         "cdp_port": 9222,
         "role": "native_candidate",
         # Real geometry and coordinate input are enabled by default.
@@ -207,10 +207,10 @@ ENGINE_DEFS = {
     },
     "lightpanda": {
         "binary": REPO_ROOT / "build_artifacts/lightpanda/zig-out/bin/lightpanda",
-        "version": "1.1.0-nightly.10552+dd2cd5d7f",
-        "sha256": "855170c2d15a2b17692fa6e2e7ad4e57022d15e64f1383b6ad748670bbaf9273",
-        "sha256_12": "855170c2d15a",
-        "upstream_commit": "dd2cd5d7f7bdd5f1a24d5704d47da0183bf9a557",
+        "version": "1.0.1",
+        "sha256": "551747e35c51ba107b5d5277eca4b48e077b2a3b40f09a047bf6670448bc35fd",
+        "sha256_12": "551747e35c51",
+        "upstream_commit": "99edca45844b5968c3ec8e50ad8e1acec8f3b759",
         "cdp_port": 9223,
         "role": "native_candidate",
         # Load iframes and workers, and serve classic WebDriver next to CDP on
@@ -226,9 +226,9 @@ ENGINE_DEFS = {
     },
     "chrome": {
         "binary": REPO_ROOT / "build_artifacts/chrome-for-testing/bin/chrome",
-        "version": "151.0.7922.47",
-        "sha256": "3b0be9872ea937893cb1e1523fde071d38c1ed4ef866b3f7976240094a868c93",
-        "sha256_12": "3b0be9872ea9",
+        "version": "155.0.8059.79",
+        "sha256": "58957d0e74a9073626131018aabf17d97318227cca9b5dbdf5dee16345f2d211",
+        "sha256_12": "58957d0e74a9",
         "cdp_port": 9224,
         "role": "gold_baseline",
         "mode": "headless=new",
@@ -238,14 +238,14 @@ ENGINE_DEFS = {
     },
     "obscura": {
         "binary": REPO_ROOT / "build_artifacts/obscura/bin/obscura",
-        "version": "obscura 0.1.11",
-        "sha256": "42c7eac0f635959f09a7d32adfdd3a9bb5c852c65532630308fb93aee483f96f",
-        "sha256_12": "42c7eac0f635",
+        "version": "obscura 0.2.4",
+        "sha256": "bce11fcf3bcb83251c76e60bb61600697691690bfb8945f9ad9e20b634560ed0",
+        "sha256_12": "bce11fcf3bcb",
         "cdp_port": 9225,
         "role": "native_candidate",
-        "upstream_tag": "v0.1.11",
-        "upstream_commit": "e78b5e60261599a850c053eaecc2de92625496d7",
-        "release_archive_sha256": "c9343428c9692c49e837487f1d0a8f308b280dd854981c5a06f2aece0048230e",
+        "upstream_tag": "v0.2.4",
+        "upstream_commit": "1fccab2c1ecd0f7eadc16d7a520ba227f9e7f782",
+        "release_archive_sha256": "757e7b597ba5cdd53af9fc701e0a9b80f0a8d788f545d4f82ec9ad32db77f000",
         "version_argv": ["{binary}", "--version"],
         # The fixture is runner-owned and loopback-only. Obscura blocks this
         # address class unless the narrow permission is explicit.

@@ -80,9 +80,9 @@
       "notes": "Selenium drives through ChromeDriver's WebDriver facade. ChromeDriver attaches to the running engine through `debuggerAddress`; inability to attach is recorded as a structured compatibility result."
     },
     "chromedriver": {
-      "version": "150.0.7871.49",
+      "version": "155.0.8059.79",
       "binary_path": "build_artifacts/chromedriver/bin/chromedriver",
-      "sha256_12": "3969c40b8e13",
+      "sha256_12": "a6bc70678e48",
       "used_by": "webdriver_selenium driver (spawned per attempt on a free port by selenium_adapter.py)",
       "notes": "Stored under build_artifacts/ and verified by version plus sha256 prefix. An activated engine set may override this fallback pin with its matching ChromeDriver."
     },

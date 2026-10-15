@@ -123,7 +123,7 @@ def test_tiny_l1_obscura_run_records_launch_provenance(tmp_path):
     provenance = row["engine_provenance"]
     assert (
         provenance["binary_sha256"]
-        == "42c7eac0f635959f09a7d32adfdd3a9bb5c852c65532630308fb93aee483f96f"
+        == "bce11fcf3bcb83251c76e60bb61600697691690bfb8945f9ad9e20b634560ed0"
     )
     assert provenance["launch_command"][-1] == "--allow-private-network"
     assert provenance["http_endpoint"].startswith("http://127.0.0.1:")
