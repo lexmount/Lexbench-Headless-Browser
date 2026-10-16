@@ -414,7 +414,7 @@ def test_find_free_port_returns_bindable_port():
         sock.bind(("127.0.0.1", port))  # still free
 
 
-def test_moli_default_serve_command_keeps_lightweight_mode():
+def test_moli_default_serve_command_enables_layout():
     command = runner_run.serve_engine_launch_command(
         "moli", pathlib.Path("/tmp/moli"), 9333
     )
@@ -425,6 +425,7 @@ def test_moli_default_serve_command_keeps_lightweight_mode():
         "127.0.0.1",
         "--port",
         "9333",
+        "--layout",
     ]
 
 
@@ -442,6 +443,7 @@ def test_moli_all_resources_profile_enables_full_resource_fetch():
         "127.0.0.1",
         "--port",
         "9333",
+        "--layout",
         "--resource",
     ]
 
@@ -534,11 +536,11 @@ def test_browser_manager_replaces_moli_when_task_profile_changes(
     assert killed == [default.process]
     assert manager.processes == {"moli": all_resources}
 
-    monkeypatch.setitem(runner_run.ENGINE_DEFS["moli"], "serve_args", ("--layout",))
-    layout = manager.launch("moli", "all_resources")
-    assert layout is not all_resources
-    assert layout.serve_args == ("--layout", "--resource")
-    assert manager.launch("moli", "all_resources") is layout
+    monkeypatch.setitem(runner_run.ENGINE_DEFS["moli"], "serve_args", ())
+    lightweight = manager.launch("moli", "all_resources")
+    assert lightweight is not all_resources
+    assert lightweight.serve_args == ("--resource",)
+    assert manager.launch("moli", "all_resources") is lightweight
     assert killed == [default.process, all_resources.process]
 
 

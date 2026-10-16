@@ -190,8 +190,9 @@ ENGINE_DEFS = {
         "upstream_commit": "63eb3d6bc284950e2eb7f8a4dadd813208a22818",
         "cdp_port": 9222,
         "role": "native_candidate",
-        # The crawler-oriented default deliberately avoids real layout.
-        # Automation cohorts opt into on-demand layout explicitly.
+        # Real geometry and coordinate input are enabled by default.
+        # --moli-layout off selects the lightweight mock layout for a run.
+        "serve_args": ("--layout",),
         "launch_profile_args": {
             "all_resources": ("--resource",),
             "browser_automation": ("--enable-automation",),
@@ -2243,7 +2244,7 @@ def run_manifest_payload(
             item["mode"] = "headless=new"
         if engine == "moli":
             item["resource_fetch_policy"] = "task_scoped_launch_profile"
-            item["layout_mode"] = getattr(args, "moli_layout", "off")
+            item["layout_mode"] = getattr(args, "moli_layout", layout.DEFAULT_MODE)
         if engine == "obscura":
             item.update(
                 {
@@ -2270,7 +2271,7 @@ def run_manifest_payload(
 
     layout_receipt = None
     if "moli" in selected_engines:
-        layout_receipt = layout.policy(getattr(args, "moli_layout", "off"))
+        layout_receipt = layout.policy(getattr(args, "moli_layout", layout.DEFAULT_MODE))
 
     return {
         "run_id": run_id,
@@ -8032,7 +8033,7 @@ def command_run(args: argparse.Namespace) -> int:
         payload = {
             "manifest": rel_to_repo(manifest_path),
             "seed": args.seed,
-            "moli_layout_policy": layout.policy(getattr(args, "moli_layout", "off")),
+            "moli_layout_policy": layout.policy(getattr(args, "moli_layout", layout.DEFAULT_MODE)),
             "selected_layers": sorted({task.layer for task in tasks}),
             "tasks": [
                 task.to_run_manifest(semantic_index.get(task.task_id))
@@ -8529,8 +8530,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
-        "--moli-layout", choices=("off", "on"), default="off",
-        help="Moli layout: off (default), on (always enabled)",
+        "--moli-layout", choices=("off", "on"), default=layout.DEFAULT_MODE,
+        help="Moli layout: on (default, always enabled), off (disabled for every attempt)",
     )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(

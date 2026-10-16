@@ -15,7 +15,7 @@ commands, and truth tables follow `runner/run.py`, which is the source of truth.
 | grader                    | Inline checks (value_equals/value_type/value_truthy/value_contains/eval_no_exception/eval_has_exception/no_error; empty checks fail); server-side `/__grade__/expected_answer` (equals/contains/contains_all) | L1 and L2 grading paths |
 | `default_k_runs`          | Both the manifest and the runner fallback are 1                                                                    | Development, smoke, and non-release results uniformly use k=1; only official release evidence uses an explicit `--k 3` |
 | Chrome environment        | Launch carries hermetic flags (host-resolver blackhole, background networking and HTTP cache disabled) plus `DBUS_*=/dev/null`; browser logs go to a spool file | Background traffic is controlled and log backpressure cannot freeze the browser process |
-| Moli environment          | The default keeps Moli's lightweight mock layout; `run --moli-layout on` opts an automation cohort into real geometry and coordinate input. Only tasks with `launch_profile=all_resources` append `--resource` | Layout and resource fetching are separate controls. A profile switch replaces the current process — two concurrent processes must never pollute memory results; flags must enter provenance |
+| Moli environment          | Layout is enabled by default for real geometry and coordinate input; `run --moli-layout off` selects lightweight mock layout for the complete run. Only tasks with `launch_profile=all_resources` append `--resource` | Layout and resource fetching are separate controls. A profile switch replaces the current process — two concurrent processes must never pollute memory results; flags must enter provenance |
 
 > **Testing stance**: the framework truth tables (§5/§6/§7) are locked down by `test/`; correctness is anchored to Chrome gold rather than historical run snapshots.
 
@@ -43,7 +43,7 @@ Directly `from runner import run` and assert on pure functions; no browser neede
 | `should_include_score`          | See the §5 table                                                                                          |
 | `seed_for_attempt`              | Same `(base_seed, task_id, attempt)` → stable 12 digits; different attempt → different; `base_seed=None` → random but recorded for that round          |
 | `is_unsupported_error`          | "method not found"/"not found"/"unsupported"/"unknown method" → True; anything else → False                 |
-| `serve_engine_launch_command`   | Moli gets `--layout` only when the run opts in; only `all_resources` appends `--resource`; Obscura keeps `--allow-private-network`; flags must not leak into other engines |
+| `serve_engine_launch_command`   | Moli gets `--layout` by default and omits it for an explicit `--moli-layout off`; only `all_resources` appends `--resource`; Obscura keeps `--allow-private-network`; flags must not leak into other engines |
 | `BrowserManager.launch`         | Identical effective args reuse the process; when the task profile changes, the old process is killed before launching, and `processes` holds at most one instance per engine at all times |
 | `grade_inline`                  | `value_equals_3` / `result_type_number` hit; unknown check → fail                                      |
 | `FixtureServer.expected_count`  | Pure and deterministic: `10 + int(sha256(seed)[:2],16)%90` ∈ [10,99]                                            |
@@ -135,6 +135,7 @@ Expensive; manual / nightly. Binaries are pinned by this repository's `build_art
 | doctor          | `python -m runner.run doctor`                                  | All four engines report `ready:<product>`, Obscura version/SHA exact, node present, final line `OK` |
 | L1 chrome       | `run --task runtime_evaluate_basic_001 --engines chrome --k 1` | chrome attempt `pass` (`1+2==3`)                               |
 | Moli Selenium   | `run --task sc_cs_url_surface__se --engines moli --k 1 --chrome-baseline off --score-mode independent` | attempt `pass`, and the binding transport is `native_webdriver` |
+| Moli default layout | `run --task sc_obs_box_model_geometry__pw --task v3_pp_act_click_counter --engines moli --k 1 --chrome-baseline off --score-mode independent` | Both tasks pass without a layout argument; manifest and physical launch provenance agree on layout on |
 | L1 three engines | `run --subset l1.raw_cdp --tag purpose.smoke --engines chrome,moli,lightpanda --k 1` | A complete run directory is produced; Chrome/Moli/Lightpanda each emit a status |
 | L2 three-engine smoke | `run --layer L2 --engines chrome,moli,lightpanda --k 1` | 188×3 rows of evidence land completely on disk; the report gives full capability verdicts and separate cross-check and diagnostic sections |
 | report          | `run` auto-reports by default; `report --run runs/<run_id>` can backfill an old run          | Writes `scores.json`/`scorecard.md`               |

@@ -78,6 +78,9 @@ def test_run_manifest_records_both_axes():
     assert payload["bench_version"] == suite["bench_version"]
     assert payload["harness_version"] == HARNESS_VERSION
     assert "site_version" not in payload["site"]
+    assert payload["moli_layout_policy"] == policy("on")
+    assert payload["engines"]["moli"]["layout_mode"] == "on"
+    assert payload["engines"]["moli"]["serve_args"] == ["--layout"]
 
 
 def test_fixed_layout_receipt_declares_policy_before_calls():

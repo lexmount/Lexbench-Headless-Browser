@@ -12,9 +12,9 @@ def test_cli_accepts_fixed_modes(mode):
     assert layout.policy(mode) == {'policy_id': 'fixed_layout_v1', 'layout': mode}
 
 
-def test_cli_defaults_off_and_rejects_removed_switch():
+def test_cli_defaults_on_and_rejects_removed_switch():
     parser = run.build_parser()
-    assert parser.parse_args(['run']).moli_layout == 'off'
+    assert parser.parse_args(['run']).moli_layout == 'on'
     for args in [['run', '--try-layout'], ['run', '--moli-layout', 'auto']]:
         with pytest.raises(SystemExit):
             parser.parse_args(args)

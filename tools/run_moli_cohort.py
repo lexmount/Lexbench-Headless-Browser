@@ -18,6 +18,7 @@ from tools._repository import require_local_runner
 require_local_runner(Path(__file__).resolve().parents[1])
 
 from runner.run import compact_run_id
+from runner.layout import DEFAULT_MODE
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "benchmarks/moli-0.1.1-failure-cohort.json"
@@ -66,7 +67,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
-    parser.add_argument("--moli-layout", choices=("on", "off"), default="off")
+    parser.add_argument("--moli-layout", choices=("on", "off"), default=DEFAULT_MODE,
+                        help="Moli layout mode (default: on)")
     parser.add_argument("--moli-commit", help="40-character source commit for candidate binaries")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):

@@ -134,4 +134,4 @@ Round B compares its task-duration distribution against round A to quantify how 
 
 ## Fixed Moli layout
 
-Layout is off by default. Use `--moli-layout on` to enable it for every attempt, or `--moli-layout off` to keep it disabled. Choose the mode before launch; it applies to the complete run. Each task executes its configured attempts (normally three), and all must pass for the task to pass. Failures do not switch layout or add attempts. Compare off/on as separate runs with identical tasks and repetition counts.
+Moli layout is on by default, enabling real geometry and coordinate input. Use `--moli-layout off` to disable it for every attempt, or explicitly pass `--moli-layout on` to pin the default in a reproduction command. Choose the mode before launch; it applies to the complete run. Each task executes its configured attempts (normally three), and all must pass for the task to pass. Failures do not switch layout or add attempts. Compare off/on as separate runs with identical tasks and repetition counts.

@@ -59,6 +59,40 @@ def test_tiny_l1_chrome_run_and_report(tmp_path, capsys):
     assert scores["run_id"] == run_dir.name
 
 
+@pytest.mark.parametrize("mode", [None, "off"])
+def test_moli_layout_default_and_explicit_opt_out(tmp_path, mode):
+    run_id = "pytest_smoke_moli_layout"
+    tasks = (
+        ["sc_obs_box_model_geometry__pw", "v3_pp_act_click_counter"]
+        if mode is None else ["runtime_evaluate_basic_001"]
+    )
+    argv = [
+        "run", "--engines", "moli", "--k", "1", "--jobs", "1",
+        "--chrome-baseline", "off", "--score-mode", "independent",
+        "--host-telemetry", "off", "--out", str(tmp_path), "--run-id", run_id,
+    ]
+    for task in tasks:
+        argv += ["--task", task]
+    if mode is not None:
+        argv += ["--moli-layout", mode]
+    assert runner_run.main(argv) == 0
+    run_dir = tmp_path / run_id
+    rows = runner_run.read_jsonl(run_dir / "results.jsonl")
+    assert len(rows) == len(tasks)
+    assert {row["task_id"] for row in rows} == set(tasks)
+    for row in rows:
+        assert row["status"] == "pass", row
+        provenance = row["engine_provenance"]
+        assert provenance["layout_enabled"] is (mode is None)
+        assert ("--layout" in provenance["launch_command"]) is (mode is None)
+        assert "--resource" not in provenance["launch_command"]
+    manifest = json.loads((run_dir / "run_manifest.json").read_text())
+    assert manifest["moli_layout_policy"]["layout"] == (mode or "on")
+    assert manifest["engines"]["moli"]["layout_mode"] == (mode or "on")
+    assert ("--layout" in manifest["engines"]["moli"].get("serve_args", [])) is (mode is None)
+    assert runner_run.engine_serve_args("moli") == ("--layout",)
+
+
 def test_tiny_l1_obscura_run_records_launch_provenance(tmp_path):
     run_id = "pytest_smoke_l1_obscura"
     rc = runner_run.main(
@@ -286,7 +320,7 @@ def test_moli_resource_task_uses_all_resources_profile(tmp_path):
     assert row["status"] == "pass"
     assert row["launch_profile"] == "all_resources"
     assert row["engine_provenance"]["serve_args"] == [
-        "--resource"
+        "--layout", "--resource"
     ]
     assert row["engine_provenance"]["launch_command"][-1] == (
         "--resource"

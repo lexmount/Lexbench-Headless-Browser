@@ -1,4 +1,8 @@
 """Fixed Moli layout selection and rejection of mixed-layout evidence."""
+
+DEFAULT_MODE = "on"
+
+
 def policy(mode):
     if mode not in {"off", "on"}:
         raise ValueError("layout mode must be off or on")
