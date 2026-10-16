@@ -195,7 +195,6 @@ ENGINE_DEFS = {
         "serve_args": ("--layout",),
         "launch_profile_args": {
             "all_resources": ("--resource",),
-            "browser_automation": ("--enable-automation",),
         },
         # Native WebDriver session identity: the capabilities.browserName the
         # session must report, and the /json/version fields (first non-empty

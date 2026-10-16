@@ -39,7 +39,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/four-engine-overview-dark.png">
-    <img alt="四个无头浏览器在 1,928 道任务上的成功率：Chrome 100%、Lightpanda 81.4%、Moli 80.7%、Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
+    <img alt="四个无头浏览器在 1,928 道任务上的成功率：Chrome 100%、Moli 93.1%、Lightpanda 81.4%、Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
   </picture>
 </div>
 
@@ -48,8 +48,8 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 | 引擎 | 版本 | 通过 | 任务成功率 |
 |:---|:---|---:|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 155.0.8059.79 | 1,928 / 1,928 | **100.00%** |
+| [Moli](https://github.com/lexmount/moli) | 1.1.17 | 1,795 / 1,928 | **93.10%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1.0.1 | 1,569 / 1,928 | **81.38%** |
-| [Moli](https://github.com/lexmount/moli) | 1.1.17 | 1,556 / 1,928 | **80.71%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.2.4 | 1,161 / 1,928 | **60.22%** |
 
 </div>
@@ -60,7 +60,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/five-engine-caliber-b-dark.png">
-    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率：Chrome 100%、Moli 81.9%、Lightpanda 76.7%、Obscura 66.2%、Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
+    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率：Chrome 100%、Moli 94.5%、Lightpanda 76.7%、Obscura 66.2%、Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
   </picture>
 </div>
 
@@ -69,7 +69,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 | 引擎 | 可比子集（1,308 道） |
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,308 / 1,308 · **100.00%** |
-| [Moli](https://github.com/lexmount/moli) | 1,071 / 1,308 · **81.88%** |
+| [Moli](https://github.com/lexmount/moli) | 1,236 / 1,308 · **94.50%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1,003 / 1,308 · **76.68%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 866 / 1,308 · **66.21%** |
 | [Kitesurf](https://blog.cloudflare.com/kitesurf/)（远程） | 812 / 1,308 · **62.08%** |
@@ -80,25 +80,25 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 
 </details>
 
-本次 run 的参数：run id `four_engine_full_20261016`、数据集版本 `0.4.2`、seed `official20260709`、k=3，共 23,136 条结果行。计分规则为 k=3 全通过制：每道题要尝试三次，三次全部成功才算通过；每个引擎只按自己的尝试计分（`--score-mode independent`），Chrome 仅作参照。完整报告见 [four-engine-report-20261016.md](docs/reports/four-engine-report-20261016.md)。
+本次 run 的参数：run id `four_engine_full_20261016b`、数据集版本 `0.4.2`、seed `official20260709`、k=3，共 23,136 条结果行。计分规则为 k=3 全通过制：每道题要尝试三次，三次全部成功才算通过；每个引擎只按自己的尝试计分（`--score-mode independent`），Chrome 仅作参照。Moli 开启布局（`serve --layout`）运行，其结果来自参数相同的 Moli 单独重跑。完整报告见 [four-engine-report-20261016b.md](docs/reports/four-engine-report-20261016b.md)。
 
 > [!NOTE]
 > 如果你关心 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/)，它的评测在 [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支。Kitesurf 目前只以远程端点形态存在，没有二进制、无法测量资源，五引擎结果在该分支发布。
 
 ## 资源开销
 
-轻量引擎最大的卖点是资源消耗低——"替代 Chrome"的论据能不能成立，就得看到底省了多少。因此资源轮采用了和兼容性同等严格的方式。任务集取 `l1.raw_cdp`（375 道）加上 L2 的 `l2.web_platform` 子集（182 道），共 557 道；并且必须以 `--jobs 1` 串行执行，避免不同引擎之间互相争抢资源。所有资源统计只在这四个引擎共同通过的任务×尝试交集上计算（共 1,321 个样本）：只有大家都完成了同一批工作，比较各自的开销才有意义；某个引擎没通过的题，也不会计入它的资源账。
+轻量引擎最大的卖点是资源消耗低——"替代 Chrome"的论据能不能成立，就得看到底省了多少。因此资源轮采用了和兼容性同等严格的方式。任务集取 `l1.raw_cdp`（375 道）加上 L2 的 `l2.web_platform` 子集（182 道），共 557 道；并且必须以 `--jobs 1` 串行执行，避免不同引擎之间互相争抢资源。所有资源统计只在这四个引擎共同通过的任务×尝试交集上计算（共 1,346 个样本）：只有大家都完成了同一批工作，比较各自的开销才有意义；某个引擎没通过的题，也不会计入它的资源账。
 
 测量本身会带来误差——比如开启 profiler 会引入额外开销，所以采用两轮 A/B 设计：同一批任务先关掉 profiler 完整跑一轮作为基线，再开启 profiler 跑一轮，两轮之差就是观测行为自身造成的干扰。只有当干扰低于校准阈值时，这一轮才算合格（`resource_comparison_eligible: true`）。本轮不合格：Obscura 的 Fetch 拦截类任务在两轮之间时而通过、时而失败，而且主机在使用 swap。下面的数字仅供参考。
 
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/efficiency-map-dark.png">
-    <img alt="任务成功率与单题内存峰值中位数的关系：Chrome 100%、730 MiB，Moli 80.7%、74 MiB，Lightpanda 81.4%、34 MiB，Obscura 60.2%、45 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
+    <img alt="任务成功率与单题内存峰值中位数的关系：Chrome 100%、734 MiB，Moli 93.1%、78 MiB，Lightpanda 81.4%、34 MiB，Obscura 60.2%、45 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
   </picture>
 </div>
 
-单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 45 MiB、Moli 74 MiB、Chrome 730 MiB；同一批任务的单题引擎 CPU 时间中位数分别是 7 ms、14 ms、24 ms、177 ms。细节与校准记录见[资源卡片](docs/reports/resource-card-20261016.md)。
+单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 45 MiB、Moli 78 MiB、Chrome 734 MiB；同一批任务的单题引擎 CPU 时间中位数分别是 7 ms、14 ms、24 ms、177 ms。细节与校准记录见[资源卡片](docs/reports/resource-card-20261016b.md)。
 
 ## 测试集构成
 

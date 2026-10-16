@@ -53,7 +53,7 @@ For multi-step workflow tasks the grading is two-gated: the driver's step checks
 
 Resource figures come from the separate A/B-calibrated round documented in [resource-cost.md](resource-cost.md) and [REPRODUCE.md](REPRODUCE.md). When reading them:
 
-- They are computed on the 1,321 task-attempt intersection that all four engines passed. A failed task never enters an engine's account as a cheap failure.
+- They are computed on the 1,346 task-attempt intersection that all four engines passed. A failed task never enters an engine's account as a cheap failure.
 - They describe the 557-task resource set and do not extrapolate to the full corpus.
 - Filled values are medians; the resource card also carries p95 values, PSS deltas, process counts and fixture traffic.
 - A remote engine has no process tree on the measuring machine. An empty cell means unmeasurable, never zero.
