@@ -53,7 +53,7 @@ For multi-step workflow tasks the grading is two-gated: the driver's step checks
 
 Resource figures come from the separate A/B-calibrated round documented in [resource-cost.md](resource-cost.md) and [REPRODUCE.md](REPRODUCE.md). When reading them:
 
-- They are computed on the 1,045 task-attempt intersection that all four engines passed. A failed task never enters an engine's account as a cheap failure.
+- They are computed on the 1,321 task-attempt intersection that all four engines passed. A failed task never enters an engine's account as a cheap failure.
 - They describe the 557-task resource set and do not extrapolate to the full corpus.
 - Filled values are medians; the resource card also carries p95 values, PSS deltas, process counts and fixture traffic.
 - A remote engine has no process tree on the measuring machine. An empty cell means unmeasurable, never zero.
@@ -88,7 +88,7 @@ The fixture tree belongs to this axis: editing a fixture changes results, so it 
 
 **Harness — `runner/version.py`, currently `0.1.0`.** The code that runs the dataset, mirrored in `pyproject.toml` and `package.json`. Bumping it does not change what is being measured, so runs stay comparable across it. Runs record it as `harness_version`.
 
-Runs predating this scheme carry a dated label instead: the three published runs record `2026.08.02-v0_4.1`, which is `0.4.1` here, and its difference from `0.4.2` is PATCH — descriptions only, fully comparable. Neither number is what makes a run reproducible. `run_manifest.json` pins the manifest, fixture tree, runner source and capability map by sha256, and those digests are the identity a re-run is checked against; the versions are the labels that let a reader skip the check.
+Runs predating this scheme carry a dated label instead: the three 2026-08-12 runs record `2026.08.02-v0_4.1`, which is `0.4.1` here, and its difference from `0.4.2` is PATCH — descriptions only, fully comparable. Neither number is what makes a run reproducible. `run_manifest.json` pins the manifest, fixture tree, runner source and capability map by sha256, and those digests are the identity a re-run is checked against; the versions are the labels that let a reader skip the check.
 
 ## Boundaries
 

@@ -471,10 +471,7 @@ def test_browser_automation_profile_only_enables_supported_serve_engines(engine)
         engine, binary, 9333, "browser_automation"
     )
     assert "--enable-automation" not in default
-    if engine == "moli":
-        assert automation == [*default, "--enable-automation"]
-    else:
-        assert automation == default
+    assert automation == default
 
 
 def test_serve_command_keeps_engine_specific_flags_isolated():

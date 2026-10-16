@@ -39,7 +39,7 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/four-engine-overview-dark.png">
-    <img alt="Task success rate of four headless browsers over 1,928 tasks: Chrome 99.9%, Lightpanda 80.8%, Moli 80.7%, Obscura 39.5%" src="docs/assets/four-engine-overview-light.png" width="100%">
+    <img alt="Task success rate of four headless browsers over 1,928 tasks: Chrome 100%, Lightpanda 81.4%, Moli 80.7%, Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
   </picture>
 </div>
 
@@ -47,10 +47,10 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 
 | Engine | Version | Passed | Task success rate |
 |:---|:---|---:|---:|
-| [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 151.0.7922.47 | 1,926 / 1,928 | **99.90%** |
-| [Lightpanda](https://github.com/lightpanda-io/browser) | 1.1.0-nightly.10552+dd2cd5d7f | 1,558 / 1,928 | **80.81%** |
-| [Moli](https://github.com/lexmount/moli) | 0.1.1 | 1,556 / 1,928 | **80.71%** |
-| [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.1.11 | 762 / 1,928 | **39.52%** |
+| [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 155.0.8059.79 | 1,928 / 1,928 | **100.00%** |
+| [Lightpanda](https://github.com/lightpanda-io/browser) | 1.0.1 | 1,569 / 1,928 | **81.38%** |
+| [Moli](https://github.com/lexmount/moli) | 1.1.17 | 1,556 / 1,928 | **80.71%** |
+| [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.2.4 | 1,161 / 1,928 | **60.22%** |
 
 </div>
 
@@ -60,7 +60,7 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/five-engine-caliber-b-dark.png">
-    <img alt="Task success rate of five headless browsers over 1,308 comparable tasks: Chrome 99.8%, Moli 81.9%, Lightpanda 75.8%, Kitesurf 62.1%, Obscura 44.9%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
+    <img alt="Task success rate of five headless browsers over 1,308 comparable tasks: Chrome 100%, Moli 81.9%, Lightpanda 76.7%, Obscura 66.2%, Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
   </picture>
 </div>
 
@@ -68,11 +68,11 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 
 | Engine | Comparable subset (1,308 tasks) |
 |:---|---:|
-| [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,306 / 1,308 · **99.85%** |
+| [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,308 / 1,308 · **100.00%** |
 | [Moli](https://github.com/lexmount/moli) | 1,071 / 1,308 · **81.88%** |
-| [Lightpanda](https://github.com/lightpanda-io/browser) | 992 / 1,308 · **75.84%** |
+| [Lightpanda](https://github.com/lightpanda-io/browser) | 1,003 / 1,308 · **76.68%** |
+| [Obscura](https://github.com/h4ckf0r0day/obscura) | 866 / 1,308 · **66.21%** |
 | [Kitesurf](https://blog.cloudflare.com/kitesurf/) (remote) | 812 / 1,308 · **62.08%** |
-| [Obscura](https://github.com/h4ckf0r0day/obscura) | 587 / 1,308 · **44.88%** |
 
 </div>
 
@@ -80,25 +80,25 @@ This comparison uses a subset of the same 1,928-task set: tasks whose failures c
 
 </details>
 
-Run parameters: run id `four_engine_full_20260812`, bench tag `2026.08.02-v0_4.1`, seed `official20260709`, k=3, 23,136 result rows. A task counts as passed only when all three attempts pass. Each engine is scored on its own attempts (`--score-mode independent`); Chrome is the reference column. Full report: [docs/reports/four-engine-report-20260812.md](docs/reports/four-engine-report-20260812.md).
+Run parameters: run id `four_engine_full_20261016`, dataset version `0.4.2`, seed `official20260709`, k=3, 23,136 result rows. A task counts as passed only when all three attempts pass. Each engine is scored on its own attempts (`--score-mode independent`); Chrome is the reference column. Full report: [docs/reports/four-engine-report-20261016.md](docs/reports/four-engine-report-20261016.md).
 
 > [!NOTE]
 > If you care about [Kitesurf](https://blog.cloudflare.com/kitesurf/), the agent-first cloud browser Cloudflare just launched, its evaluation lives on the [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch. Kitesurf currently exists only as a remote endpoint, with no binary digest and no resource measurement, and the five-engine results are published on that branch.
 
 ## Resource Cost
 
-The lightweight engines' biggest selling point is low resource use, and whether the replacement case holds also depends on how much they actually save, so resources are measured with the same rigor as compatibility. The task set is `l1.raw_cdp` (375 tasks) plus L2's `l2.web_platform` subset (182 tasks), 557 in total; the resource round runs strictly serial (`--jobs 1`) so engines never compete for the machine. Every resource statistic is computed only on the task-attempt intersection that all four engines passed (1,045 attempts): comparing cost makes sense only when everyone finished the same work, and a task an engine failed never enters its resource account.
+The lightweight engines' biggest selling point is low resource use, and whether the replacement case holds also depends on how much they actually save, so resources are measured with the same rigor as compatibility. The task set is `l1.raw_cdp` (375 tasks) plus L2's `l2.web_platform` subset (182 tasks), 557 in total; the resource round runs strictly serial (`--jobs 1`) so engines never compete for the machine. Every resource statistic is computed only on the task-attempt intersection that all four engines passed (1,321 attempts): comparing cost makes sense only when everyone finished the same work, and a task an engine failed never enters its resource account.
 
-Because observing a process can itself distort the numbers, the measurement is a two-round A/B design: the same tasks run once with the profiler off as a baseline, then once with it on, and the two rounds are compared to quantify the disturbance of observing. Numbers are recorded only when that disturbance clears the calibration gate (`resource_comparison_eligible: true`).
+Because observing a process can itself distort the numbers, the measurement is a two-round A/B design: the same tasks run once with the profiler off as a baseline, then once with it on, and the two rounds are compared to quantify the disturbance of observing. A round is eligible (`resource_comparison_eligible: true`) only when that disturbance clears the calibration gate. The current round is not eligible: Obscura's Fetch interception tasks flipped between pass and fail across the two rounds, and the host was using swap. Read the numbers below as indicative.
 
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/efficiency-map-dark.png">
-    <img alt="Task success rate plotted against median peak memory per task: Chrome at 99.9% and 697 MiB, Moli at 80.7% and 92 MiB, Lightpanda at 80.8% and 34 MiB, Obscura at 39.5% and 39 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
+    <img alt="Task success rate plotted against median peak memory per task: Chrome at 100% and 730 MiB, Moli at 80.7% and 74 MiB, Lightpanda at 81.4% and 34 MiB, Obscura at 60.2% and 45 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
   </picture>
 </div>
 
-Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 39 MiB, Moli 92 MiB, Chrome 697 MiB. Median engine CPU time per task on the same set: 36 ms, 38 ms, 101 ms, 687 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20260812.md).
+Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 45 MiB, Moli 74 MiB, Chrome 730 MiB. Median engine CPU time per task on the same set: 7 ms, 14 ms, 24 ms, 177 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20261016.md).
 
 ## Quick Start
 
@@ -127,7 +127,7 @@ A smoke round finishes in minutes, with per-task pass/fail in `runs/<run-id>/res
 
 ## Benchmark Composition
 
-Current dataset version `0.4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above remains pinned to `0.4.1` (recorded in its manifest as `2026.08.02-v0_4.1`, the dated label used before the version scheme was unified). The difference is a PATCH: task descriptions and non-executable metadata, not task membership, drivers, graders, fixtures, or capability assignments. How the dataset and harness versions are bumped: [Versioning](docs/RESULTS.md#versioning).
+Current dataset version `0.4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above uses this version. How the dataset and harness versions are bumped: [Versioning](docs/RESULTS.md#versioning).
 
 **L1 measures protocol and driver compatibility (1,740 tasks) across two paths:**
 
