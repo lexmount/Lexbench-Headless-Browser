@@ -3,7 +3,7 @@ import pytest
 from runner import layout, run
 
 
-@pytest.mark.parametrize('mode', ['off', 'on'])
+@pytest.mark.parametrize('mode', ['off', 'on', 'realtime'])
 def test_cli_accepts_fixed_modes(mode):
     args = run.build_parser().parse_args(['run', '--moli-layout', mode, '--k', '3'])
     assert args.moli_layout == mode
@@ -30,6 +30,6 @@ def test_mixed_layout_evidence_cannot_be_reported_as_fixed(manifest):
         layout.require_fixed(manifest)
 
 
-@pytest.mark.parametrize('mode', ['off', 'on'])
+@pytest.mark.parametrize('mode', ['off', 'on', 'realtime'])
 def test_fixed_evidence_is_accepted(mode):
     layout.require_fixed({'moli_layout_policy': layout.policy(mode)})

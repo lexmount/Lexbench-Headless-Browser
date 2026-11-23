@@ -134,4 +134,4 @@ Round B compares its task-duration distribution against round A to quantify how 
 
 ## Fixed Moli layout
 
-Moli layout is on by default, enabling real geometry and coordinate input. Use `--moli-layout off` to disable it for every attempt, or explicitly pass `--moli-layout on` to pin the default in a reproduction command. Choose the mode before launch; it applies to the complete run. Each task executes its configured attempts (normally three), and all must pass for the task to pass. Failures do not switch layout or add attempts. Compare off/on as separate runs with identical tasks and repetition counts.
+Moli uses on-demand layout by default, enabling real geometry and coordinate input. Pass `--moli-layout on` to reproduce that setting, or use `--moli-layout off` for mock geometry. With a Moli build that supports `serve --realtime`, use `--moli-layout realtime` to maintain geometry and run rendering callbacks as pages run. The selected mode applies to the complete run. Each task passes when all configured attempts pass. Compare modes in separate runs with the same binary, tasks, seed, and attempt count.
