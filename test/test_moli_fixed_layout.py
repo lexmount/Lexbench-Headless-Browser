@@ -20,6 +20,23 @@ def test_cli_defaults_on_and_rejects_removed_switch():
             parser.parse_args(args)
 
 
+@pytest.mark.parametrize("help_text, debugger_args", [
+    ("      --debugger\n          Enable debugger pauses.", ("--debugger",)),
+    ("      --layout\n          Enable on-demand layout.", ()),
+])
+def test_moli_launch_enables_debugger_when_supported(monkeypatch, help_text, debugger_args):
+    def check_launch_args(_args):
+        assert run.engine_serve_args("moli", "all_resources") == (
+            "--realtime", *debugger_args, "--resource",
+        )
+        return 0
+
+    monkeypatch.setattr(run, "moli_serve_help", lambda: help_text)
+    monkeypatch.setattr(run, "command_run", check_launch_args)
+    assert run.main(["run", "--moli-layout", "realtime"]) == 0
+    assert run.engine_serve_args("moli") == ("--layout",)
+
+
 @pytest.mark.parametrize('manifest', [
     {'layout_retry': {'recovered_cases': ['one']}},
     {'moli_layout_policy': {'try_layout': True}},

@@ -135,3 +135,5 @@ Round B compares its task-duration distribution against round A to quantify how 
 ## Fixed Moli layout
 
 Moli uses on-demand layout by default, enabling real geometry and coordinate input. Pass `--moli-layout on` to reproduce that setting, or use `--moli-layout off` for mock geometry. With a Moli build that supports `serve --realtime`, use `--moli-layout realtime` to maintain geometry and run rendering callbacks as pages run. The selected mode applies to the complete run. Each task passes when all configured attempts pass. Compare modes in separate runs with the same binary, tasks, seed, and attempt count.
+
+For Moli builds that support `serve --debugger`, Lexbench enables it automatically to exercise CDP debugger pauses and stepping. The launcher records the flag in the run manifest and the individual attempts.
