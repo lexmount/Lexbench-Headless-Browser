@@ -2521,6 +2521,17 @@ def pinned_binary_version(binary: pathlib.Path, meta: dict[str, Any]) -> str | N
     return (proc.stdout or proc.stderr).strip()
 
 
+def moli_serve_help() -> str:
+    try:
+        result = subprocess.run(
+            [str(ENGINE_DEFS["moli"]["binary"]), "serve", "--help"],
+            capture_output=True, text=True, timeout=5, check=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return result.stdout
+
+
 def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind((LOCAL_HOST, 0))
@@ -8644,9 +8655,13 @@ def main(argv: list[str] | None = None) -> int:
         except Exception:
             args.k = DEFAULT_K_RUNS
     prior_moli_args = ENGINE_DEFS["moli"].get("serve_args")
-    if hasattr(args, "moli_layout"):
-        ENGINE_DEFS["moli"]["serve_args"] = layout.SERVE_ARGS[args.moli_layout]
     try:
+        if args.command in {"doctor", "run"}:
+            serve_args = layout.SERVE_ARGS[getattr(args, "moli_layout", layout.DEFAULT_MODE)]
+            if args.command == "doctor" or "moli" in parse_engines(args.engines):
+                if re.search(r"(?m)^\s*--debugger(?:\s|$)", moli_serve_help()):
+                    serve_args += ("--debugger",)
+            ENGINE_DEFS["moli"]["serve_args"] = serve_args
         return int(args.func(args))
     except BenchError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
