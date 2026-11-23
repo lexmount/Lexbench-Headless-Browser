@@ -37,6 +37,20 @@ def test_moli_launch_enables_debugger_when_supported(monkeypatch, help_text, deb
     assert run.engine_serve_args("moli") == ("--layout",)
 
 
+def test_moli_browser_command_line_opt_in_is_scoped_to_automation_profile(monkeypatch):
+    def check_launch_args(_args):
+        assert run.engine_serve_args("moli", "browser_automation") == (
+            "--layout", "--enable-automation",
+        )
+        assert run.engine_serve_args("moli") == ("--layout",)
+        return 0
+
+    monkeypatch.setattr(run, "moli_serve_help", lambda: "      --enable-automation\n")
+    monkeypatch.setattr(run, "command_run", check_launch_args)
+    assert run.main(["run", "--engines", "moli"]) == 0
+    assert run.engine_serve_args("moli", "browser_automation") == ("--layout",)
+
+
 @pytest.mark.parametrize('manifest', [
     {'layout_retry': {'recovered_cases': ['one']}},
     {'moli_layout_policy': {'try_layout': True}},

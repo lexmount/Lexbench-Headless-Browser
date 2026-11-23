@@ -8654,23 +8654,29 @@ def main(argv: list[str] | None = None) -> int:
             args.k = int(suite.get("default_k_runs", DEFAULT_K_RUNS))
         except Exception:
             args.k = DEFAULT_K_RUNS
-    prior_moli_args = ENGINE_DEFS["moli"].get("serve_args")
+    moli = ENGINE_DEFS["moli"]
+    prior_moli_args = moli["serve_args"]
+    prior_moli_profiles = moli["launch_profile_args"]
     try:
         if args.command in {"doctor", "run"}:
             serve_args = layout.SERVE_ARGS[getattr(args, "moli_layout", layout.DEFAULT_MODE)]
             if args.command == "doctor" or "moli" in parse_engines(args.engines):
-                if re.search(r"(?m)^\s*--debugger(?:\s|$)", moli_serve_help()):
+                help_text = moli_serve_help()
+                if re.search(r"(?m)^\s*--debugger(?:\s|$)", help_text):
                     serve_args += ("--debugger",)
-            ENGINE_DEFS["moli"]["serve_args"] = serve_args
+                if re.search(r"(?m)^\s*--enable-automation(?:\s|$)", help_text):
+                    moli["launch_profile_args"] = {
+                        **prior_moli_profiles,
+                        "browser_automation": ("--enable-automation",),
+                    }
+            moli["serve_args"] = serve_args
         return int(args.func(args))
     except BenchError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     finally:
-        if prior_moli_args is None:
-            ENGINE_DEFS["moli"].pop("serve_args", None)
-        else:
-            ENGINE_DEFS["moli"]["serve_args"] = prior_moli_args
+        moli["serve_args"] = prior_moli_args
+        moli["launch_profile_args"] = prior_moli_profiles
 
 
 if __name__ == "__main__":
