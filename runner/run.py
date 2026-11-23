@@ -190,9 +190,7 @@ ENGINE_DEFS = {
         "upstream_commit": "cac20d15b83892d71fa8efc27d1e802002a4d68e",
         "cdp_port": 9222,
         "role": "native_candidate",
-        # Real geometry and coordinate input are enabled by default.
-        # --moli-layout off selects the lightweight mock layout for a run.
-        "serve_args": ("--layout",),
+        "serve_args": layout.SERVE_ARGS[layout.DEFAULT_MODE],
         "launch_profile_args": {
             "all_resources": ("--resource",),
         },
@@ -4199,7 +4197,9 @@ def engine_provenance(browser: BrowserProcess) -> dict[str, Any]:
         "http_identity": dict(browser.version_info),
     }
     if browser.engine == "moli":
-        payload["layout_enabled"] = "--layout" in browser.serve_args
+        payload["layout_enabled"] = any(
+            flag in browser.serve_args for flag in ("--layout", "--realtime")
+        )
     return payload
 
 
@@ -8529,8 +8529,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--tag", action="append")
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
-        "--moli-layout", choices=("off", "on"), default=layout.DEFAULT_MODE,
-        help="Moli layout: on (default, always enabled), off (disabled for every attempt)",
+        "--moli-layout", choices=tuple(layout.SERVE_ARGS), default=layout.DEFAULT_MODE,
+        help="Moli layout: on (on-demand, default), realtime (requires --realtime support), off (mock geometry)",
     )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(
@@ -8645,7 +8645,7 @@ def main(argv: list[str] | None = None) -> int:
             args.k = DEFAULT_K_RUNS
     prior_moli_args = ENGINE_DEFS["moli"].get("serve_args")
     if hasattr(args, "moli_layout"):
-        ENGINE_DEFS["moli"]["serve_args"] = ("--layout",) if args.moli_layout == "on" else ()
+        ENGINE_DEFS["moli"]["serve_args"] = layout.SERVE_ARGS[args.moli_layout]
     try:
         return int(args.func(args))
     except BenchError as exc:

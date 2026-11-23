@@ -1,11 +1,16 @@
 """Fixed Moli layout selection and rejection of mixed-layout evidence."""
 
 DEFAULT_MODE = "on"
+SERVE_ARGS = {
+    "off": (),
+    "on": ("--layout",),
+    "realtime": ("--realtime",),
+}
 
 
 def policy(mode):
-    if mode not in {"off", "on"}:
-        raise ValueError("layout mode must be off or on")
+    if mode not in SERVE_ARGS:
+        raise ValueError(f"unknown Moli layout mode: {mode}")
     return {"policy_id": "fixed_layout_v1", "layout": mode}
 
 
