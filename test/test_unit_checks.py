@@ -414,7 +414,7 @@ def test_find_free_port_returns_bindable_port():
         sock.bind(("127.0.0.1", port))  # still free
 
 
-def test_moli_default_serve_command_enables_layout():
+def test_moli_default_serve_command_enables_realtime_layout():
     command = runner_run.serve_engine_launch_command(
         "moli", pathlib.Path("/tmp/moli"), 9333
     )
@@ -425,7 +425,7 @@ def test_moli_default_serve_command_enables_layout():
         "127.0.0.1",
         "--port",
         "9333",
-        "--layout",
+        "--realtime",
     ]
 
 
@@ -443,7 +443,7 @@ def test_moli_all_resources_profile_enables_full_resource_fetch():
         "127.0.0.1",
         "--port",
         "9333",
-        "--layout",
+        "--realtime",
         "--resource",
     ]
 

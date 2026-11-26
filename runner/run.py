@@ -8541,7 +8541,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--engines", default="chrome,moli,lightpanda,obscura")
     run.add_argument(
         "--moli-layout", choices=tuple(layout.SERVE_ARGS), default=layout.DEFAULT_MODE,
-        help="Moli layout: on (on-demand, default), realtime (requires --realtime support), off (mock geometry)",
+        help="Moli layout: realtime (default, requires --realtime support), on (on-demand), off (mock geometry)",
     )
     run.add_argument("--jobs", type=int, default=1, help="parallel task workers; each worker owns isolated browser processes on ephemeral ports")
     run.add_argument(

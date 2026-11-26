@@ -84,13 +84,13 @@ def test_moli_layout_default_and_explicit_opt_out(tmp_path, mode):
         assert row["status"] == "pass", row
         provenance = row["engine_provenance"]
         assert provenance["layout_enabled"] is (mode is None)
-        assert ("--layout" in provenance["launch_command"]) is (mode is None)
+        assert ("--realtime" in provenance["launch_command"]) is (mode is None)
         assert "--resource" not in provenance["launch_command"]
     manifest = json.loads((run_dir / "run_manifest.json").read_text())
-    assert manifest["moli_layout_policy"]["layout"] == (mode or "on")
-    assert manifest["engines"]["moli"]["layout_mode"] == (mode or "on")
-    assert ("--layout" in manifest["engines"]["moli"].get("serve_args", [])) is (mode is None)
-    assert runner_run.engine_serve_args("moli") == ("--layout",)
+    assert manifest["moli_layout_policy"]["layout"] == (mode or "realtime")
+    assert manifest["engines"]["moli"]["layout_mode"] == (mode or "realtime")
+    assert ("--realtime" in manifest["engines"]["moli"].get("serve_args", [])) is (mode is None)
+    assert runner_run.engine_serve_args("moli") == ("--realtime",)
 
 
 def test_tiny_l1_obscura_run_records_launch_provenance(tmp_path):
@@ -320,7 +320,7 @@ def test_moli_resource_task_uses_all_resources_profile(tmp_path):
     assert row["status"] == "pass"
     assert row["launch_profile"] == "all_resources"
     assert row["engine_provenance"]["serve_args"] == [
-        "--layout", "--resource"
+        "--realtime", "--resource"
     ]
     assert row["engine_provenance"]["launch_command"][-1] == (
         "--resource"
