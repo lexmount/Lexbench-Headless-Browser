@@ -2,9 +2,11 @@
 
 [English](REPRODUCE.md) · [中文](REPRODUCE.zh.md)
 
-Every number in the reports traces back to one of three runs. This page records their exact parameters, how a run turns into a report, and what to check when your rerun disagrees.
+The November 2026 Moli 1.1.28 results have their own run settings and reproduction command. [November run record](reports/benchmark-results-20261127.md).
 
-## The three published runs
+This page records the exact parameters of the August 2026 runs, how to regenerate their reports and what to check when a rerun disagrees.
+
+## August 2026 runs
 
 | Run id | Purpose | Task set | k | jobs | Profiler |
 |:---|:---|:---|---:|---:|:---|

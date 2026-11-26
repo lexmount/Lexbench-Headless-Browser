@@ -184,10 +184,10 @@ SOCKET_TRANSPORT_ERRNOS = {
 ENGINE_DEFS = {
     "moli": {
         "binary": REPO_ROOT / "build_artifacts/moli/bin/moli",
-        "version": "moli 1.1.17",
-        "sha256": "04f27d757d793515a7c8ce38e564c668489a1f4351bb3c49586629a24044c24f",
-        "sha256_12": "04f27d757d79",
-        "upstream_commit": "cac20d15b83892d71fa8efc27d1e802002a4d68e",
+        "version": "moli 1.1.28",
+        "sha256": "bd31659ed3e49b74f3d7c714a87533ad1ccacedeb84f48026837f07cb84e4ae0",
+        "sha256_12": "bd31659ed3e4",
+        "upstream_commit": "95948200df1bfa269c2f60a7c570bef1b8b247ab",
         "cdp_port": 9222,
         "role": "native_candidate",
         "serve_args": layout.SERVE_ARGS[layout.DEFAULT_MODE],

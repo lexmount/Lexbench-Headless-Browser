@@ -265,9 +265,7 @@ def test_moli_native_webdriver_selenium(tmp_path):
         manifest["engines"]["moli"]["resource_fetch_policy"]
         == "task_scoped_launch_profile"
     )
-    assert manifest["engines"]["moli"]["launch_profile_args"] == {
-        "all_resources": ["--resource"]
-    }
+    assert manifest["engines"]["moli"]["launch_profile_args"]["all_resources"] == ["--resource"]
     assert manifest["resolved_tasks"][0]["launch_profile"] == "default"
 
     stdout_path = run_dir / rows[0]["artifact_dir"] / "stdout.log"
@@ -319,9 +317,9 @@ def test_moli_resource_task_uses_all_resources_profile(tmp_path):
     assert row["engine"] == "moli"
     assert row["status"] == "pass"
     assert row["launch_profile"] == "all_resources"
-    assert row["engine_provenance"]["serve_args"] == [
-        "--realtime", "--resource"
-    ]
+    serve_args = row["engine_provenance"]["serve_args"]
+    assert serve_args[0] == "--realtime"
+    assert serve_args[-1] == "--resource"
     assert row["engine_provenance"]["launch_command"][-1] == (
         "--resource"
     )

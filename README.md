@@ -39,7 +39,7 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/four-engine-overview-dark.png">
-    <img alt="Task success rate of four headless browsers over 1,928 tasks: Chrome 100%, Moli 93.1%, Lightpanda 81.4%, Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
+    <img alt="Task success rate of four headless browsers over 1,928 tasks — Chrome 100%, Moli 1.1.28 100%, Lightpanda 81.4%, Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
   </picture>
 </div>
 
@@ -48,11 +48,13 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 | Engine | Version | Passed | Task success rate |
 |:---|:---|---:|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 155.0.8059.79 | 1,928 / 1,928 | **100.00%** |
-| [Moli](https://github.com/lexmount/moli) | 1.1.17 | 1,795 / 1,928 | **93.10%** |
+| [Moli](https://github.com/lexmount/moli) | 1.1.28 | 1,928 / 1,928 | **100.00%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1.0.1 | 1,569 / 1,928 | **81.38%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.2.4 | 1,161 / 1,928 | **60.22%** |
 
 </div>
+
+Moli 1.1.28 completed the full suite with `serve --realtime` in the November 2026 run. Chrome, Lightpanda and Obscura use the October results from `four_engine_full_20261016b`. The local runs use dataset `0.4.2`, seed `official20260709` and independent scoring. A task passes when all three attempts pass (`k=3`). [Run record and reproduction steps](docs/reports/benchmark-results-20261127.md).
 
 <details>
 <summary><b>Five-engine results at a glance (with Kitesurf, on a 1,308-task comparable subset)</b></summary>
@@ -60,7 +62,7 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/five-engine-caliber-b-dark.png">
-    <img alt="Task success rate of five headless browsers over 1,308 comparable tasks: Chrome 100%, Moli 94.5%, Lightpanda 76.7%, Obscura 66.2%, Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
+    <img alt="Task success rate of five headless browsers over 1,308 comparable tasks — Chrome 100%, Moli 1.1.28 100%, Lightpanda 76.7%, Obscura 66.2%, Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
   </picture>
 </div>
 
@@ -69,36 +71,32 @@ Lexbench-Headless-Browser turns that premise into something testable: every task
 | Engine | Comparable subset (1,308 tasks) |
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,308 / 1,308 · **100.00%** |
-| [Moli](https://github.com/lexmount/moli) | 1,236 / 1,308 · **94.50%** |
+| [Moli](https://github.com/lexmount/moli) | 1,308 / 1,308 · **100.00%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1,003 / 1,308 · **76.68%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 866 / 1,308 · **66.21%** |
 | [Kitesurf](https://blog.cloudflare.com/kitesurf/) (remote) | 812 / 1,308 · **62.08%** |
 
 </div>
 
-This comparison uses a subset of the same 1,928-task set: tasks whose failures cannot be attributed when the engine is a remote endpoint are removed, and the removal applies to all five engines alike; removing a task does not mean Kitesurf would pass it once a local binary ships. The subset definition and the full report are on the [`kitesurf-eval` branch](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md).
+The same 1,308-task subset applies to all five engines. Moli's count comes from filtering the November run to that subset. Kitesurf's count comes from the August remote evaluation. [Subset definition and remote report](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/docs/reports/five-engine-report-20260813.md).
 
 </details>
-
-Run parameters: run id `four_engine_full_20261016b`, dataset version `0.4.2`, seed `official20260709`, k=3, 23,136 result rows. A task counts as passed only when all three attempts pass. Each engine is scored on its own attempts (`--score-mode independent`); Chrome is the reference column. Moli runs with layout on (`serve --layout`); its rows come from a Moli-only re-run with the same settings. Full report: [docs/reports/four-engine-report-20261016b.md](docs/reports/four-engine-report-20261016b.md).
 
 > [!NOTE]
 > If you care about [Kitesurf](https://blog.cloudflare.com/kitesurf/), the agent-first cloud browser Cloudflare just launched, its evaluation lives on the [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.md) branch. Kitesurf currently exists only as a remote endpoint, with no binary digest and no resource measurement, and the five-engine results are published on that branch.
 
 ## Resource Cost
 
-The lightweight engines' biggest selling point is low resource use, and whether the replacement case holds also depends on how much they actually save, so resources are measured with the same rigor as compatibility. The task set is `l1.raw_cdp` (375 tasks) plus L2's `l2.web_platform` subset (182 tasks), 557 in total; the resource round runs strictly serial (`--jobs 1`) so engines never compete for the machine. Every resource statistic is computed only on the task-attempt intersection that all four engines passed (1,346 attempts): comparing cost makes sense only when everyone finished the same work, and a task an engine failed never enters its resource account.
+The resource suite runs `l1.raw_cdp` and `l2.web_platform`, 557 tasks in total. Moli 1.1.28 ran in realtime layout with one worker and five attempts per task. Its 2,777 passing attempts had a median sampled peak PSS of **112.63 MiB** and a median CPU time of **30.11 ms**. At the 95th percentile they reached 165.88 MiB and 44.56 ms. [Resource run details](docs/reports/benchmark-results-20261127.md#moli-resource-sample).
 
-Because observing a process can itself distort the numbers, the measurement is a two-round A/B design: the same tasks run once with the profiler off as a baseline, then once with it on, and the two rounds are compared to quantify the disturbance of observing. A round is eligible (`resource_comparison_eligible: true`) only when that disturbance clears the calibration gate. The current round is not eligible: Obscura's Fetch interception tasks flipped between pass and fail across the two rounds, and the host was using swap. Read the numbers below as indicative.
+The outlined point uses the new Moli sample. The filled points for Chrome, Lightpanda and Obscura use the October 2026 snapshot, which measured 1,346 shared passing attempts. The resource figures are indicative given the different sample populations and recorded host swap use. [October resource snapshot](docs/reports/benchmark-results-20261127.md#october-resource-snapshot).
 
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/efficiency-map-dark.png">
-    <img alt="Task success rate plotted against median peak memory per task: Chrome at 100% and 734 MiB, Moli at 93.1% and 78 MiB, Lightpanda at 81.4% and 34 MiB, Obscura at 60.2% and 45 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
+    <img alt="Task success rate and median peak PSS — Moli 1.1.28 at 100% and 112.6 MiB from a single-engine sample. October values are Chrome 100% and 734 MiB, Lightpanda 81.4% and 34 MiB, Obscura 60.2% and 45 MiB." src="docs/assets/efficiency-map-light.png" width="100%">
   </picture>
 </div>
-
-Median peak process-tree memory per task: Lightpanda 34 MiB, Obscura 45 MiB, Moli 78 MiB, Chrome 734 MiB. Median engine CPU time per task on the same set: 7 ms, 14 ms, 24 ms, 177 ms. Details and the calibration record are in the [resource card](docs/reports/resource-card-20261016b.md).
 
 ## Quick Start
 
@@ -127,7 +125,7 @@ A smoke round finishes in minutes, with per-task pass/fail in `runs/<run-id>/res
 
 ## Benchmark Composition
 
-Current dataset version `0.4.2`: 1,928 tasks in 18 subsets, on two layers. The published run above uses this version. How the dataset and harness versions are bumped: [Versioning](docs/RESULTS.md#versioning).
+Current dataset version `0.4.2`: 1,928 tasks in 18 subsets, on two layers. The local engine results above use this version. How the dataset and harness versions are bumped: [Versioning](docs/RESULTS.md#versioning).
 
 **L1 measures protocol and driver compatibility (1,740 tasks) across two paths:**
 
@@ -170,9 +168,9 @@ Every attempt passes two identity checks: an HTTP `/json/version` probe before c
 
 Every result row carries a status (`pass`, `fail`, `unsupported`, `timeout`, `crash`, `infra`); a failing row also carries `failure.class` and `failure.origin`.
 
-Reports under `docs/reports/` come from generators that read a run's `results.jsonl`. Running a generator again on the same run produces the same bytes.
+The evaluation reports are generated from each run's `results.jsonl`. The November run record lists the sources behind the README charts and their regeneration command. [November run record](docs/reports/benchmark-results-20261127.md).
 
-Functional and resource rounds never share a run. Resource figures come from the A/B protocol above and are published only when `resource_comparison_eligible` is true.
+Functional results and resource measurements come from separate runs. The resource section records whether a measurement passed A/B calibration.
 
 `run_manifest.json` records digests of the runner source tree, the fixture tree and the compiled adapter binaries, so anyone can check which code produced a run. Timestamps are UTC, result rows carry no absolute host paths, and `--provenance-level minimal` keeps hardware facts while dropping deployment fingerprints.
 

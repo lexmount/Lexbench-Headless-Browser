@@ -6,7 +6,9 @@
 
 ## 关键数字是什么
 
-头条通过率计一道题通过的标准是：**全部 k 次尝试都通过**（已发布 run 的 k=3）。过了两次、超时一次，这道题按失败计。让头条数字对不稳定敏感是有意的：Agent 重试一个抖动的操作，消耗预算的方式跟撞上硬失败没有区别。
+一道题必须 **全部 k 次尝试都通过**，才计入通过率（README 中本地引擎的 `k=3`）。过了两次、超时一次，这道题按失败计。Agent 重试一次不稳定的操作也会消耗预算，因此通过率计入这些失败。
+
+2026 年 11 月，Moli 1.1.28 使用实时布局通过了全部 1,928 道题。其他本地引擎沿用 10 月的数据。[11 月运行记录](reports/benchmark-results-20261127.md)。
 
 每个引擎只按自己的尝试计分（`--score-mode independent`）。Chrome 是参照列，不是及格线。另一种模式 `--chrome-baseline required` 会把 Chrome 失败的题从所有引擎的分母里剔除，等于把 Chrome 那列推向 100%，因此已发布运行采用 `best_effort`。历史报告的 99.90% 是包含诊断题的全部任务原始通过率；Chrome 失败的两道题仍在这一分母中，但两题的调用均标记为 `score_included: false`。其中 `pw_raw_schema_getdomains` 是评测器把页面命令错发到浏览器连接所致。新报告应分别展示原始任务和正式计分的人群。
 
@@ -31,7 +33,7 @@ L1 刻意让同一个行为跨 driver 重复——因为 **driver 兼容性正�
 
 **整列为零要读成"启动级失败"，而不是 92 次独立失误**：说明这个栈对该引擎连会话握手都完成不了，握手之后的题全都够不着。报告会把每个零列归因到根因。
 
-已发布 run 还显示信号方向是**混合的**——这本身就是关于测试集的证据：Moli 总分领先，但 Lightpanda 在六个 subset 上高于 Moli（`l1.puppeteer` 114:96、`l1.agent_browser_scenarios` 80:66、`l1.cdp_use`/`l1.chrome_remote_interface`/`l1.stagehand` 76:69、`l1.agent_browser_tool` 68:64）。一套专门为某个引擎量身挑选的任务集，不会产生这种模式。
+在 2026 年 8 月的运行中，Moli 总分领先，Lightpanda 在六个子集上高于 Moli（`l1.puppeteer` 114:96、`l1.agent_browser_scenarios` 80:66、`l1.cdp_use`、`l1.chrome_remote_interface` 和 `l1.stagehand` 均为 76:69、`l1.agent_browser_tool` 68:64）。[8 月四引擎报告](reports/four-engine-report-20260812.md)。
 
 ## L2 轴：按能力项计，不按题数计
 
@@ -56,7 +58,7 @@ L2 按行为判语义。fixture 跑在框架自己的服务器上，由**服务�
 
 资源数字来自单独的 A/B 校准轮：契约见 [resource-cost.zh.md](resource-cost.zh.md)、复现步骤见 [REPRODUCE.zh.md](REPRODUCE.zh.md)。阅读时注意：
 
-- 统计在四个引擎共同通过的 **1,346 个任务×尝试交集**上进行；失败的题从来不按"便宜的失败"计入任何引擎的账。
+- 10 月资源记录采用四个引擎共同通过的 1,346 次尝试。11 月 Moli 1.1.28 的资源记录采用单引擎运行中的 2,777 次通过样本。[采样详情](reports/benchmark-results-20261127.md#moli-resource-sample)
 - 数字描述的是 **557 道**的资源任务集，不外推到全量。
 - 实心值是中位数；资源卡片里还有 p95、PSS 增量、进程数和 fixture 流量。
 - 远程引擎在测量机上**没有进程树**。空单元格的意思是"无法测量"，永远不是零。

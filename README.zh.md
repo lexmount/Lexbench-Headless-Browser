@@ -39,7 +39,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/four-engine-overview-dark.png">
-    <img alt="四个无头浏览器在 1,928 道任务上的成功率：Chrome 100%、Moli 93.1%、Lightpanda 81.4%、Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
+    <img alt="四个无头浏览器在 1,928 道任务上的成功率为 Chrome 100%、Moli 1.1.28 100%、Lightpanda 81.4%、Obscura 60.2%" src="docs/assets/four-engine-overview-light.png" width="100%">
   </picture>
 </div>
 
@@ -48,11 +48,13 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 | 引擎 | 版本 | 通过 | 任务成功率 |
 |:---|:---|---:|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 155.0.8059.79 | 1,928 / 1,928 | **100.00%** |
-| [Moli](https://github.com/lexmount/moli) | 1.1.17 | 1,795 / 1,928 | **93.10%** |
+| [Moli](https://github.com/lexmount/moli) | 1.1.28 | 1,928 / 1,928 | **100.00%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1.0.1 | 1,569 / 1,928 | **81.38%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 0.2.4 | 1,161 / 1,928 | **60.22%** |
 
 </div>
+
+Moli 1.1.28 在 2026 年 11 月使用 `serve --realtime` 跑完了全量任务。Chrome、Lightpanda 和 Obscura 沿用 10 月的 `four_engine_full_20261016b` 结果。本地引擎均使用数据集 `0.4.2`、种子 `official20260709` 和独立计分，每道题三次都通过才计为通过（`k=3`）。[运行记录与复现步骤](docs/reports/benchmark-results-20261127.md)。
 
 <details>
 <summary><b>五引擎结果速览（含 Kitesurf，1,308 道可比任务子集）</b></summary>
@@ -60,7 +62,7 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/five-engine-caliber-b-dark.png">
-    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率：Chrome 100%、Moli 94.5%、Lightpanda 76.7%、Obscura 66.2%、Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
+    <img alt="五个无头浏览器在 1,308 道可比任务上的成功率为 Chrome 100%、Moli 1.1.28 100%、Lightpanda 76.7%、Obscura 66.2%、Kitesurf 62.1%" src="docs/assets/five-engine-caliber-b-light.png" width="100%">
   </picture>
 </div>
 
@@ -69,40 +71,36 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 | 引擎 | 可比子集（1,308 道） |
 |:---|---:|
 | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) | 1,308 / 1,308 · **100.00%** |
-| [Moli](https://github.com/lexmount/moli) | 1,236 / 1,308 · **94.50%** |
+| [Moli](https://github.com/lexmount/moli) | 1,308 / 1,308 · **100.00%** |
 | [Lightpanda](https://github.com/lightpanda-io/browser) | 1,003 / 1,308 · **76.68%** |
 | [Obscura](https://github.com/h4ckf0r0day/obscura) | 866 / 1,308 · **66.21%** |
 | [Kitesurf](https://blog.cloudflare.com/kitesurf/)（远程） | 812 / 1,308 · **62.08%** |
 
 </div>
 
-这份对比取的是同一份 1,928 道任务集的一个子集：剔除掉面对远程端点失败、无法归因的题，对五个引擎一视同仁；剔除不代表这些题在 Kitesurf 提供本地二进制后就一定能通过。子集定义和完整报告见 [`kitesurf-eval` 分支](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md)。
+五个引擎都采用同一个 1,308 题子集。Moli 的成绩从 11 月的全量结果中按该子集统计，Kitesurf 的成绩来自 8 月的远程评测。[子集定义与远程评测报告](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/docs/reports/five-engine-report-20260813.md)。
 
 </details>
-
-本次 run 的参数：run id `four_engine_full_20261016b`、数据集版本 `0.4.2`、seed `official20260709`、k=3，共 23,136 条结果行。计分规则为 k=3 全通过制：每道题要尝试三次，三次全部成功才算通过；每个引擎只按自己的尝试计分（`--score-mode independent`），Chrome 仅作参照。Moli 开启布局（`serve --layout`）运行，其结果来自参数相同的 Moli 单独重跑。完整报告见 [four-engine-report-20261016b.md](docs/reports/four-engine-report-20261016b.md)。
 
 > [!NOTE]
 > 如果你关心 Cloudflare 新发布的 agent-first 云端浏览器 [Kitesurf](https://blog.cloudflare.com/kitesurf/)，它的评测在 [`kitesurf-eval`](https://github.com/lexmount/Lexbench-Headless-Browser/blob/kitesurf-eval/README.zh.md) 分支。Kitesurf 目前只以远程端点形态存在，没有二进制、无法测量资源，五引擎结果在该分支发布。
 
 ## 资源开销
 
-轻量引擎最大的卖点是资源消耗低——"替代 Chrome"的论据能不能成立，就得看到底省了多少。因此资源轮采用了和兼容性同等严格的方式。任务集取 `l1.raw_cdp`（375 道）加上 L2 的 `l2.web_platform` 子集（182 道），共 557 道；并且必须以 `--jobs 1` 串行执行，避免不同引擎之间互相争抢资源。所有资源统计只在这四个引擎共同通过的任务×尝试交集上计算（共 1,346 个样本）：只有大家都完成了同一批工作，比较各自的开销才有意义；某个引擎没通过的题，也不会计入它的资源账。
+资源测试使用 `l1.raw_cdp` 和 `l2.web_platform`，共 557 道题。Moli 1.1.28 在实时布局下串行运行，每题尝试五次。2,777 个通过样本的 PSS 峰值中位数为 **112.63 MiB**，CPU 时间中位数为 **30.11 ms**，P95 分别为 165.88 MiB 和 44.56 ms。[资源采样详情](docs/reports/benchmark-results-20261127.md#moli-resource-sample)。
 
-测量本身会带来误差——比如开启 profiler 会引入额外开销，所以采用两轮 A/B 设计：同一批任务先关掉 profiler 完整跑一轮作为基线，再开启 profiler 跑一轮，两轮之差就是观测行为自身造成的干扰。只有当干扰低于校准阈值时，这一轮才算合格（`resource_comparison_eligible: true`）。本轮不合格：Obscura 的 Fetch 拦截类任务在两轮之间时而通过、时而失败，而且主机在使用 swap。下面的数字仅供参考。
+空心点来自这次 Moli 单引擎采样。Chrome、Lightpanda 和 Obscura 的实心点沿用 2026 年 10 月的 1,346 个共同通过样本。两批样本的统计范围不同，主机也记录到 swap 使用，因此资源数字仅供参考。[10 月资源记录](docs/reports/benchmark-results-20261127.md#october-resource-snapshot)。
 
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/efficiency-map-dark.png">
-    <img alt="任务成功率与单题内存峰值中位数的关系：Chrome 100%、734 MiB，Moli 93.1%、78 MiB，Lightpanda 81.4%、34 MiB，Obscura 60.2%、45 MiB" src="docs/assets/efficiency-map-light.png" width="100%">
+    <img alt="任务成功率与 PSS 峰值中位数。Moli 1.1.28 为 100% 和 112.6 MiB，来自单引擎采样。10 月记录中 Chrome 为 100% 和 734 MiB，Lightpanda 为 81.4% 和 34 MiB，Obscura 为 60.2% 和 45 MiB。" src="docs/assets/efficiency-map-light.png" width="100%">
   </picture>
 </div>
 
-单题进程树内存峰值的中位数：Lightpanda 34 MiB、Obscura 45 MiB、Moli 78 MiB、Chrome 734 MiB；同一批任务的单题引擎 CPU 时间中位数分别是 7 ms、14 ms、24 ms、177 ms。细节与校准记录见[资源卡片](docs/reports/resource-card-20261016b.md)。
-
 ## 测试集构成
 
-当前数据集版本 `0.4.2`：共 1,928 道 task、18 个子集，分两层（L1 / L2）。上文发布的 run 使用的就是这个版本。数据集版本与 harness 版本各自怎么递增，见 [版本号](docs/RESULTS.zh.md#版本号)。
+当前数据集版本 `0.4.2`：共 1,928 道 task、18 个子集，分两层（L1 / L2）。上文的本地引擎结果均使用这个版本。数据集版本与 harness 版本各自怎么递增，见 [版本号](docs/RESULTS.zh.md#版本号)。
 
 **L1：测协议与 driver 兼容性，共 1,740 道，走两条路径**
 
@@ -145,9 +143,9 @@ Lexbench-Headless-Browser 把"这个前提"变成了可以测量、可以复现�
 
 每条结果行都带一个状态（`pass`、`fail`、`unsupported`、`timeout`、`crash`、`infra`）；失败的行还会记录 `failure.class` 与 `failure.origin`，便于定位"是哪种失败、失败在哪一环"。
 
-`docs/reports/` 下的报告由读取 run 的 `results.jsonl` 的生成器产出。同一份 run 再跑一次生成器，输出逐字节相同——保证报告可复现。
+评测报告从每次运行的 `results.jsonl` 生成。11 月运行记录收录了 README 图表的数据来源和重新生成命令。[11 月运行记录](docs/reports/benchmark-results-20261127.md)。
 
-功能轮与资源轮从不共用同一次 run。资源数字只来自上面那套 A/B 协议，只有 `resource_comparison_eligible` 为真时才会公布。
+功能结果和资源数据来自不同的运行。资源章节标注了每组采样的 A/B 校准状态。
 
 `run_manifest.json` 记录了 runner 源码树、fixture 树和编译后 adapter 二进制的摘要，任何人都能核对某次 run 到底由哪份代码产出。时间戳统一使用 UTC；结果行不包含绝对路径；使用 `--provenance-level minimal` 时只保留硬件事实、去掉部署指纹。
 

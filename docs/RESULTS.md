@@ -6,7 +6,9 @@ The reports print the numbers. This page defines what the numbers mean, where th
 
 ## What the headline number is
 
-The headline pass rate counts a task as passed only when all k attempts pass (k=3 in the published run). A task that passes twice and times out once counts as failed. This makes the headline sensitive to instability on purpose: an agent retrying a flaky operation burns its budget just as surely as it does on a hard failure.
+The headline pass rate counts a task as passed only when all k attempts pass (k=3 for the local engines in the README). A task that passes twice and times out once counts as failed. This makes the headline sensitive to instability on purpose: an agent retrying a flaky operation burns its budget just as surely as it does on a hard failure.
+
+The November 2026 Moli 1.1.28 run passed all 1,928 tasks in realtime layout. The other local engine columns use the October 2026 snapshot. [November run record](reports/benchmark-results-20261127.md).
 
 Every engine is scored on its own attempts (`--score-mode independent`). Chrome is a reference column, not a gate. The alternative, `--chrome-baseline required`, would remove Chrome-failing tasks from every engine's denominator and push Chrome's own column toward 100% by construction, which is why the published runs use `best_effort`. The historical 99.90% is the raw all-task completion rate, including diagnostic tasks. Both Chrome-failing tasks remain in that raw denominator; their calls have `score_included: false` in the scored population. One, `pw_raw_schema_getdomains`, failed because the harness routed a page-target command to the browser connection. Corrected runs must keep raw and scored populations separate.
 
@@ -31,7 +33,7 @@ L1 deliberately repeats behavior across driver stacks, because driver compatibil
 
 Read a whole-column zero as a bootstrap failure, not as 92 separate misses: the stack cannot complete its session handshake against that engine, and every task behind the handshake is unreachable. The reports attribute each zero column to its root cause.
 
-The published run also shows the direction of the signal is mixed, which is worth reading as evidence about the bench itself: Lightpanda beats Moli in six subsets (`l1.puppeteer` 114:96, `l1.agent_browser_scenarios` 80:66, `l1.cdp_use`, `l1.chrome_remote_interface` and `l1.stagehand` 76:69, `l1.agent_browser_tool` 68:64) while Moli leads overall. A task set tuned to favour one engine would not produce that pattern.
+In the August 2026 run, Lightpanda led Moli in six subsets (`l1.puppeteer` 114:96, `l1.agent_browser_scenarios` 80:66, `l1.cdp_use`, `l1.chrome_remote_interface` and `l1.stagehand` 76:69, `l1.agent_browser_tool` 68:64) while Moli led overall. [August four-engine report](reports/four-engine-report-20260812.md).
 
 ## The L2 axis: capabilities, not task counts
 
@@ -53,7 +55,7 @@ For multi-step workflow tasks the grading is two-gated: the driver's step checks
 
 Resource figures come from the separate A/B-calibrated round documented in [resource-cost.md](resource-cost.md) and [REPRODUCE.md](REPRODUCE.md). When reading them:
 
-- They are computed on the 1,346 task-attempt intersection that all four engines passed. A failed task never enters an engine's account as a cheap failure.
+- The October resource snapshot uses the 1,346 task attempts all four engines passed. The November Moli 1.1.28 sample uses its 2,777 passing attempts. [Run details](reports/benchmark-results-20261127.md#moli-resource-sample)
 - They describe the 557-task resource set and do not extrapolate to the full corpus.
 - Filled values are medians; the resource card also carries p95 values, PSS deltas, process counts and fixture traffic.
 - A remote engine has no process tree on the measuring machine. An empty cell means unmeasurable, never zero.
