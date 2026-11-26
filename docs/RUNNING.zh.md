@@ -152,6 +152,6 @@ B 轮结束时，拿自己的任务耗时分布和 A 轮对比，量出 **profil
 
 ## Moli 固定布局
 
-Moli 默认使用按需布局，支持真实几何信息和坐标输入。用 `--moli-layout on` 复现默认配置，或用 `--moli-layout off` 使用模拟几何。对于支持 `serve --realtime` 的 Moli 构建，用 `--moli-layout realtime` 在页面运行时更新几何信息并执行渲染回调。所选模式应用于整次运行。每题的所有尝试都通过才算成功。比较模式时，分别运行并使用同一二进制、题目、种子和重复次数。
+Moli 默认使用实时布局，在页面运行时更新几何信息并执行渲染回调，需要 Moli 构建支持 `serve --realtime`。用 `--moli-layout realtime` 复现默认配置，`--moli-layout on` 使用按需布局，或用 `--moli-layout off` 使用模拟几何。所选模式应用于整次运行。每题的所有尝试都通过才算成功。比较模式时，分别运行并使用同一二进制、题目、种子和重复次数。
 
 Lexbench 会为支持 `serve --debugger` 的 Moli 构建自动开启该参数，以测试 CDP 调试器暂停和单步执行。运行清单和每次尝试的记录都会包含这个启动参数。

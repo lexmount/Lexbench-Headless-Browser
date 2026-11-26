@@ -18,7 +18,7 @@ from tools._repository import require_local_runner
 require_local_runner(Path(__file__).resolve().parents[1])
 
 from runner.run import compact_run_id
-from runner.layout import DEFAULT_MODE
+from runner.layout import DEFAULT_MODE, SERVE_ARGS
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "benchmarks/moli-0.1.1-failure-cohort.json"
@@ -67,8 +67,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("moli_binary", type=Path, help="absolute path to the version under test")
     parser.add_argument("run_id", help="new result directory name")
-    parser.add_argument("--moli-layout", choices=("on", "off"), default=DEFAULT_MODE,
-                        help="Moli layout mode (default: on)")
+    parser.add_argument("--moli-layout", choices=tuple(SERVE_ARGS), default=DEFAULT_MODE,
+                        help=f"Moli layout mode (default: {DEFAULT_MODE})")
     parser.add_argument("--moli-commit", help="40-character source commit for candidate binaries")
     args = parser.parse_args()
     if not args.moli_binary.is_absolute() or not args.moli_binary.is_file() or not os.access(args.moli_binary, os.X_OK):
@@ -154,9 +154,12 @@ def main() -> None:
         raise ValueError("run did not produce the complete pinned Moli matrix")
     if manifest["engines"]["moli"].get("layout_mode") != args.moli_layout:
         raise ValueError("Moli layout mode differs from the declared run")
-    has_global_layout = "--layout" in manifest["engines"]["moli"].get("serve_args", [])
-    if has_global_layout != (args.moli_layout == "on"):
-        raise ValueError("Moli global layout flag differs from the declared run")
+    layout_flags = tuple(
+        flag for flag in manifest["engines"]["moli"].get("serve_args", [])
+        if flag in ("--layout", "--realtime")
+    )
+    if layout_flags != SERVE_ARGS[args.moli_layout]:
+        raise ValueError("Moli layout flags differ from the declared run")
     print(f"Complete cohort: {run_dir}")
 
 

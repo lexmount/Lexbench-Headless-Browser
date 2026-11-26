@@ -57,7 +57,7 @@ def test_checked_in_cohort_keeps_all_372_failures():
 
 @pytest.mark.parametrize('child_failure', [False, True])
 @pytest.mark.parametrize('requested', ['release-1_1_9', 'Release__119', 'x' * 80])
-@pytest.mark.parametrize('mode', [None, 'off'])
+@pytest.mark.parametrize('mode', [None, 'off', 'on', 'realtime'])
 def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, requested, child_failure, mode):
     from runner.run import compact_run_id
     binary = tmp_path / 'moli'
@@ -89,7 +89,7 @@ def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, request
     monkeypatch.setenv('GEM_HOME', '/configured/gems')
     monkeypatch.setenv('PATH', '/configured/bin')
     invoked = []
-    expected_mode = mode or 'on'
+    expected_mode = mode or 'realtime'
 
     def execute(command, **kwargs):
         requested_id = command[command.index('--run-id') + 1]
@@ -108,7 +108,8 @@ def test_run_paths_and_receipts_use_the_runner_id(tmp_path, monkeypatch, request
         manifest = dict(completion_status='completed', completed_result_rows=3,
                         engines={'moli': dict(sha256=cohort.file_sha256(binary),
                                               layout_mode=expected_mode,
-                                              serve_args=['--layout'] if expected_mode == 'on' else [])})
+                                              serve_args={'off': [], 'on': ['--layout'],
+                                                          'realtime': ['--realtime']}[expected_mode])})
         (run_dir / 'run_manifest.json').write_text(json.dumps(manifest))
 
     monkeypatch.setattr(cohort.subprocess, 'run', execute)

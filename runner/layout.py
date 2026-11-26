@@ -1,6 +1,6 @@
 """Fixed Moli layout selection and rejection of mixed-layout evidence."""
 
-DEFAULT_MODE = "on"
+DEFAULT_MODE = "realtime"
 SERVE_ARGS = {
     "off": (),
     "on": ("--layout",),
